@@ -11,7 +11,7 @@ test('premium V2 release wires embedded hero, atlas and three customer portraits
   ]);
   assert.match(html,/v2-release\.css\?v=/);
   assert.match(html,/v2-main\.js\?v=/);
-  assert.match(html,/data-build="v2-premium-/);
+  assert.match(html,/data-build="v2-single-screen-/);
   assert.match(release,/--poply-hero/);
   assert.match(release,/--poply-atlas/);
   assert.match(release,/position:fixed/);
