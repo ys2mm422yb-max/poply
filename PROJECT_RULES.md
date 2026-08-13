@@ -59,6 +59,11 @@ A change is not considered finished merely because it compiles. The meaningful u
 Poply is a mobile-first Match-3 game designed for broad appeal.
 
 - The core interaction must be immediately understandable.
+- A first-time player must be able to discover a valid move from the game itself without external explanation.
+- Never rely on the player understanding that equal-colour pieces are swapped rather than merged. The UI must visually teach that the goal is to move one piece so that at least three matching pieces form a line.
+- Invalid gestures must give specific, useful feedback. A same-colour-on-same-colour no-op must not look like a broken merge.
+- Drag input on touch devices should visibly follow the finger and preview the neighbouring destination whenever practical.
+- Early levels should guide a valid move until the player demonstrates understanding, then get out of the way.
 - Sessions should be short and satisfying.
 - Moment-to-moment feedback, combos and progression should create a strong "one more round" feeling.
 - Swaps, matches, cascades and power effects must be visually understandable; do not jump from input straight to an unexplained final board state.
