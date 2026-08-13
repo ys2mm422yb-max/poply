@@ -98,6 +98,21 @@ export function resolveBoard(board, size = DEFAULT_SIZE, randomTile = () => 0) {
   return { board: next, score, chain };
 }
 
+export function hasValidMove(board, size = DEFAULT_SIZE) {
+  for (let row = 0; row < size; row += 1) {
+    for (let col = 0; col < size; col += 1) {
+      const current = indexOf(row, col, size);
+      const neighbours = [];
+      if (col + 1 < size) neighbours.push(indexOf(row, col + 1, size));
+      if (row + 1 < size) neighbours.push(indexOf(row + 1, col, size));
+      for (const neighbour of neighbours) {
+        if (findMatches(swap(board, current, neighbour), size).length > 0) return true;
+      }
+    }
+  }
+  return false;
+}
+
 export function attemptSwap(board, a, b, size = DEFAULT_SIZE, randomTile = () => 0) {
   if (!areAdjacent(a, b, size)) return { valid: false, board, score: 0, chain: 0 };
   const swapped = swap(board, a, b);
@@ -106,7 +121,7 @@ export function attemptSwap(board, a, b, size = DEFAULT_SIZE, randomTile = () =>
   return { valid: true, ...resolved };
 }
 
-export function createBoard(size = DEFAULT_SIZE, types = DEFAULT_TYPES, rng = Math.random) {
+function createCandidateBoard(size, types, rng) {
   const board = [];
   for (let row = 0; row < size; row += 1) {
     for (let col = 0; col < size; col += 1) {
@@ -126,4 +141,12 @@ export function createBoard(size = DEFAULT_SIZE, types = DEFAULT_TYPES, rng = Ma
     }
   }
   return board;
+}
+
+export function createBoard(size = DEFAULT_SIZE, types = DEFAULT_TYPES, rng = Math.random) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const board = createCandidateBoard(size, types, rng);
+    if (hasValidMove(board, size)) return board;
+  }
+  throw new Error('Could not create a playable board');
 }

@@ -5,6 +5,7 @@ import {
   attemptSwap,
   createBoard,
   findMatches,
+  hasValidMove,
   scoreFor,
   swap,
 } from '../src/game.js';
@@ -35,7 +36,9 @@ test('findMatches detects horizontal and vertical runs', () => {
 
 test('new boards do not start with automatic matches', () => {
   for (let i = 0; i < 100; i += 1) {
-    assert.equal(findMatches(createBoard(8, 6), 8).length, 0);
+    const board = createBoard(8, 6);
+    assert.equal(findMatches(board, 8).length, 0);
+    assert.equal(hasValidMove(board, 8), true);
   }
 });
 
@@ -54,4 +57,18 @@ test('score rewards chain depth', () => {
   assert.equal(scoreFor(3, 1), 300);
   assert.equal(scoreFor(3, 2), 600);
   assert.equal(scoreFor(4, 3), 1200);
+});
+
+test('a valid swap resolves its match and awards points', () => {
+  const board = [
+    0, 1, 0,
+    2, 0, 2,
+    1, 0, 1,
+  ];
+  const refills = [1, 2, 1];
+  const result = attemptSwap(board, 1, 4, 3, () => refills.shift());
+  assert.equal(result.valid, true);
+  assert.equal(result.score, 300);
+  assert.equal(result.chain, 1);
+  assert.equal(findMatches(result.board, 3).length, 0);
 });
