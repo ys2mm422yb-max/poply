@@ -2,28 +2,36 @@
 
 ## What Poply should become
 
-Poply should feel like a polished, modern Match-3 game that anyone can pick up immediately. The target is not to clone Candy Crush; the target is to reproduce the clarity and replayability of the genre while building a distinct identity and its own progression systems.
+Poply should feel like a polished, modern connect-and-pop puzzle game that anyone can pick up immediately. The target is not to clone Candy Crush or another existing game; the target is to combine instant clarity, satisfying touch interaction and short replayable levels with Poply's own identity.
 
 ## Core player promise
 
-A player should be able to open Poply, understand the board within seconds, make satisfying moves immediately and finish a meaningful round in a few minutes.
+A player should be able to open Poply, touch a colour, naturally drag through neighbouring pieces of the same colour, see the chain form under the finger and understand the result without a tutorial from outside the game.
 
 ## Core loop
 
 1. Start a short level.
-2. Swap adjacent pieces to create matches.
-3. Matches clear, pieces fall and cascades can create combos.
-4. Strong moves create visibly better rewards and special effects.
-5. Complete a simple level objective within a move/time constraint.
-6. Receive progress/rewards and see the next clear goal.
-7. Start another level quickly.
+2. Drag through at least three adjacent matching pieces; diagonal links are allowed.
+3. Release to pop the chain.
+4. Pieces fall and new pieces enter visibly.
+5. Longer chains produce stronger score moments and power pieces.
+6. Complete a simple level objective within a move constraint.
+7. Receive progress/rewards and start another level quickly.
+
+## Power language
+
+- 3–4 matching pieces: normal chain pop.
+- 5–6 matching pieces: create a Blast power piece.
+- 7+ matching pieces: create a Prism power piece.
+- Connecting through an existing power activates it as part of the same intuitive colour chain.
 
 ## Feel
 
 - Fast, readable and responsive.
 - Colorful but not childish.
 - Friendly and energetic without being strongly gender-coded.
-- Juicy feedback: movement, scale, sound, particles and combo escalation should eventually make strong moves feel excellent.
+- The glowing connection path should make dragging satisfying before the pieces even pop.
+- Juicy feedback: movement, scale, sound, haptics, particles and escalating long-chain moments.
 - Low friction: avoid unnecessary menus between play sessions.
 
 ## Engagement philosophy
@@ -37,7 +45,7 @@ Allowed/desired:
 - streaks that reward returning without punishing absence harshly
 - collections/cosmetics
 - level goals and mastery
-- surprising but fair cascades
+- fair, visible power moments
 
 Not desired:
 - hidden manipulation that deliberately forces a loss
@@ -50,19 +58,21 @@ Not desired:
 
 ### Phase 1 – Prove the core
 - 8×8 board
-- six piece types
-- adjacent swapping
-- match-3+ detection
-- cascades
+- five accessible colours initially, with a sixth colour available for harder levels
+- same-colour drag chains
+- diagonal + orthogonal neighbours
+- minimum three-piece chains
+- visible connection path
+- collapse/refill
 - scoring
-- clear invalid-move feedback
 - mobile touch controls
+- hints that display a real chain
 
 ### Phase 2 – Make it satisfying
 - polished animations
 - sound and haptics
-- special pieces from 4/5 matches
-- combo escalation
+- Blast and Prism power pieces
+- escalating long-chain feedback
 - level goals
 - move counter
 - win/lose states
@@ -72,6 +82,7 @@ Not desired:
 - star/mastery system
 - daily challenge
 - local save
+- varied objectives/obstacles
 - basic balancing telemetry if justified
 
 ### Phase 4 – Online features
@@ -82,4 +93,4 @@ Not desired:
 
 ## Success criteria for the early prototype
 
-The prototype is successful when a player can make several valid moves in a row without explanation, understands why invalid moves fail, sees cascades resolve correctly, and wants to continue playing because each action feels responsive and clear.
+The prototype is successful when a first-time player naturally connects several same-colour chains without explanation, understands why a short chain does not pop, clearly sees Blast/Prism rewards, and wants to continue because dragging and popping feels responsive and satisfying.
