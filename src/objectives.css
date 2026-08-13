@@ -1,0 +1,129 @@
+.level-trail {
+  display: flex;
+  gap: 7px;
+  margin-top: 14px;
+  overflow-x: auto;
+  padding: 2px 2px 5px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.level-trail::-webkit-scrollbar { display: none; }
+.level-node {
+  position: relative;
+  flex: 0 0 42px;
+  height: 42px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 15px;
+  background: rgba(255,255,255,.045);
+  color: #7f89a5;
+  font-weight: 900;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+.level-node::after {
+  content: attr(data-stars);
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  transform: translateX(-50%);
+  color: #ffd76b;
+  font-size: .48rem;
+  letter-spacing: -.08em;
+  white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(0,0,0,.5);
+}
+.level-node.unlocked { color: #dbe2f6; background: rgba(255,255,255,.065); }
+.level-node.active {
+  color: #fff;
+  border-color: rgba(156,166,255,.5);
+  background: linear-gradient(145deg, rgba(120,104,255,.34), rgba(69,178,229,.18));
+  box-shadow: 0 0 0 2px rgba(126,111,255,.12), 0 8px 24px rgba(42,56,135,.24);
+  transform: translateY(-1px);
+}
+.level-node.locked { opacity: .36; cursor: default; }
+.level-node:active:not(.locked) { transform: scale(.95); }
+
+.objective-block {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.objective-list {
+  display: flex;
+  gap: 7px;
+  margin-top: 7px;
+  overflow-x: auto;
+  padding: 1px 1px 3px;
+  scrollbar-width: none;
+}
+.objective-list::-webkit-scrollbar { display: none; }
+.objective-chip {
+  --goal: #9daccc;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 35px;
+  padding: 7px 10px 7px 8px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 13px;
+  background: rgba(255,255,255,.035);
+  color: #b8c1d8;
+  font-size: .69rem;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.objective-chip.complete {
+  border-color: rgba(84,223,167,.28);
+  background: rgba(65,190,139,.09);
+  color: #87e6ba;
+}
+.objective-chip.complete::after {
+  content: '✓';
+  color: #78e2ad;
+  font-weight: 950;
+}
+.goal-icon {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border-radius: 7px;
+  background: var(--goal);
+  color: #fff;
+  font-size: .66rem;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -4px 7px rgba(0,0,0,.14);
+}
+.goal-color-0 { --goal: #ff5e79; }
+.goal-color-1 { --goal: #ffbe46; }
+.goal-color-2 { --goal: #4fd690; }
+.goal-color-3 { --goal: #43b6ff; }
+.goal-color-4 { --goal: #9476ff; }
+.goal-color-5 { --goal: #ff72cf; }
+.goal-chain .goal-icon { background: linear-gradient(145deg, #806eff, #4fb8ff); }
+.goal-power .goal-icon { background: linear-gradient(145deg, #ffca55, #ff708d); }
+.goal-value { color: #f2f5ff; font-variant-numeric: tabular-nums; }
+.objective-chip.complete .goal-value { color: #9aebc5; }
+
+.result-progress {
+  margin: -5px 0 17px !important;
+  color: #8f9ab6 !important;
+  font-size: .78rem;
+}
+
+@media (max-width: 390px) {
+  .level-node { flex-basis: 38px; height: 38px; border-radius: 13px; font-size: .84rem; }
+  .objective-chip { padding-right: 8px; font-size: .64rem; }
+}
+
+@media (min-width: 820px) and (orientation: landscape) {
+  .level-trail { max-width: 610px; }
+  .objective-list { flex-wrap: wrap; overflow: visible; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .level-node,
+  .objective-chip { transition: none; }
+}
