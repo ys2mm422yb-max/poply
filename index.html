@@ -8,11 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="format-detection" content="telephone=no">
-  <meta name="description" content="Poply — Match. Pop. Flow.">
+  <meta name="description" content="Poply — connect matching pieces, pop satisfying chains, keep the flow.">
   <link rel="manifest" href="./manifest.webmanifest">
   <title>Poply</title>
   <link rel="stylesheet" href="./src/styles.css">
-  <link rel="stylesheet" href="./src/tutorial.css">
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -20,20 +19,18 @@
 
   <main class="app-shell">
     <header class="game-header">
-      <div>
-        <div class="brand-row">
-          <h1>Poply</h1>
-          <span id="level-pill" class="level-pill">Level 1</span>
-        </div>
-        <p>Match. Pop. Flow.</p>
+      <div class="brand-row">
+        <h1>Poply</h1>
+        <span id="level-pill" class="level-pill">Level 1</span>
       </div>
+      <p>Connect. Pop. Flow.</p>
     </header>
 
     <section class="game-layout" aria-label="Poply game">
       <aside class="mission-panel" aria-label="Level objective">
         <div class="score-block">
-          <span class="eyebrow">Score</span>
-          <div class="score-value"><strong id="score">0</strong><span>/ <span id="target">3,600</span></span></div>
+          <span id="score-label" class="eyebrow">Score</span>
+          <div class="score-value"><strong id="score">0</strong><span>/ <span id="target">4,000</span></span></div>
         </div>
 
         <div class="progress-track" aria-label="Level progress">
@@ -43,34 +40,32 @@
 
         <div class="mission-stats">
           <div class="mission-stat">
-            <span>Moves</span>
-            <strong id="moves">18</strong>
+            <span id="moves-label">Moves</span>
+            <strong id="moves">16</strong>
           </div>
           <div class="mission-stat">
-            <span>Best combo</span>
+            <span id="best-label">Best chain</span>
             <strong id="best-chain">—</strong>
           </div>
         </div>
 
-        <p class="power-tip"><strong>Power up:</strong> match 4 for a line blast · match 5 for a cross blast.</p>
+        <p id="power-tip" class="power-tip">5 matching = Blast · 7+ matching = Prism</p>
       </aside>
 
       <div class="board-zone">
-        <div id="tutorial" class="tutorial-banner" hidden>
-          <strong>MAKE 3 IN A LINE</strong>
-          <span>Move the glowing piece into the outlined slot. Same colours do not merge by themselves.</span>
-        </div>
-
         <div id="board-frame" class="board-frame">
           <div class="board-halo" aria-hidden="true"></div>
-          <div id="board" class="board" role="grid" aria-label="Match 3 board"></div>
+          <div id="board" class="board" role="grid" aria-label="Connect matching pieces"></div>
+          <svg id="chain-svg" class="chain-svg" aria-hidden="true" preserveAspectRatio="none">
+            <polyline id="hint-polyline" class="hint-polyline" points=""></polyline>
+            <polyline id="chain-polyline" class="chain-polyline" points=""></polyline>
+          </svg>
           <div id="fx" class="fx-layer" aria-hidden="true"></div>
           <div id="combo" class="combo-badge" aria-hidden="true"></div>
-          <div id="guide-arrow" class="guide-arrow" aria-hidden="true"></div>
         </div>
 
         <div class="play-footer">
-          <p id="status" class="status" data-tone="neutral" aria-live="polite">Make 3 matching pieces in a line.</p>
+          <p id="status" class="status" data-tone="neutral" aria-live="polite">Drag through 3+ matching pieces.</p>
           <button id="restart" class="restart-button" type="button">Restart</button>
         </div>
       </div>
@@ -80,7 +75,7 @@
       <div class="result-card">
         <div id="stars" class="stars" aria-label="Level stars">☆ ☆ ☆</div>
         <h2 id="result-title">Level clear</h2>
-        <p id="result-copy">Great run.</p>
+        <p id="result-copy">Great chain.</p>
         <strong id="result-score" class="result-score">0</strong>
         <button id="result-action" class="primary-button" type="button">Next level</button>
       </div>
