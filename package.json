@@ -1,13 +1,11 @@
 {
   "name": "poply",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test && node --check src/main.js && node --check src/polish.js && node --check src/premium.js && node --check src/anticipation.js",
+    "test": "node --test && node --check src/main.js && node --check src/polish.js && node --check src/premium.js && node --check src/anticipation.js && node --check src/v2-game.js && node --check src/v2-main.js",
     "check": "npm test"
   },
-  "engines": {
-    "node": ">=20"
-  }
+  "engines": { "node": ">=20" }
 }
