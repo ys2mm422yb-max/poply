@@ -1,0 +1,11 @@
+{
+  "name": "Poply",
+  "short_name": "Poply",
+  "description": "Match. Pop. Flow.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1020",
+  "theme_color": "#0d1020"
+}
