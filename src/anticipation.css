@@ -1,0 +1,129 @@
+/* Escalating feedback while the player is still building a chain. */
+.board-frame.chain-ready,
+.board-frame.blast-ready,
+.board-frame.prism-ready {
+  transition: border-color 130ms ease, box-shadow 160ms ease;
+}
+
+.board-frame.chain-ready {
+  border-color: color-mix(in srgb, var(--chain-color) 24%, rgba(255,255,255,.08));
+}
+
+.board-frame.blast-ready {
+  border-color: color-mix(in srgb, var(--chain-color) 42%, rgba(255,255,255,.10));
+  box-shadow:
+    0 24px 62px rgba(0,0,0,.34),
+    0 0 32px color-mix(in srgb, var(--chain-color) 15%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.05),
+    inset 0 -24px 48px rgba(0,0,0,.13);
+}
+
+.board-frame.prism-ready {
+  border-color: color-mix(in srgb, var(--chain-color) 55%, rgba(255,255,255,.14));
+  box-shadow:
+    0 24px 62px rgba(0,0,0,.34),
+    0 0 42px color-mix(in srgb, var(--chain-color) 22%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.065),
+    inset 0 -24px 48px rgba(0,0,0,.13);
+}
+
+.board-frame.blast-ready .chain-glow,
+.board-frame.blast-ready .chain-tail-glow {
+  stroke-width: 13;
+  opacity: .22;
+  animation: anticipation-glow 520ms ease-in-out infinite alternate;
+}
+
+.board-frame.prism-ready .chain-glow,
+.board-frame.prism-ready .chain-tail-glow {
+  stroke-width: 16;
+  opacity: .28;
+  animation: anticipation-glow 360ms ease-in-out infinite alternate;
+}
+
+.board-frame.blast-ready .chain-polyline,
+.board-frame.blast-ready .chain-tail {
+  stroke-width: 4.2;
+}
+
+.board-frame.prism-ready .chain-polyline,
+.board-frame.prism-ready .chain-tail {
+  stroke-width: 4.8;
+}
+
+.board-frame.blast-ready .piece.chain-selected::before {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.68),
+    inset 0 -5px 9px rgba(0,0,0,.09),
+    0 0 0 1.5px color-mix(in srgb,var(--piece) 74%,white 26%),
+    0 0 16px color-mix(in srgb,var(--piece) 58%,transparent),
+    0 5px 10px rgba(0,0,0,.18);
+}
+
+.board-frame.prism-ready .piece.chain-selected::before {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -5px 9px rgba(0,0,0,.08),
+    0 0 0 2px color-mix(in srgb,var(--piece) 68%,white 32%),
+    0 0 22px color-mix(in srgb,var(--piece) 70%,transparent),
+    0 5px 11px rgba(0,0,0,.18);
+}
+
+.flow-hud[data-anticipation="chain"] {
+  border-color: color-mix(in srgb,var(--chain-color) 28%,rgba(255,255,255,.08));
+}
+
+.flow-hud[data-anticipation="blast"] {
+  border-color: color-mix(in srgb,var(--chain-color) 48%,rgba(255,255,255,.11));
+  background:
+    linear-gradient(120deg,
+      color-mix(in srgb,var(--chain-color) 14%,rgba(9,13,27,.88)),
+      rgba(9,13,27,.82));
+  box-shadow:
+    0 8px 28px rgba(0,0,0,.28),
+    0 0 20px color-mix(in srgb,var(--chain-color) 15%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+.flow-hud[data-anticipation="prism"] {
+  border-color: color-mix(in srgb,var(--chain-color) 62%,rgba(255,255,255,.14));
+  background:
+    linear-gradient(120deg,
+      color-mix(in srgb,var(--chain-color) 21%,rgba(9,13,27,.90)),
+      rgba(52,38,96,.82),
+      rgba(9,13,27,.84));
+  box-shadow:
+    0 9px 30px rgba(0,0,0,.30),
+    0 0 28px color-mix(in srgb,var(--chain-color) 22%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.flow-hud[data-anticipation="blast"] .flow-copy,
+.flow-hud[data-anticipation="prism"] .flow-copy {
+  color: #fff;
+  letter-spacing: .055em;
+}
+
+.flow-hud[data-anticipation="prism"] .flow-dot {
+  animation: anticipation-dot 420ms ease-in-out infinite alternate;
+}
+
+@keyframes anticipation-glow {
+  from { filter: blur(2px) drop-shadow(0 0 7px var(--chain-color)); }
+  to { filter: blur(2.5px) drop-shadow(0 0 13px var(--chain-color)); }
+}
+
+@keyframes anticipation-dot {
+  from { transform: scale(.9); opacity: .82; }
+  to { transform: scale(1.28); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-frame.blast-ready .chain-glow,
+  .board-frame.blast-ready .chain-tail-glow,
+  .board-frame.prism-ready .chain-glow,
+  .board-frame.prism-ready .chain-tail-glow,
+  .flow-hud[data-anticipation="prism"] .flow-dot {
+    animation: none;
+  }
+}
