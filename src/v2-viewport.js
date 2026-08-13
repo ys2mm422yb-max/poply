@@ -11,7 +11,7 @@ function syncViewport(){
     root.style.setProperty('--app-height',`${height}px`);
     const sideSpace=width<=819?16:28;
     const boardByWidth=Math.max(250,width-sideSpace);
-    const boardByHeight=Math.max(250,Math.floor(height*.53));
+    const boardByHeight=Math.max(250,Math.floor(height*.515));
     const boardSize=Math.min(boardByWidth,boardByHeight,width<=819?390:500);
     root.style.setProperty('--board-size',`${boardSize}px`);
     if(app)app.dataset.viewport=`${width}x${height}`;
