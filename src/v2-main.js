@@ -1,7 +1,11 @@
 import { HERO_IMAGE } from './v2-hero-data.js';
-import { ATLAS_IMAGE, CUSTOMER_ASSETS } from './v2-board-data.js';
+import { ATLAS_IMAGE } from './v2-atlas-data.js';
+import { CUSTOMER_A } from './v2-customer-a.js';
+import { CUSTOMER_B } from './v2-customer-b.js';
+import { CUSTOMER_C } from './v2-customer-c.js';
 import { ITEM_FAMILIES, createInitialState, normalizeState, itemDefinition, generateFromSlot, moveOrMerge, canMerge, canFulfillOrder, countRequirement, fulfillOrder, buildNextUpgrade, nextPlaceUpgrade } from './v2-game.js';
 
+const CUSTOMER_ASSETS=[CUSTOMER_A,CUSTOMER_B,CUSTOMER_C];
 const SAVE_KEY='poply-v2-state-1';
 document.documentElement.style.setProperty('--poply-hero',`url(${HERO_IMAGE})`);
 document.documentElement.style.setProperty('--poply-atlas',`url(${ATLAS_IMAGE})`);
