@@ -14,3 +14,11 @@ test('AAA entry owns visible Safari viewport sizing',async()=>{
   assert.match(source,/visualViewport/);
   assert.match(source,/--app-height/);
 });
+
+test('Place restoration has six visible authored scene steps',async()=>{
+  const css=await read('src/aaa-views.css');
+  assert.match(css,/data:image\/svg\+xml;base64/);
+  assert.doesNotMatch(css,/var\(--poply-hero\)/);
+  for(let stage=1;stage<=6;stage+=1)assert.ok(css.includes(`.scene-card.stage-${stage}`),`missing restoration stage ${stage}`);
+  for(const position of ['16.6667%','33.3333%','50%','66.6667%','83.3333%','100%'])assert.ok(css.includes(position),position);
+});
