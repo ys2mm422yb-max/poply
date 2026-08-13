@@ -1,11 +1,11 @@
 {
-  "name": "Poply",
+  "name": "Poply Places",
   "short_name": "Poply",
-  "description": "Match. Pop. Flow.",
+  "description": "Merge, serve and build your Poply Places.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0d1020",
-  "theme_color": "#0d1020"
+  "background_color": "#f6e1c4",
+  "theme_color": "#58c2ff"
 }

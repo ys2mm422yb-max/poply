@@ -1,113 +1,68 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
-  <meta name="theme-color" content="#0d1020">
+  <meta name="theme-color" content="#58c2ff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="format-detection" content="telephone=no">
-  <meta name="description" content="Poply — connect matching pieces, pop satisfying chains, keep the flow.">
+  <meta name="description" content="Poply Places — merge items, serve orders and build your own places.">
   <link rel="manifest" href="./manifest.webmanifest">
-  <title>Poply</title>
-  <link rel="stylesheet" href="./src/styles.css">
-  <link rel="stylesheet" href="./src/objectives.css">
-  <link rel="stylesheet" href="./src/game-shell.css">
-  <link rel="stylesheet" href="./src/premium.css">
-  <link rel="stylesheet" href="./src/anticipation.css">
+  <link rel="stylesheet" href="./src/v2.css">
+  <title>Poply Places</title>
 </head>
 <body>
-  <div class="ambient ambient-one" aria-hidden="true"></div>
-  <div class="ambient ambient-two" aria-hidden="true"></div>
-
-  <main class="app-shell">
-    <header class="game-header">
-      <div class="brand-row">
-        <div class="brand-lockup">
-          <h1>Poply</h1>
-          <span id="level-pill" class="level-pill">Level 1</span>
+  <main class="poply-app" aria-label="Poply Places">
+    <section id="place-hero" class="place-hero" data-stage="0" aria-label="Poply Place">
+      <div class="hero-top">
+        <div class="brand" aria-label="Poply Places">
+          <div class="brand-logo">Poply<span>PLACES</span></div>
         </div>
-        <button id="restart" class="restart-button" type="button" aria-label="Restart" title="Restart">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 11a8 8 0 1 0-2.34 5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M20 5v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <div class="resources" aria-label="Ressourcen">
+          <div class="resource"><i>⚡</i><span id="energy-value">40/40</span></div>
+          <div class="resource"><i>●</i><span id="coins-value">100</span></div>
+          <div class="resource"><i>★</i><span id="stars-value">0</span></div>
+        </div>
       </div>
-      <p class="tagline">Connect. Pop. Flow.</p>
-      <nav id="level-trail" class="level-trail" aria-label="Level progress"></nav>
-    </header>
-
-    <section class="game-layout" aria-label="Poply game">
-      <aside class="mission-panel" aria-label="Level objective">
-        <div class="mission-head">
-          <div class="score-block">
-            <span id="score-label" class="eyebrow">Score</span>
-            <div class="score-value"><strong id="score">0</strong><span>/ <span id="target">4,000</span></span></div>
-          </div>
-
-          <div class="mission-stats">
-            <div class="mission-stat">
-              <span id="moves-label">Moves</span>
-              <strong id="moves">16</strong>
-            </div>
-            <div class="mission-stat best-stat">
-              <span id="best-label">Best chain</span>
-              <strong id="best-chain">—</strong>
-            </div>
-          </div>
+      <div class="hero-bottom">
+        <div class="place-card">
+          <strong id="place-name">Café am Meer</strong>
+          <small id="place-progress">Ausbau 0/3</small>
+          <div class="place-progress" aria-hidden="true"><span id="place-progress-fill"></span></div>
         </div>
-
-        <div class="progress-track" aria-label="Level progress">
-          <div id="progress" class="progress-fill"></div>
-          <div class="progress-shine" aria-hidden="true"></div>
-        </div>
-
-        <div class="objective-block">
-          <span id="goals-label" class="eyebrow">Goals</span>
-          <div id="objectives" class="objective-list" aria-live="polite"></div>
-        </div>
-
-        <p id="power-tip" class="power-tip">5 matching = Blast · 7+ matching = Prism</p>
-      </aside>
-
-      <div class="board-zone">
-        <div id="board-frame" class="board-frame">
-          <div class="board-halo" aria-hidden="true"></div>
-          <div id="board" class="board" role="grid" aria-label="Connect matching pieces"></div>
-          <svg id="chain-svg" class="chain-svg" aria-hidden="true" preserveAspectRatio="none">
-            <polyline id="hint-polyline" class="hint-polyline" points=""></polyline>
-            <polyline id="chain-glow" class="chain-glow" points=""></polyline>
-            <polyline id="chain-polyline" class="chain-polyline" points=""></polyline>
-            <line id="chain-tail-glow" class="chain-tail-glow" x1="0" y1="0" x2="0" y2="0"></line>
-            <line id="chain-tail" class="chain-tail" x1="0" y1="0" x2="0" y2="0"></line>
-          </svg>
-          <div id="fx" class="fx-layer" aria-hidden="true"></div>
-          <div id="combo" class="combo-badge" aria-hidden="true"></div>
-        </div>
-
-        <div class="play-footer">
-          <p id="status" class="status" data-tone="neutral" aria-live="polite">Drag through 3+ matching pieces.</p>
+        <div class="upgrade-cta">
+          <div class="upgrade-copy"><span id="upgrade-name">Lichter</span><small id="upgrade-cost">★ 4</small></div>
+          <button id="build-button" type="button">Bauen</button>
         </div>
       </div>
     </section>
 
-    <section id="result" class="result-sheet" aria-live="polite" hidden>
-      <div class="result-card">
-        <div id="stars" class="stars" aria-label="Level stars">☆ ☆ ☆</div>
-        <h2 id="result-title">Level clear</h2>
-        <p id="result-copy">Great chain.</p>
-        <strong id="result-score" class="result-score">0</strong>
-        <p id="result-progress" class="result-progress"></p>
-        <button id="result-action" class="primary-button" type="button">Next level</button>
+    <section class="section" aria-labelledby="orders-heading">
+      <div class="section-head"><h2 id="orders-heading">Aufträge</h2><span>Merge → liefern → ausbauen</span></div>
+      <div id="orders" class="orders" aria-live="polite"></div>
+    </section>
+
+    <section class="board-wrap" aria-labelledby="board-heading">
+      <div class="section-head"><h2 id="board-heading">Merge-Board</h2><span>2 gleiche = nächste Stufe</span></div>
+      <div class="board-shell">
+        <div id="merge-board" class="merge-board" role="grid" aria-label="Merge Board"></div>
+        <div class="board-meta">
+          <p id="hint" class="hint">Tippe Generatoren an und ziehe gleiche Items zusammen.</p>
+          <div id="item-info" class="item-info" aria-live="polite"><span><strong>Poply V2</strong><small>Antippen zum Erkunden</small></span></div>
+        </div>
       </div>
     </section>
+
+    <nav class="bottom-bar" aria-label="Spielbereiche">
+      <button class="nav-button" type="button"><strong>☑</strong>Aufträge</button>
+      <button class="nav-button active" type="button"><strong>▦</strong>Board</button>
+      <button class="nav-button" type="button"><strong>⌂</strong>Place</button>
+      <button id="reset-button" class="nav-button utility" type="button"><strong>↻</strong>Reset</button>
+    </nav>
   </main>
-
-  <script type="module" src="./src/main.js"></script>
-  <script type="module" src="./src/polish.js"></script>
-  <script type="module" src="./src/premium.js"></script>
-  <script type="module" src="./src/anticipation.js"></script>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./src/v2-main.js"></script>
 </body>
 </html>

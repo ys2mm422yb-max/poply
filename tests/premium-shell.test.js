@@ -5,25 +5,20 @@ import { readFile } from 'node:fs/promises';
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
 
-test('premium layers load after existing polish layers', async () => {
+test('legacy premium runtime stays in the repository but is inactive in V2', async () => {
   const html = await read('index.html');
-  assert.ok(html.indexOf('./src/premium.css') > html.indexOf('./src/game-shell.css'));
-  assert.ok(html.indexOf('./src/premium.js') > html.indexOf('./src/polish.js'));
-});
-
-test('premium pass includes board feedback and impact effects', async () => {
   const css = await read('src/premium.css');
   const js = await read('src/premium.js');
-  assert.ok(css.includes('.flow-hud'));
-  assert.ok(css.includes('.premium-spark'));
-  assert.ok(css.includes('premium-power-impact'));
-  assert.ok(js.includes('createFlowHud'));
-  assert.ok(js.includes('spawnPremiumBurst'));
+  assert.doesNotMatch(html, /premium\.css/);
+  assert.doesNotMatch(html, /premium\.js/);
+  assert.match(css, /premium-spark/);
+  assert.match(js, /spawnPremiumBurst/);
 });
 
-test('premium pass covers phone and tablet layouts', async () => {
-  const css = await read('src/premium.css');
-  assert.ok(css.includes('@media (max-width:430px)'));
-  assert.ok(css.includes('@media (min-width:760px) and (orientation:portrait)'));
-  assert.ok(css.includes('@media (min-width:820px) and (orientation:landscape)'));
+test('V2 provides its own generated-art and responsive visual layer', async () => {
+  const css = await read('src/v2.css');
+  assert.match(css, /poply-v2-atlas\.webp/);
+  assert.match(css, /poply-place-cafe\.webp/);
+  assert.match(css, /@media \(max-width:430px\)/);
+  assert.match(css, /orientation:landscape/);
 });
