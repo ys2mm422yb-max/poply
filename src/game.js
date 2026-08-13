@@ -247,16 +247,20 @@ export function reshuffleBoard(board, size = DEFAULT_SIZE, rng = Math.random) {
 
 export function attemptSwap(board, a, b, size = DEFAULT_SIZE, randomTile = () => 0) {
   if (!areAdjacent(a, b, size)) {
-    return { valid: false, board, swappedBoard: board, score: 0, chain: 0, steps: [] };
+    return { valid: false, reason: 'not-adjacent', board, swappedBoard: board, score: 0, chain: 0, steps: [] };
+  }
+
+  if (tileBase(board[a]) === tileBase(board[b])) {
+    return { valid: false, reason: 'same-color', board, swappedBoard: board, score: 0, chain: 0, steps: [] };
   }
 
   const swapped = swap(board, a, b);
   if (findMatches(swapped, size).length === 0) {
-    return { valid: false, board, swappedBoard: swapped, score: 0, chain: 0, steps: [] };
+    return { valid: false, reason: 'no-match', board, swappedBoard: swapped, score: 0, chain: 0, steps: [] };
   }
 
   const resolved = resolveBoard(swapped, size, randomTile, b);
-  return { valid: true, swappedBoard: swapped, ...resolved };
+  return { valid: true, reason: null, swappedBoard: swapped, ...resolved };
 }
 
 function createCandidateBoard(size, types, rng) {
