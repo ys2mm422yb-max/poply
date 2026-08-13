@@ -7,7 +7,7 @@ const read=p=>readFile(new URL(p,root),'utf8');
 test('mobile V2 uses a visible-viewport single-screen contract',async()=>{
   const [html,css,runtime]=await Promise.all([read('index.html'),read('src/v2-release.css'),read('src/v2-viewport.js')]);
   assert.match(html,/v2-viewport\.js\?v=/);
-  assert.match(html,/data-build="v2-(?:single-screen(?:-purpose)?|game-screen)-/);
+  assert.match(html,/data-build="v2-(?:single-screen(?:-purpose)?|game-screen|focused-view-hotfix)-/);
   assert.match(css,/height:var\(--app-height\)!important/);
   assert.match(css,/overflow:hidden!important/);
   assert.match(css,/grid-template-rows:/);
