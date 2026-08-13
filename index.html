@@ -12,6 +12,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <title>Poply</title>
   <link rel="stylesheet" href="./src/styles.css">
+  <link rel="stylesheet" href="./src/tutorial.css">
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -47,7 +48,7 @@
           </div>
           <div class="mission-stat">
             <span>Best combo</span>
-            <strong id="best-chain">1×</strong>
+            <strong id="best-chain">—</strong>
           </div>
         </div>
 
@@ -55,15 +56,21 @@
       </aside>
 
       <div class="board-zone">
+        <div id="tutorial" class="tutorial-banner" hidden>
+          <strong>MAKE 3 IN A LINE</strong>
+          <span>Move the glowing piece into the outlined slot. Same colours do not merge by themselves.</span>
+        </div>
+
         <div id="board-frame" class="board-frame">
           <div class="board-halo" aria-hidden="true"></div>
           <div id="board" class="board" role="grid" aria-label="Match 3 board"></div>
           <div id="fx" class="fx-layer" aria-hidden="true"></div>
           <div id="combo" class="combo-badge" aria-hidden="true"></div>
+          <div id="guide-arrow" class="guide-arrow" aria-hidden="true"></div>
         </div>
 
         <div class="play-footer">
-          <p id="status" class="status" data-tone="neutral" aria-live="polite">Swipe to match 3. Make 4+ for powers.</p>
+          <p id="status" class="status" data-tone="neutral" aria-live="polite">Make 3 matching pieces in a line.</p>
           <button id="restart" class="restart-button" type="button">Restart</button>
         </div>
       </div>

@@ -12,6 +12,7 @@ import {
 
 const SIZE = 8;
 const TYPES = 6;
+const TUTORIAL_KEY = 'poply-first-move-v4';
 const LEVELS = Object.freeze([
   { number: 1, targetScore: 3600, moves: 18 },
   { number: 2, targetScore: 5200, moves: 19 },
@@ -38,18 +39,22 @@ const resultCopy = document.querySelector('#result-copy');
 const resultScore = document.querySelector('#result-score');
 const resultAction = document.querySelector('#result-action');
 const starsElement = document.querySelector('#stars');
+const tutorialElement = document.querySelector('#tutorial');
+const guideArrowElement = document.querySelector('#guide-arrow');
 
 let levelIndex = 0;
 let board = [];
 let selected = null;
 let score = 0;
 let movesLeft = 0;
-let bestChain = 1;
+let bestChain = 0;
 let gameState = 'playing';
 let busy = false;
 let dragStart = null;
 let suppressClick = false;
 let hintPair = [];
+let tutorialPair = [];
+let tutorialActive = false;
 let hintTimer = null;
 let statusTimer = null;
 let audioContext = null;
@@ -89,10 +94,56 @@ function playPop(chain = 1, power = false) {
   if (power) setTimeout(() => playTone(680 + chain * 60, 0.09, 0.028), 45);
 }
 
+function defaultStatus() {
+  return tutorialActive
+    ? 'Move the glowing piece into the outlined slot → make 3.'
+    : 'Make 3 matching pieces in a line.';
+}
+
+function guidePair() {
+  if (tutorialActive && tutorialPair.length === 2) return tutorialPair;
+  if (hintPair.length === 2) return hintPair;
+  return [];
+}
+
+function positionGuideArrow() {
+  const pair = guidePair();
+  if (pair.length !== 2) {
+    guideArrowElement.classList.remove('show', 'tutorial');
+    return;
+  }
+
+  const from = boardElement.querySelector(`[data-index="${pair[0]}"]`);
+  const to = boardElement.querySelector(`[data-index="${pair[1]}"]`);
+  if (!from || !to) return;
+
+  const frameRect = boardFrame.getBoundingClientRect();
+  const fromRect = from.getBoundingClientRect();
+  const toRect = to.getBoundingClientRect();
+  const x1 = fromRect.left - frameRect.left + fromRect.width / 2;
+  const y1 = fromRect.top - frameRect.top + fromRect.height / 2;
+  const x2 = toRect.left - frameRect.left + toRect.width / 2;
+  const y2 = toRect.top - frameRect.top + toRect.height / 2;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const length = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+  guideArrowElement.style.left = `${x1}px`;
+  guideArrowElement.style.top = `${y1}px`;
+  guideArrowElement.style.width = `${Math.max(20, length)}px`;
+  guideArrowElement.style.transform = `translateY(-50%) rotate(${angle}deg)`;
+  guideArrowElement.classList.toggle('tutorial', tutorialActive);
+  guideArrowElement.classList.add('show');
+}
+
 function render(options = {}) {
   const matched = new Set(options.matched || []);
   const created = new Set((options.created || []).map((item) => item.index));
+  const invalid = new Set(options.invalid || []);
   const hint = new Set(hintPair);
+  const tutorialSource = tutorialActive ? tutorialPair[0] : null;
+  const tutorialTarget = tutorialActive ? tutorialPair[1] : null;
 
   boardElement.replaceChildren();
   board.forEach((value, index) => {
@@ -107,7 +158,10 @@ function render(options = {}) {
       selected === index ? 'selected' : '',
       matched.has(index) ? 'matched' : '',
       created.has(index) ? 'created' : '',
+      invalid.has(index) ? 'invalid-piece' : '',
       hint.has(index) ? 'hinted' : '',
+      tutorialSource === index ? 'tutorial-source' : '',
+      tutorialTarget === index ? 'tutorial-target' : '',
       options.dropping ? 'dropping' : '',
     ].filter(Boolean).join(' ');
 
@@ -128,9 +182,12 @@ function render(options = {}) {
   scoreElement.textContent = score.toLocaleString();
   targetElement.textContent = current.targetScore.toLocaleString();
   movesElement.textContent = String(movesLeft);
-  bestChainElement.textContent = `${bestChain}×`;
+  bestChainElement.textContent = bestChain > 0 ? `${bestChain}×` : '—';
   levelPillElement.textContent = `Level ${current.number}`;
   progressElement.style.setProperty('--progress', `${Math.min(100, (score / current.targetScore) * 100)}%`);
+  tutorialElement.hidden = !tutorialActive;
+
+  requestAnimationFrame(positionGuideArrow);
 }
 
 function setStatus(message, tone = 'neutral', temporary = false) {
@@ -141,10 +198,10 @@ function setStatus(message, tone = 'neutral', temporary = false) {
   if (temporary) {
     statusTimer = setTimeout(() => {
       if (gameState === 'playing') {
-        statusElement.textContent = 'Swipe to match 3. Make 4+ for powers.';
-        statusElement.dataset.tone = 'neutral';
+        statusElement.textContent = defaultStatus();
+        statusElement.dataset.tone = tutorialActive ? 'hint' : 'neutral';
       }
-    }, 1450);
+    }, 1700);
   }
 }
 
@@ -199,30 +256,73 @@ function spawnBurst(indices, scoreValue, power = false) {
 }
 
 function clearHint() {
-  hintPair = [];
   if (hintTimer) clearTimeout(hintTimer);
   hintTimer = null;
+  hintPair = tutorialActive ? tutorialPair.slice() : [];
+}
+
+function tutorialWasSeen() {
+  try {
+    return localStorage.getItem(TUTORIAL_KEY) === 'done';
+  } catch {
+    return false;
+  }
+}
+
+function markTutorialSeen() {
+  try {
+    localStorage.setItem(TUTORIAL_KEY, 'done');
+  } catch {
+    // Storage may be disabled; the tutorial can simply appear again next session.
+  }
+}
+
+function startTutorial(force = false) {
+  if (levelIndex !== 0 || (!force && tutorialWasSeen())) {
+    tutorialActive = false;
+    tutorialPair = [];
+    return false;
+  }
+
+  const moves = getValidMoves(board, SIZE);
+  if (!moves.length) return false;
+  tutorialPair = moves[0];
+  tutorialActive = true;
+  hintPair = tutorialPair.slice();
+  render();
+  setStatus(defaultStatus(), 'hint');
+  return true;
+}
+
+function completeTutorial() {
+  if (!tutorialActive) return;
+  tutorialActive = false;
+  tutorialPair = [];
+  hintPair = [];
+  markTutorialSeen();
+  tutorialElement.hidden = true;
+  guideArrowElement.classList.remove('show', 'tutorial');
 }
 
 function scheduleHint() {
   clearHint();
-  if (gameState !== 'playing' || busy) return;
+  if (tutorialActive || gameState !== 'playing' || busy) return;
   hintTimer = setTimeout(() => {
     if (gameState !== 'playing' || busy || selected !== null) return;
     const moves = getValidMoves(board, SIZE);
     if (!moves.length) return;
     hintPair = moves[Math.floor(Math.random() * moves.length)];
     render();
-    setStatus('A possible move is glowing.', 'hint');
+    setStatus('Try the glowing move — it will make 3.', 'hint');
     setTimeout(() => {
-      if (gameState === 'playing') {
+      if (gameState === 'playing' && !tutorialActive) {
         hintPair = [];
         render();
-        setStatus('Swipe to match 3. Make 4+ for powers.');
+        setStatus(defaultStatus());
         scheduleHint();
       }
-    }, 1700);
-  }, 5200);
+    }, 1900);
+  }, 4200);
 }
 
 function swipeTarget(index, dx, dy) {
@@ -237,6 +337,22 @@ function swipeTarget(index, dx, dy) {
   return targetRow * SIZE + targetCol;
 }
 
+function isValidMovePair(a, b) {
+  return getValidMoves(board, SIZE).some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+}
+
+function resetDragPreview() {
+  const dragging = boardElement.querySelector('.dragging');
+  if (dragging) {
+    dragging.classList.remove('dragging');
+    dragging.style.removeProperty('--drag-x');
+    dragging.style.removeProperty('--drag-y');
+  }
+  for (const target of boardElement.querySelectorAll('.drag-target, .valid-drag-target, .invalid-drag-target')) {
+    target.classList.remove('drag-target', 'valid-drag-target', 'invalid-drag-target');
+  }
+}
+
 async function attemptMove(a, b) {
   if (gameState !== 'playing' || busy) return;
   clearHint();
@@ -247,25 +363,40 @@ async function attemptMove(a, b) {
 
   if (!result.valid) {
     busy = true;
+
+    if (result.reason === 'same-color') {
+      render({ invalid: [a, b] });
+      animateFrame('invalid');
+      playTone(175, 0.06, 0.018);
+      await wait(240);
+      busy = false;
+      if (levelIndex === 0 && score === 0) startTutorial(true);
+      else render();
+      setStatus('Same colours do not merge. Move one piece so 3 matching pieces line up.', 'bad', true);
+      scheduleHint();
+      return;
+    }
+
     board = result.swappedBoard;
     render();
-    await wait(90);
+    await wait(105);
     animateFrame('invalid');
     playTone(180, 0.06, 0.018);
-    await wait(130);
+    await wait(135);
     board = settledBoard;
     busy = false;
     render();
-    setStatus('That swap does not make 3 in a row.', 'bad', true);
+    setStatus('That move does not leave 3 matching pieces in a line.', 'bad', true);
     scheduleHint();
     return;
   }
 
+  completeTutorial();
   busy = true;
   movesLeft -= 1;
   board = result.swappedBoard;
   render();
-  await wait(115);
+  await wait(125);
 
   for (const step of result.steps) {
     board = step.board;
@@ -336,7 +467,7 @@ function choose(index) {
   if (selected === null) {
     selected = index;
     render();
-    setStatus('Now choose a neighbouring piece.');
+    setStatus('Choose a neighbouring slot that makes 3.');
     scheduleHint();
     return;
   }
@@ -344,7 +475,7 @@ function choose(index) {
   if (selected === index) {
     selected = null;
     render();
-    setStatus('Swipe to match 3. Make 4+ for powers.');
+    setStatus(defaultStatus(), tutorialActive ? 'hint' : 'neutral');
     scheduleHint();
     return;
   }
@@ -352,7 +483,7 @@ function choose(index) {
   if (!areAdjacent(selected, index, SIZE)) {
     selected = index;
     render();
-    setStatus('Choose a neighbour or swipe.');
+    setStatus('Only move into a neighbouring slot.');
     scheduleHint();
     return;
   }
@@ -395,15 +526,20 @@ function restartLevel() {
   selected = null;
   score = 0;
   movesLeft = level().moves;
-  bestChain = 1;
+  bestChain = 0;
   gameState = 'playing';
   busy = false;
   dragStart = null;
+  tutorialActive = false;
+  tutorialPair = [];
   fxElement.replaceChildren();
   comboElement.classList.remove('show');
-  setStatus('Swipe to match 3. Make 4+ for powers.');
   render({ dropping: true });
-  scheduleHint();
+
+  if (!startTutorial()) {
+    setStatus(defaultStatus());
+    scheduleHint();
+  }
 }
 
 boardElement.addEventListener('pointerdown', (event) => {
@@ -412,36 +548,74 @@ boardElement.addEventListener('pointerdown', (event) => {
   if (!piece) return;
   ensureAudio();
   clearHint();
+
   dragStart = {
     index: Number(piece.dataset.index),
     x: event.clientX,
     y: event.clientY,
+    pointerId: event.pointerId,
+    piece,
   };
+
+  piece.classList.add('dragging');
+  if (boardElement.setPointerCapture) {
+    try { boardElement.setPointerCapture(event.pointerId); } catch { /* no-op */ }
+  }
+});
+
+boardElement.addEventListener('pointermove', (event) => {
+  if (!dragStart || event.pointerId !== dragStart.pointerId || busy) return;
+
+  const dx = event.clientX - dragStart.x;
+  const dy = event.clientY - dragStart.y;
+  const horizontal = Math.abs(dx) >= Math.abs(dy);
+  const rect = dragStart.piece.getBoundingClientRect();
+  const limit = rect.width * 1.05;
+  const tx = horizontal ? Math.max(-limit, Math.min(limit, dx)) : 0;
+  const ty = horizontal ? 0 : Math.max(-limit, Math.min(limit, dy));
+
+  dragStart.piece.style.setProperty('--drag-x', `${tx}px`);
+  dragStart.piece.style.setProperty('--drag-y', `${ty}px`);
+
+  for (const target of boardElement.querySelectorAll('.drag-target, .valid-drag-target, .invalid-drag-target')) {
+    target.classList.remove('drag-target', 'valid-drag-target', 'invalid-drag-target');
+  }
+
+  if (Math.hypot(dx, dy) < 8) return;
+  const targetIndex = swipeTarget(dragStart.index, dx, dy);
+  if (targetIndex === null) return;
+  const target = boardElement.querySelector(`[data-index="${targetIndex}"]`);
+  if (!target) return;
+
+  target.classList.add('drag-target');
+  target.classList.add(isValidMovePair(dragStart.index, targetIndex) ? 'valid-drag-target' : 'invalid-drag-target');
 });
 
 boardElement.addEventListener('pointerup', (event) => {
   if (!dragStart || gameState !== 'playing' || busy) {
+    resetDragPreview();
     dragStart = null;
     return;
   }
 
-  const dx = event.clientX - dragStart.x;
-  const dy = event.clientY - dragStart.y;
+  const start = dragStart;
+  const dx = event.clientX - start.x;
+  const dy = event.clientY - start.y;
   const distance = Math.hypot(dx, dy);
+  const target = distance >= 16 ? swipeTarget(start.index, dx, dy) : null;
 
-  if (distance >= 16) {
-    const target = swipeTarget(dragStart.index, dx, dy);
-    if (target !== null) {
-      suppressClick = true;
-      attemptMove(dragStart.index, target);
-      setTimeout(() => { suppressClick = false; }, 0);
-    }
-  }
-
+  resetDragPreview();
   dragStart = null;
+
+  if (target !== null) {
+    suppressClick = true;
+    attemptMove(start.index, target);
+    setTimeout(() => { suppressClick = false; }, 0);
+  }
 });
 
 boardElement.addEventListener('pointercancel', () => {
+  resetDragPreview();
   dragStart = null;
 });
 
@@ -455,5 +629,7 @@ resultAction.addEventListener('click', () => {
   if (gameState === 'won') levelIndex = levelIndex < LEVELS.length - 1 ? levelIndex + 1 : 0;
   restartLevel();
 });
+
+window.addEventListener('resize', () => requestAnimationFrame(positionGuideArrow));
 
 restartLevel();

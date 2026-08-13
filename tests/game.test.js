@@ -100,8 +100,34 @@ test('invalid swaps leave the settled board unchanged', () => {
   ];
   const result = attemptSwap(board, 0, 1, 3, () => 0);
   assert.equal(result.valid, false);
+  assert.equal(result.reason, 'no-match');
   assert.equal(result.board, board);
   assert.notEqual(result.swappedBoard, board);
+});
+
+test('same-colour neighbour swaps are classified as a no-op merge attempt', () => {
+  const board = [
+    0, 0, 1,
+    2, 1, 2,
+    1, 2, 0,
+  ];
+  const result = attemptSwap(board, 0, 1, 3, () => 0);
+  assert.equal(result.valid, false);
+  assert.equal(result.reason, 'same-color');
+  assert.equal(result.board, board);
+  assert.equal(result.swappedBoard, board);
+});
+
+test('non-neighbour swaps report their reason without changing the board', () => {
+  const board = [
+    0, 1, 2,
+    1, 2, 0,
+    2, 0, 1,
+  ];
+  const result = attemptSwap(board, 0, 8, 3, () => 0);
+  assert.equal(result.valid, false);
+  assert.equal(result.reason, 'not-adjacent');
+  assert.equal(result.board, board);
 });
 
 test('score rewards chain depth, larger groups and power activations', () => {
@@ -120,6 +146,7 @@ test('a valid swap exposes animation steps and awards points', () => {
   const refills = [1, 2, 1];
   const result = attemptSwap(board, 1, 4, 3, () => refills.shift());
   assert.equal(result.valid, true);
+  assert.equal(result.reason, null);
   assert.equal(result.score, 300);
   assert.equal(result.chain, 1);
   assert.equal(result.steps.length, 1);
