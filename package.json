@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test",
+    "test": "node --test && node --check src/main.js && node --check src/polish.js",
     "check": "npm test"
   },
   "engines": {

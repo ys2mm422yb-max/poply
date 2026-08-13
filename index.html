@@ -13,6 +13,7 @@
   <title>Poply</title>
   <link rel="stylesheet" href="./src/styles.css">
   <link rel="stylesheet" href="./src/objectives.css">
+  <link rel="stylesheet" href="./src/game-shell.css">
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -21,34 +22,44 @@
   <main class="app-shell">
     <header class="game-header">
       <div class="brand-row">
-        <h1>Poply</h1>
-        <span id="level-pill" class="level-pill">Level 1</span>
+        <div class="brand-lockup">
+          <h1>Poply</h1>
+          <span id="level-pill" class="level-pill">Level 1</span>
+        </div>
+        <button id="restart" class="restart-button" type="button" aria-label="Restart" title="Restart">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-2.34 5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M20 5v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
-      <p>Connect. Pop. Flow.</p>
+      <p class="tagline">Connect. Pop. Flow.</p>
       <nav id="level-trail" class="level-trail" aria-label="Level progress"></nav>
     </header>
 
     <section class="game-layout" aria-label="Poply game">
       <aside class="mission-panel" aria-label="Level objective">
-        <div class="score-block">
-          <span id="score-label" class="eyebrow">Score</span>
-          <div class="score-value"><strong id="score">0</strong><span>/ <span id="target">4,000</span></span></div>
+        <div class="mission-head">
+          <div class="score-block">
+            <span id="score-label" class="eyebrow">Score</span>
+            <div class="score-value"><strong id="score">0</strong><span>/ <span id="target">4,000</span></span></div>
+          </div>
+
+          <div class="mission-stats">
+            <div class="mission-stat">
+              <span id="moves-label">Moves</span>
+              <strong id="moves">16</strong>
+            </div>
+            <div class="mission-stat best-stat">
+              <span id="best-label">Best chain</span>
+              <strong id="best-chain">—</strong>
+            </div>
+          </div>
         </div>
 
         <div class="progress-track" aria-label="Level progress">
           <div id="progress" class="progress-fill"></div>
           <div class="progress-shine" aria-hidden="true"></div>
-        </div>
-
-        <div class="mission-stats">
-          <div class="mission-stat">
-            <span id="moves-label">Moves</span>
-            <strong id="moves">16</strong>
-          </div>
-          <div class="mission-stat">
-            <span id="best-label">Best chain</span>
-            <strong id="best-chain">—</strong>
-          </div>
         </div>
 
         <div class="objective-block">
@@ -65,7 +76,10 @@
           <div id="board" class="board" role="grid" aria-label="Connect matching pieces"></div>
           <svg id="chain-svg" class="chain-svg" aria-hidden="true" preserveAspectRatio="none">
             <polyline id="hint-polyline" class="hint-polyline" points=""></polyline>
+            <polyline id="chain-glow" class="chain-glow" points=""></polyline>
             <polyline id="chain-polyline" class="chain-polyline" points=""></polyline>
+            <line id="chain-tail-glow" class="chain-tail-glow" x1="0" y1="0" x2="0" y2="0"></line>
+            <line id="chain-tail" class="chain-tail" x1="0" y1="0" x2="0" y2="0"></line>
           </svg>
           <div id="fx" class="fx-layer" aria-hidden="true"></div>
           <div id="combo" class="combo-badge" aria-hidden="true"></div>
@@ -73,7 +87,6 @@
 
         <div class="play-footer">
           <p id="status" class="status" data-tone="neutral" aria-live="polite">Drag through 3+ matching pieces.</p>
-          <button id="restart" class="restart-button" type="button">Restart</button>
         </div>
       </div>
     </section>
@@ -91,5 +104,6 @@
   </main>
 
   <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/polish.js"></script>
 </body>
 </html>
