@@ -1,7 +1,10 @@
-import { CUSTOMER_ASSETS } from './v2-customers.js';
+import { HERO_IMAGE } from './v2-hero-data.js';
+import { ATLAS_IMAGE, CUSTOMER_ASSETS } from './v2-board-data.js';
 import { ITEM_FAMILIES, createInitialState, normalizeState, itemDefinition, generateFromSlot, moveOrMerge, canMerge, canFulfillOrder, countRequirement, fulfillOrder, buildNextUpgrade, nextPlaceUpgrade } from './v2-game.js';
 
 const SAVE_KEY='poply-v2-state-1';
+document.documentElement.style.setProperty('--poply-hero',`url(${HERO_IMAGE})`);
+document.documentElement.style.setProperty('--poply-atlas',`url(${ATLAS_IMAGE})`);
 
 const de=(navigator.language||'').toLowerCase().startsWith('de');
 const copy=de?{
@@ -59,30 +62,10 @@ function onCellClick(event){const index=Number(event.currentTarget.dataset.index
 function clearDropStates(){els.board.querySelectorAll('.drop-merge,.drop-move,.drop-bad,.dragging').forEach(cell=>cell.classList.remove('drop-merge','drop-move','drop-bad','dragging'));}
 function removeGhost(){els.ghost.classList.remove('show');els.ghost.innerHTML='';}
 function moveGhost(x,y){els.ghost.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-58%) scale(1.03)`;}
-function onPointerDown(event){
-  const index=Number(event.currentTarget.dataset.index),item=state.board[index]; if(!item)return;
-  drag={index,x:event.clientX,y:event.clientY,moved:false,pointerId:event.pointerId}; event.currentTarget.setPointerCapture?.(event.pointerId); event.currentTarget.classList.add('dragging');
-  els.ghost.innerHTML=itemMarkup(item);els.ghost.classList.add('show');moveGhost(event.clientX,event.clientY);
-}
-function onPointerMove(event){
-  if(!drag||event.pointerId!==drag.pointerId)return; moveGhost(event.clientX,event.clientY); if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>8)drag.moved=true;
-  const target=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.merge-cell'); els.board.querySelectorAll('.drop-merge,.drop-move,.drop-bad').forEach(cell=>cell.classList.remove('drop-merge','drop-move','drop-bad'));
-  if(!target||Number(target.dataset.index)===drag.index)return; const to=Number(target.dataset.index),source=state.board[drag.index],dest=state.board[to];
-  target.classList.add(!dest?'drop-move':canMerge(source,dest)?'drop-merge':'drop-bad');
-}
-function onPointerUp(event){
-  if(!drag||event.pointerId!==drag.pointerId)return; const from=drag.index,source=state.board[from],targetEl=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.merge-cell'); clearDropStates();removeGhost();
-  if(!drag.moved&&source?.kind==='generator'){
-    const result=generateFromSlot(state,from);if(!result.changed)showToast(result.reason==='board-full'?copy.boardFull:result.reason==='no-energy'?copy.noEnergy:copy.noMerge,'bad');
-    else{state=result.state;lastFx={type:'spawn',index:result.spawnedIndex};saveState();vibrate(8);showToast(copy.spawned);render();}drag=null;return;
-  }
-  if(targetEl){const to=Number(targetEl.dataset.index),result=moveOrMerge(state,from,to);if(result.changed){state=result.state;lastFx={type:result.type,index:result.type==='merge'?result.mergedIndex:to};saveState();if(result.type==='merge'){vibrate([10,12,18]);showToast(`${copy.merged} ${itemLabel(result.item)}`);}else showToast(copy.move);render();}else if(to!==from)showToast(copy.noMerge,'bad');}
-  drag=null;
-}
+function onPointerDown(event){const index=Number(event.currentTarget.dataset.index),item=state.board[index];if(!item)return;drag={index,x:event.clientX,y:event.clientY,moved:false,pointerId:event.pointerId};event.currentTarget.setPointerCapture?.(event.pointerId);event.currentTarget.classList.add('dragging');els.ghost.innerHTML=itemMarkup(item);els.ghost.classList.add('show');moveGhost(event.clientX,event.clientY);}
+function onPointerMove(event){if(!drag||event.pointerId!==drag.pointerId)return;moveGhost(event.clientX,event.clientY);if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>8)drag.moved=true;const target=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.merge-cell');els.board.querySelectorAll('.drop-merge,.drop-move,.drop-bad').forEach(cell=>cell.classList.remove('drop-merge','drop-move','drop-bad'));if(!target||Number(target.dataset.index)===drag.index)return;const to=Number(target.dataset.index),source=state.board[drag.index],dest=state.board[to];target.classList.add(!dest?'drop-move':canMerge(source,dest)?'drop-merge':'drop-bad');}
+function onPointerUp(event){if(!drag||event.pointerId!==drag.pointerId)return;const from=drag.index,source=state.board[from],targetEl=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.merge-cell');clearDropStates();removeGhost();if(!drag.moved&&source?.kind==='generator'){const result=generateFromSlot(state,from);if(!result.changed)showToast(result.reason==='board-full'?copy.boardFull:result.reason==='no-energy'?copy.noEnergy:copy.noMerge,'bad');else{state=result.state;lastFx={type:'spawn',index:result.spawnedIndex};saveState();vibrate(8);showToast(copy.spawned);render();}drag=null;return;}if(targetEl){const to=Number(targetEl.dataset.index),result=moveOrMerge(state,from,to);if(result.changed){state=result.state;lastFx={type:result.type,index:result.type==='merge'?result.mergedIndex:to};saveState();if(result.type==='merge'){vibrate([10,12,18]);showToast(`${copy.merged} ${itemLabel(result.item)}`);}else showToast(copy.move);render();}else if(to!==from)showToast(copy.noMerge,'bad');}drag=null;}
 function render(){renderResources();renderPlace();renderOrders();renderBoard();els.hint.textContent=copy.tapGenerator;}
 els.buildButton.addEventListener('click',()=>{const result=buildNextUpgrade(state);if(!result.changed){showToast(copy.needStars,'bad');return;}state=result.state;saveState();vibrate([18,25,18,25,24]);els.hero.classList.add('build-impact');setTimeout(()=>els.hero.classList.remove('build-impact'),650);showToast(`${copy.built} ${result.upgrade.label}`);render();});
 els.reset.addEventListener('click',()=>{if(!confirm(de?'Spielstand wirklich zurücksetzen?':'Reset progress?'))return;state=createInitialState();saveState();render();showToast(copy.tapGenerator);document.querySelector('.game-menu')?.removeAttribute('open');});
-document.querySelectorAll('[data-scroll]').forEach(button=>button.addEventListener('click',()=>document.getElementById(button.dataset.scroll)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})));
-document.querySelector('[data-action="collection"]')?.addEventListener('click',()=>showToast(copy.collection));document.querySelector('[data-action="shop"]')?.addEventListener('click',()=>showToast(copy.shop));
-window.addEventListener('pointermove',onPointerMove,{passive:true});window.addEventListener('pointerup',onPointerUp);window.addEventListener('pointercancel',()=>{drag=null;clearDropStates();removeGhost();});
-render();
+document.querySelectorAll('[data-scroll]').forEach(button=>button.addEventListener('click',()=>document.getElementById(button.dataset.scroll)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})));document.querySelector('[data-action="collection"]')?.addEventListener('click',()=>showToast(copy.collection));document.querySelector('[data-action="shop"]')?.addEventListener('click',()=>showToast(copy.shop));window.addEventListener('pointermove',onPointerMove,{passive:true});window.addEventListener('pointerup',onPointerUp);window.addEventListener('pointercancel',()=>{drag=null;clearDropStates();removeGhost();});render();
