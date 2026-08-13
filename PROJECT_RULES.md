@@ -19,7 +19,7 @@ These rules apply to all future work on Poply unless the project owner explicitl
 
 ## 3. Ownership and autonomy
 
-- Routine implementation decisions may be made independently when they stay within the agreed Poply vision.
+- Routine implementation decisions may be made independently when they stay within the agreed Poply vision and `docs/END_GOAL.md`.
 - Choose the tests that are appropriate for each change; do not ask the project owner to design the test strategy.
 - Fix straightforward defects found during implementation or testing without waiting for separate approval.
 - Prefer small, reviewable changes over large rewrites.
@@ -34,7 +34,9 @@ Self-review is a permanent part of development, not an optional extra.
 - Identify obvious weaknesses and low-risk improvements proactively; do not wait for the project owner to point out every issue individually.
 - Fix clear defects and usability problems as part of the same work when practical.
 - For subjective design changes, preserve what already works and improve with purpose rather than changing things merely for novelty.
-- Compare changes against the product vision: Poply should feel immediately understandable, polished, satisfying and increasingly like a real game rather than a technical demo.
+- Compare every meaningful release against `docs/END_GOAL.md`.
+- The quality gate is not "works". The build should feel cohesive, immediately understandable, responsive and increasingly capable of producing a real "wow" reaction.
+- If a UI looks like separate cards, controls or technical-demo pieces pasted together, keep iterating until the screen reads as one coherent game experience.
 - After meaningful UI/gameplay releases, verify the canonical test link and use the rendered result to decide the next improvement pass.
 
 ## 5. Test policy
@@ -48,6 +50,7 @@ Minimum expectations:
 - Database schema changes: test on an isolated Neon branch first when practical, then apply only after verification.
 - Deployment changes: verify the canonical test URL after deployment.
 - Bug fixes: add a regression test when the bug can reasonably be reproduced automatically.
+- Meaningful responsive UI changes: check representative phone and tablet sizes, including at least about 390x844, 430x932, 768x1024, 1024x1366 and one tablet landscape size when tooling permits.
 
 A change is not considered finished merely because it compiles. The meaningful user path must work.
 
@@ -58,12 +61,22 @@ Poply is a mobile-first Match-3 game designed for broad appeal.
 - The core interaction must be immediately understandable.
 - Sessions should be short and satisfying.
 - Moment-to-moment feedback, combos and progression should create a strong "one more round" feeling.
+- Swaps, matches, cascades and power effects must be visually understandable; do not jump from input straight to an unexplained final board state.
+- Match 4+ interactions should create meaningful power/reward moments, not only extra score text.
 - Difficulty may adapt to maintain flow, but the game must not secretly rig outcomes to manufacture losses or fake near-misses.
 - Monetization must not be pay-to-win or depend on deceptive dark patterns.
 - Poply must have its own visual identity. Do not copy Candy Crush branding, art, level layouts, sounds or protected presentation.
 - Avoid visual positioning that is strongly gender-coded; aim for modern, colorful and universal.
 
-## 7. Architecture rules
+## 7. Platform and responsive rules
+
+- Poply must work on iOS and Android phones and tablets.
+- The canonical web build is the development/test baseline and must remain usable in Safari on iPhone/iPad and Chromium-based Android browsers.
+- The layout must adapt intentionally between phone portrait, tablet portrait and tablet landscape; do not merely stretch a phone layout.
+- Respect safe areas, touch targets, pointer/touch input and reduced-motion preferences.
+- Keep the web codebase suitable for later packaging as native iOS/Android apps without maintaining separate game implementations.
+
+## 8. Architecture rules
 
 - Keep pure game logic separated from rendering/UI.
 - Prefer deterministic logic that is easy to test.
@@ -73,7 +86,7 @@ Poply is a mobile-first Match-3 game designed for broad appeal.
 - Backend access must follow least privilege.
 - Keep data models simple until a feature actually needs more complexity.
 
-## 8. Git and release rules
+## 9. Git and release rules
 
 - `main` is the stable integration branch.
 - Non-trivial changes should normally be developed on a branch and merged after appropriate checks.
@@ -81,14 +94,15 @@ Poply is a mobile-first Match-3 game designed for broad appeal.
 - Do not knowingly publish a failing build to the canonical test link.
 - Keep commit messages descriptive enough to understand why the change exists.
 
-## 9. Documentation rules
+## 10. Documentation rules
 
 - Keep this file current when a permanent rule changes.
 - Keep `README.md` useful as the entry point for the project.
+- `docs/END_GOAL.md` is the standing product-quality target and must remain aligned with the owner's intent.
 - Record important product decisions in `docs/PRODUCT_VISION.md`.
 - Document backend/schema decisions when they become non-trivial.
 
-## 10. Data and privacy
+## 11. Data and privacy
 
 - Use synthetic test data only.
 - Collect only data that is actually needed for game functionality or product improvement.

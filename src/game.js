@@ -15,23 +15,41 @@ export function areAdjacent(a, b, size = DEFAULT_SIZE) {
   return Math.abs(ac.row - bc.row) + Math.abs(ac.col - bc.col) === 1;
 }
 
+export function tileBase(value) {
+  if (value === null || value === undefined) return value;
+  return value % 100;
+}
+
+export function specialKind(value) {
+  if (value === null || value === undefined) return 0;
+  return Math.floor(value / 100);
+}
+
+export function makeSpecial(base, kind) {
+  if (!Number.isInteger(base) || base < 0) throw new Error('Invalid tile base');
+  if (![1, 2, 3].includes(kind)) throw new Error('Invalid special kind');
+  return kind * 100 + base;
+}
+
 export function swap(board, a, b) {
   const next = board.slice();
   [next[a], next[b]] = [next[b], next[a]];
   return next;
 }
 
-export function findMatches(board, size = DEFAULT_SIZE) {
-  const matched = new Set();
+export function findMatchGroups(board, size = DEFAULT_SIZE) {
+  const groups = [];
 
   for (let row = 0; row < size; row += 1) {
     let start = 0;
     for (let col = 1; col <= size; col += 1) {
-      const current = col < size ? board[indexOf(row, col, size)] : null;
-      const previous = board[indexOf(row, col - 1, size)];
+      const current = col < size ? tileBase(board[indexOf(row, col, size)]) : null;
+      const previous = tileBase(board[indexOf(row, col - 1, size)]);
       if (current !== previous) {
         if (col - start >= 3 && previous !== null && previous !== undefined) {
-          for (let x = start; x < col; x += 1) matched.add(indexOf(row, x, size));
+          const indices = [];
+          for (let x = start; x < col; x += 1) indices.push(indexOf(row, x, size));
+          groups.push({ orientation: 'row', type: previous, length: indices.length, indices });
         }
         start = col;
       }
@@ -41,18 +59,76 @@ export function findMatches(board, size = DEFAULT_SIZE) {
   for (let col = 0; col < size; col += 1) {
     let start = 0;
     for (let row = 1; row <= size; row += 1) {
-      const current = row < size ? board[indexOf(row, col, size)] : null;
-      const previous = board[indexOf(row - 1, col, size)];
+      const current = row < size ? tileBase(board[indexOf(row, col, size)]) : null;
+      const previous = tileBase(board[indexOf(row - 1, col, size)]);
       if (current !== previous) {
         if (row - start >= 3 && previous !== null && previous !== undefined) {
-          for (let y = start; y < row; y += 1) matched.add(indexOf(y, col, size));
+          const indices = [];
+          for (let y = start; y < row; y += 1) indices.push(indexOf(y, col, size));
+          groups.push({ orientation: 'col', type: previous, length: indices.length, indices });
         }
         start = row;
       }
     }
   }
 
+  return groups;
+}
+
+export function findMatches(board, size = DEFAULT_SIZE) {
+  const matched = new Set();
+  for (const group of findMatchGroups(board, size)) {
+    for (const index of group.indices) matched.add(index);
+  }
   return [...matched].sort((a, b) => a - b);
+}
+
+function expandedClearSet(board, groups, size) {
+  const clear = new Set();
+  for (const group of groups) {
+    for (const index of group.indices) clear.add(index);
+  }
+
+  const activations = [];
+  for (const index of [...clear]) {
+    const kind = specialKind(board[index]);
+    if (!kind) continue;
+    activations.push({ index, kind });
+    const { row, col } = coordsOf(index, size);
+
+    if (kind === 1 || kind === 3) {
+      for (let x = 0; x < size; x += 1) clear.add(indexOf(row, x, size));
+    }
+    if (kind === 2 || kind === 3) {
+      for (let y = 0; y < size; y += 1) clear.add(indexOf(y, col, size));
+    }
+  }
+
+  return { clear, activations };
+}
+
+function pickCreationIndex(group, preferredIndex) {
+  if (preferredIndex !== null && preferredIndex !== undefined && group.indices.includes(preferredIndex)) {
+    return preferredIndex;
+  }
+  return group.indices[Math.floor(group.indices.length / 2)];
+}
+
+function specialCreations(board, groups, preferredIndex, chain) {
+  const creations = [];
+  const reserved = new Set();
+
+  for (const group of groups) {
+    if (group.length < 4) continue;
+    const index = pickCreationIndex(group, chain === 1 ? preferredIndex : null);
+    if (reserved.has(index) || specialKind(board[index]) > 0) continue;
+
+    const kind = group.length >= 5 ? 3 : group.orientation === 'row' ? 1 : 2;
+    creations.push({ index, value: makeSpecial(group.type, kind), kind, type: group.type });
+    reserved.add(index);
+  }
+
+  return creations;
 }
 
 export function collapse(board, size = DEFAULT_SIZE, randomTile = () => 0) {
@@ -76,26 +152,57 @@ export function clearMatches(board, matches) {
   return next;
 }
 
-export function scoreFor(matches, chain = 1) {
+export function scoreFor(matches, chain = 1, largestGroup = 3, activations = 0) {
   if (matches <= 0) return 0;
-  return matches * 100 * Math.max(1, chain);
+  const base = matches * 100 * Math.max(1, chain);
+  const groupBonus = Math.max(0, largestGroup - 3) * 250 * Math.max(1, chain);
+  const powerBonus = Math.max(0, activations) * 400 * Math.max(1, chain);
+  return base + groupBonus + powerBonus;
 }
 
-export function resolveBoard(board, size = DEFAULT_SIZE, randomTile = () => 0) {
+export function resolveBoard(board, size = DEFAULT_SIZE, randomTile = () => 0, preferredIndex = null) {
   let next = board.slice();
   let score = 0;
   let chain = 0;
-  let matches = findMatches(next, size);
+  const steps = [];
+  let groups = findMatchGroups(next, size);
 
-  while (matches.length > 0) {
+  while (groups.length > 0) {
     chain += 1;
-    score += scoreFor(matches.length, chain);
-    next = collapse(clearMatches(next, matches), size, randomTile);
-    matches = findMatches(next, size);
+    const before = next.slice();
+    const { clear, activations } = expandedClearSet(before, groups, size);
+    const creations = specialCreations(before, groups, preferredIndex, chain);
+
+    for (const creation of creations) clear.delete(creation.index);
+
+    const matched = [...clear].sort((a, b) => a - b);
+    const largestGroup = Math.max(...groups.map((group) => group.length));
+    const stepScore = scoreFor(matched.length, chain, largestGroup, activations.length);
+
+    let afterClear = clearMatches(before, matched);
+    for (const creation of creations) afterClear[creation.index] = creation.value;
+    const after = collapse(afterClear, size, randomTile);
+
+    steps.push({
+      board: before,
+      matches: matched,
+      groups,
+      creations,
+      activations,
+      score: stepScore,
+      chain,
+      after,
+    });
+
+    score += stepScore;
+    next = after;
+    groups = findMatchGroups(next, size);
+    preferredIndex = null;
+
     if (chain > 50) throw new Error('Resolution exceeded safe chain limit');
   }
 
-  return { board: next, score, chain };
+  return { board: next, score, chain, steps };
 }
 
 export function getValidMoves(board, size = DEFAULT_SIZE) {
@@ -139,11 +246,17 @@ export function reshuffleBoard(board, size = DEFAULT_SIZE, rng = Math.random) {
 }
 
 export function attemptSwap(board, a, b, size = DEFAULT_SIZE, randomTile = () => 0) {
-  if (!areAdjacent(a, b, size)) return { valid: false, board, score: 0, chain: 0 };
+  if (!areAdjacent(a, b, size)) {
+    return { valid: false, board, swappedBoard: board, score: 0, chain: 0, steps: [] };
+  }
+
   const swapped = swap(board, a, b);
-  if (findMatches(swapped, size).length === 0) return { valid: false, board, score: 0, chain: 0 };
-  const resolved = resolveBoard(swapped, size, randomTile);
-  return { valid: true, ...resolved };
+  if (findMatches(swapped, size).length === 0) {
+    return { valid: false, board, swappedBoard: swapped, score: 0, chain: 0, steps: [] };
+  }
+
+  const resolved = resolveBoard(swapped, size, randomTile, b);
+  return { valid: true, swappedBoard: swapped, ...resolved };
 }
 
 function createCandidateBoard(size, types, rng) {
@@ -152,13 +265,13 @@ function createCandidateBoard(size, types, rng) {
     for (let col = 0; col < size; col += 1) {
       const disallowed = new Set();
       if (col >= 2) {
-        const a = board[indexOf(row, col - 1, size)];
-        const b = board[indexOf(row, col - 2, size)];
+        const a = tileBase(board[indexOf(row, col - 1, size)]);
+        const b = tileBase(board[indexOf(row, col - 2, size)]);
         if (a === b) disallowed.add(a);
       }
       if (row >= 2) {
-        const a = board[indexOf(row - 1, col, size)];
-        const b = board[indexOf(row - 2, col, size)];
+        const a = tileBase(board[indexOf(row - 1, col, size)]);
+        const b = tileBase(board[indexOf(row - 2, col, size)]);
         if (a === b) disallowed.add(a);
       }
       const options = Array.from({ length: types }, (_, i) => i).filter((x) => !disallowed.has(x));
