@@ -9,19 +9,40 @@ import {
   specialKind,
   tileBase,
 } from './game.js';
+import {
+  applyChainToObjectives,
+  areGoalsComplete,
+  createObjectiveState,
+  progressForGoal,
+  remainingGoalCount,
+} from './objectives.js';
+import {
+  loadProgress,
+  recordLevelWin,
+  saveProgress,
+  selectLevel,
+  totalStars,
+} from './progress.js';
 
 const SIZE = 8;
+const PROGRESS_KEY = 'poply.progress.v1';
 const LEVELS = Object.freeze([
-  { number: 1, targetScore: 4000, moves: 16, types: 5 },
-  { number: 2, targetScore: 5600, moves: 17, types: 5 },
-  { number: 3, targetScore: 7600, moves: 18, types: 5 },
-  { number: 4, targetScore: 9800, moves: 19, types: 6 },
-  { number: 5, targetScore: 12500, moves: 20, types: 6 },
+  { number: 1, targetScore: 2400, moves: 14, types: 5, goals: [{ kind: 'collect', base: 2, target: 8 }] },
+  { number: 2, targetScore: 3400, moves: 15, types: 5, goals: [{ kind: 'collect', base: 3, target: 10 }] },
+  { number: 3, targetScore: 4600, moves: 16, types: 5, goals: [{ kind: 'chain', target: 5 }] },
+  { number: 4, targetScore: 5800, moves: 17, types: 5, goals: [{ kind: 'power', target: 1 }] },
+  { number: 5, targetScore: 7000, moves: 18, types: 5, goals: [{ kind: 'collect', base: 0, target: 10 }, { kind: 'collect', base: 4, target: 10 }] },
+  { number: 6, targetScore: 8400, moves: 18, types: 5, goals: [{ kind: 'chain', target: 7 }, { kind: 'power', target: 1 }] },
+  { number: 7, targetScore: 9800, moves: 19, types: 5, goals: [{ kind: 'collect', base: 1, target: 14 }, { kind: 'collect', base: 3, target: 14 }] },
+  { number: 8, targetScore: 11800, moves: 20, types: 5, goals: [{ kind: 'power', target: 2 }, { kind: 'chain', target: 8 }] },
 ]);
 
 const de = (navigator.language || '').toLowerCase().startsWith('de');
+const colorNames = de
+  ? ['Rot', 'Gelb', 'Grün', 'Blau', 'Lila', 'Pink']
+  : ['Red', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink'];
 const copy = de ? {
-  score: 'Punkte', moves: 'Züge', best: 'Beste Kette',
+  score: 'Punkte', moves: 'Züge', best: 'Beste Kette', goals: 'Ziele', restart: 'Neustart',
   connect: 'Zieh durch 3+ gleiche Steine.',
   guided: 'Zieh durch die leuchtenden gleichen Steine.',
   short: 'Verbinde mindestens 3 gleiche Steine.',
@@ -31,13 +52,18 @@ const copy = de ? {
   nice: (n) => n >= 5 ? `${n}er-Kette!` : 'Pop!',
   clear: 'Level geschafft!',
   out: 'Keine Züge mehr.',
-  next: 'Nächstes Level', retry: 'Nochmal', again: 'Level 1 spielen',
-  resultWin: 'Level geschafft!', resultLose: 'Knapp daneben',
-  smooth: 'Starke Kette. Weiter so.',
-  left: (n) => `Noch ${n.toLocaleString('de-DE')} Punkte.`,
+  next: 'Nächstes Level', retry: 'Nochmal', again: 'Nochmal spielen',
+  resultWin: 'Level geschafft!', resultLose: 'Noch nicht geschafft',
+  smooth: 'Ziele erfüllt. Stark gespielt.',
   powerTip: '5 gleiche = Blast · 7+ gleiche = Prism',
+  collectGoal: (name) => `${name} sammeln`,
+  chainGoal: 'Kette', powerGoal: 'Power',
+  scoreMissing: (n) => `Noch ${n.toLocaleString('de-DE')} Punkte`,
+  goalsMissing: (n) => `${n} Ziel${n === 1 ? '' : 'e'} offen`,
+  totalStars: (n) => `${n} Sterne insgesamt`,
+  locked: 'Noch gesperrt',
 } : {
-  score: 'Score', moves: 'Moves', best: 'Best chain',
+  score: 'Score', moves: 'Moves', best: 'Best chain', goals: 'Goals', restart: 'Restart',
   connect: 'Drag through 3+ matching pieces.',
   guided: 'Drag through the glowing matching pieces.',
   short: 'Connect at least 3 matching pieces.',
@@ -47,11 +73,15 @@ const copy = de ? {
   nice: (n) => n >= 5 ? `${n}-piece chain!` : 'Pop!',
   clear: 'Level clear!',
   out: 'Out of moves.',
-  next: 'Next level', retry: 'Try again', again: 'Play level 1',
-  resultWin: 'Level clear!', resultLose: 'So close',
-  smooth: 'Great chain. Keep the flow.',
-  left: (n) => `${n.toLocaleString()} points left.`,
+  next: 'Next level', retry: 'Try again', again: 'Play again',
+  resultWin: 'Level clear!', resultLose: 'Not quite yet',
+  smooth: 'Goals complete. Great run.',
   powerTip: '5 matching = Blast · 7+ matching = Prism',
+  collectGoal: (name) => `Collect ${name}`, chainGoal: 'Chain', powerGoal: 'Power',
+  scoreMissing: (n) => `${n.toLocaleString()} points left`,
+  goalsMissing: (n) => `${n} goal${n === 1 ? '' : 's'} left`,
+  totalStars: (n) => `${n} total stars`,
+  locked: 'Locked',
 };
 
 const boardElement = document.querySelector('#board');
@@ -64,12 +94,16 @@ const movesElement = document.querySelector('#moves');
 const bestChainElement = document.querySelector('#best-chain');
 const progressElement = document.querySelector('#progress');
 const levelPillElement = document.querySelector('#level-pill');
+const levelTrailElement = document.querySelector('#level-trail');
+const objectivesElement = document.querySelector('#objectives');
+const goalsLabel = document.querySelector('#goals-label');
 const statusElement = document.querySelector('#status');
 const restartButton = document.querySelector('#restart');
 const resultElement = document.querySelector('#result');
 const resultTitle = document.querySelector('#result-title');
 const resultCopy = document.querySelector('#result-copy');
 const resultScore = document.querySelector('#result-score');
+const resultProgress = document.querySelector('#result-progress');
 const resultAction = document.querySelector('#result-action');
 const starsElement = document.querySelector('#stars');
 const chainSvg = document.querySelector('#chain-svg');
@@ -80,11 +114,13 @@ const movesLabel = document.querySelector('#moves-label');
 const bestLabel = document.querySelector('#best-label');
 const powerTip = document.querySelector('#power-tip');
 
-let levelIndex = 0;
+let progress = loadProgress(window.localStorage, PROGRESS_KEY, LEVELS.length);
+let levelIndex = Math.max(0, Math.min(LEVELS.length - 1, progress.currentLevel - 1));
 let board = [];
 let score = 0;
 let movesLeft = 0;
 let bestChain = 0;
+let objectiveState = createObjectiveState();
 let gameState = 'playing';
 let busy = false;
 let chainPath = [];
@@ -94,7 +130,6 @@ let activePointerId = null;
 let hintTimer = null;
 let statusTimer = null;
 let audioContext = null;
-let firstSuccessfulMove = false;
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const level = () => LEVELS[levelIndex];
@@ -104,11 +139,17 @@ function randomTile() {
   return Math.floor(Math.random() * level().types);
 }
 
+function persistProgress() {
+  progress = saveProgress(window.localStorage, PROGRESS_KEY, progress, LEVELS.length);
+}
+
 function localizeChrome() {
   scoreLabel.textContent = copy.score;
   movesLabel.textContent = copy.moves;
   bestLabel.textContent = copy.best;
+  goalsLabel.textContent = copy.goals;
   powerTip.textContent = copy.powerTip;
+  restartButton.textContent = copy.restart;
 }
 
 function ensureAudio() {
@@ -175,6 +216,69 @@ function updateLines() {
   hintPolyline.setAttribute('points', !pointerActive && hintPath.length > 1 ? pointsFor(hintPath) : '');
 }
 
+function goalLabel(goal) {
+  if (goal.kind === 'collect') return copy.collectGoal(colorNames[goal.base] || `${goal.base + 1}`);
+  if (goal.kind === 'chain') return copy.chainGoal;
+  return copy.powerGoal;
+}
+
+function goalIcon(goal) {
+  if (goal.kind === 'collect') return '●';
+  if (goal.kind === 'chain') return '↗';
+  return '✦';
+}
+
+function renderObjectives() {
+  objectivesElement.replaceChildren();
+  for (const goal of level().goals) {
+    const state = progressForGoal(goal, objectiveState);
+    const chip = document.createElement('div');
+    chip.className = [
+      'objective-chip',
+      `goal-${goal.kind}`,
+      goal.kind === 'collect' ? `goal-color-${goal.base}` : '',
+      state.complete ? 'complete' : '',
+    ].filter(Boolean).join(' ');
+
+    const icon = document.createElement('span');
+    icon.className = 'goal-icon';
+    icon.textContent = goalIcon(goal);
+
+    const label = document.createElement('span');
+    label.textContent = goalLabel(goal);
+
+    const value = document.createElement('strong');
+    value.className = 'goal-value';
+    value.textContent = `${Math.min(state.current, state.target)}/${state.target}`;
+
+    chip.append(icon, label, value);
+    objectivesElement.append(chip);
+  }
+}
+
+function renderLevelTrail() {
+  levelTrailElement.replaceChildren();
+  for (const item of LEVELS) {
+    const unlocked = item.number <= progress.unlocked;
+    const stars = progress.stars[item.number] || 0;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = ['level-node', unlocked ? 'unlocked' : 'locked', item.number === level().number ? 'active' : ''].filter(Boolean).join(' ');
+    button.textContent = String(item.number);
+    button.dataset.stars = stars ? '★'.repeat(stars) : '';
+    button.disabled = !unlocked || busy || pointerActive;
+    button.setAttribute('aria-label', unlocked ? `Level ${item.number}${stars ? `, ${stars} stars` : ''}` : `Level ${item.number}, ${copy.locked}`);
+    button.addEventListener('click', () => {
+      if (!unlocked || busy || pointerActive || item.number === level().number) return;
+      progress = selectLevel(progress, item.number, LEVELS.length);
+      persistProgress();
+      levelIndex = item.number - 1;
+      restartLevel();
+    });
+    levelTrailElement.append(button);
+  }
+}
+
 function render(options = {}) {
   const matched = new Set(options.matched || []);
   const selected = new Set(chainPath);
@@ -211,6 +315,8 @@ function render(options = {}) {
   bestChainElement.textContent = bestChain > 0 ? String(bestChain) : '—';
   levelPillElement.textContent = `Level ${current.number}`;
   progressElement.style.setProperty('--progress', `${Math.min(100, (score / current.targetScore) * 100)}%`);
+  renderObjectives();
+  renderLevelTrail();
   requestAnimationFrame(updateLines);
 }
 
@@ -322,6 +428,18 @@ function extendChain(index) {
   setStatus(copy.chain(chainPath.length), chainPath.length >= 3 ? 'good' : 'hint');
 }
 
+function levelComplete() {
+  return score >= level().targetScore && areGoalsComplete(level().goals, objectiveState);
+}
+
+function missingSummary() {
+  const missing = [];
+  if (score < level().targetScore) missing.push(copy.scoreMissing(level().targetScore - score));
+  const goals = remainingGoalCount(level().goals, objectiveState);
+  if (goals) missing.push(copy.goalsMissing(goals));
+  return missing.join(' · ');
+}
+
 async function finishChain() {
   if (!pointerActive) return;
   pointerActive = false;
@@ -364,10 +482,10 @@ async function finishChain() {
   if (navigator.vibrate) navigator.vibrate(power ? [12, 18, 14] : 9);
   await wait(power ? 310 : 245);
 
+  objectiveState = applyChainToObjectives(objectiveState, result);
   board = result.board;
   score += result.score;
   bestChain = Math.max(bestChain, result.chainLength);
-  firstSuccessfulMove = true;
   chainPath = [];
   render({ dropping: true });
   await wait(190);
@@ -384,7 +502,7 @@ async function finishChain() {
   busy = false;
   render();
 
-  if (score >= level().targetScore) {
+  if (levelComplete()) {
     gameState = 'won';
     render();
     setStatus(copy.clear, 'win');
@@ -416,14 +534,19 @@ function showResult(won) {
   resultElement.hidden = false;
   if (won) {
     const stars = starCount();
+    progress = recordLevelWin(progress, level().number, stars, bestChain, LEVELS.length);
+    persistProgress();
+    renderLevelTrail();
     starsElement.textContent = `${'★ '.repeat(stars)}${'☆ '.repeat(3 - stars)}`.trim();
     resultTitle.textContent = copy.resultWin;
     resultCopy.textContent = copy.smooth;
+    resultProgress.textContent = copy.totalStars(totalStars(progress));
     resultAction.textContent = levelIndex < LEVELS.length - 1 ? copy.next : copy.again;
   } else {
     starsElement.textContent = '☆ ☆ ☆';
     resultTitle.textContent = copy.resultLose;
-    resultCopy.textContent = copy.left(Math.max(0, level().targetScore - score));
+    resultCopy.textContent = missingSummary();
+    resultProgress.textContent = copy.totalStars(totalStars(progress));
     resultAction.textContent = copy.retry;
   }
   resultScore.textContent = score.toLocaleString(locale);
@@ -440,12 +563,12 @@ function restartLevel() {
   score = 0;
   movesLeft = level().moves;
   bestChain = 0;
+  objectiveState = createObjectiveState();
   gameState = 'playing';
   busy = false;
   pointerActive = false;
   activePointerId = null;
   chainPath = [];
-  firstSuccessfulMove = false;
   fxElement.replaceChildren();
   comboElement.classList.remove('show');
   setStatus(copy.connect);
@@ -496,7 +619,11 @@ restartButton.addEventListener('click', () => {
 
 resultAction.addEventListener('click', () => {
   ensureAudio();
-  if (gameState === 'won') levelIndex = levelIndex < LEVELS.length - 1 ? levelIndex + 1 : 0;
+  if (gameState === 'won' && levelIndex < LEVELS.length - 1) {
+    levelIndex += 1;
+    progress = selectLevel(progress, levelIndex + 1, LEVELS.length);
+    persistProgress();
+  }
   restartLevel();
 });
 
