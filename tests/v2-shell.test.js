@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { createInitialState } from '../src/v2-game.js';
+import { enrichStarterState } from '../src/v2-bootstrap.js';
 const root=new URL('../',import.meta.url); const read=p=>readFile(new URL(p,root),'utf8');
 test('canonical shell boots V2 only',async()=>{const html=await read('index.html');assert.ok(html.includes('./src/v2.css'));assert.ok(html.includes('./src/v2-main.js'));assert.equal(html.includes('./src/main.js'),false);assert.equal(html.includes('anticipation.js'),false);});
 test('V2 surfaces and generated art are wired',async()=>{const html=await read('index.html');const css=await read('src/v2.css');for(const id of ['merge-board','orders','build-button','place-hero'])assert.ok(html.includes(`id="${id}"`));assert.ok(css.includes('poply-v2-atlas.webp'));assert.ok(css.includes('poply-place-cafe.webp'));assert.ok(css.includes('orientation:landscape'));assert.ok(css.includes('prefers-reduced-motion'));});
+test('untouched starter board is enriched without overwriting real progress',()=>{const base=createInitialState();assert.equal(base.board.filter(Boolean).length,8);const enriched=enrichStarterState(base);assert.equal(enriched.board.filter(Boolean).length,14);assert.equal(enriched.board.filter(item=>item?.kind==='generator').length,2);const started=structuredClone(base);started.stats.generated=1;assert.deepEqual(enrichStarterState(started).board,started.board);});
+test('phone polish keeps three orders visible and board styling explicit',async()=>{const [html,layout,board]=await Promise.all([read('index.html'),read('src/v2-layout-polish.css'),read('src/v2-board-polish.css')]);assert.match(html,/v2-layout-polish\.css\?v=/);assert.match(html,/v2-board-polish\.css\?v=/);assert.match(html,/v2-bootstrap\.js\?v=/);assert.match(html,/data-build="v2-game-screen-/);assert.match(layout,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);assert.match(layout,/\.nav-button\.active:before/);assert.match(board,/\.merge-cell\.generator/);assert.match(board,/\.drop-merge/);});
