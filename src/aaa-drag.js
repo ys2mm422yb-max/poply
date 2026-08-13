@@ -16,6 +16,20 @@ export function installDrag({root,ghost,ui}){
     if(!item)return;
     drag={index,x:event.clientX,y:event.clientY,pointerId:event.pointerId,moved:false};
     cell.setPointerCapture?.(event.pointerId);
-    cell.classList.add('dragging');ghost.innerHTML=itemMarkup(item);ghost.classList.add('show');move(event.clientX,event.clientY);
+    cell.classList.add('dragging');
+    ghost.innerHTML=itemMarkup(item);ghost.classList.add('show');move(event.clientX,event.clientY);
   });
+
+  window.addEventListener('pointermove',event=>{
+    if(!drag||event.pointerId!==drag.pointerId||ui.getView()!=='board')return;
+    move(event.clientX,event.clientY);
+    if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>8)drag.moved=true;
+    root.querySelectorAll('.drop-merge,.drop-move,.drop-bad').forEach(el=>el.classList.remove('drop-merge','drop-move','drop-bad'));
+    const target=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.board-cell');
+    if(!target)return;
+    const to=Number(target.dataset.index);
+    if(to===drag.index)return;
+    const state=getState(),source=state.board[drag.index],dest=state.board[to];
+    target.classList.add(!dest?'drop-move':canMerge(source,dest)?'drop-merge':'drop-bad');
+  },{passive:true});
 }
