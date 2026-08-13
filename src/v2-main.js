@@ -1,3 +1,4 @@
+import { CUSTOMER_ASSETS } from './v2-customers.js';
 import { ITEM_FAMILIES, createInitialState, normalizeState, itemDefinition, generateFromSlot, moveOrMerge, canMerge, canFulfillOrder, countRequirement, fulfillOrder, buildNextUpgrade, nextPlaceUpgrade } from './v2-game.js';
 
 const SAVE_KEY='poply-v2-state-1';
@@ -35,7 +36,7 @@ function renderPlace(){
   const next=nextPlaceUpgrade(state); if(!next){els.upgradeName.textContent=copy.complete;els.upgradeCost.textContent='★';els.buildButton.textContent='✓';els.buildButton.disabled=true;return;}
   els.upgradeName.textContent=next.label;els.upgradeCost.textContent=`★ ${next.cost}`;els.buildButton.textContent=copy.build;els.buildButton.disabled=state.stars<next.cost;
 }
-function customerAsset(order){return `./assets/customer-${order.sequence%3+1}.webp`;}
+function customerAsset(order){return CUSTOMER_ASSETS[order.sequence%3];}
 function renderOrders(){
   els.orders.innerHTML=state.currentOrders.map(order=>{
     const ready=canFulfillOrder(state,order);
