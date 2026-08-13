@@ -5,10 +5,20 @@ import {
   attemptSwap,
   createBoard,
   findMatches,
+  getValidMoves,
   hasValidMove,
+  reshuffleBoard,
   scoreFor,
   swap,
 } from '../src/game.js';
+
+function seededRandom(seed = 123456789) {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
 
 test('adjacency only accepts orthogonal neighbours', () => {
   assert.equal(areAdjacent(0, 1, 8), true);
@@ -34,11 +44,26 @@ test('findMatches detects horizontal and vertical runs', () => {
   assert.deepEqual(findMatches(board, 4), [0, 1, 2, 6, 10]);
 });
 
-test('new boards do not start with automatic matches', () => {
+test('new boards do not start with automatic matches and have a valid move', () => {
+  const rng = seededRandom(42);
   for (let i = 0; i < 100; i += 1) {
-    const board = createBoard(8, 6);
+    const board = createBoard(8, 6, rng);
     assert.equal(findMatches(board, 8).length, 0);
     assert.equal(hasValidMove(board, 8), true);
+  }
+});
+
+test('valid move discovery returns only adjacent swaps that create matches', () => {
+  const board = [
+    0, 1, 0,
+    2, 0, 2,
+    1, 0, 1,
+  ];
+  const moves = getValidMoves(board, 3);
+  assert.ok(moves.length > 0);
+  for (const [a, b] of moves) {
+    assert.equal(areAdjacent(a, b, 3), true);
+    assert.ok(findMatches(swap(board, a, b), 3).length > 0);
   }
 });
 
@@ -71,4 +96,16 @@ test('a valid swap resolves its match and awards points', () => {
   assert.equal(result.score, 300);
   assert.equal(result.chain, 1);
   assert.equal(findMatches(result.board, 3).length, 0);
+});
+
+test('reshuffling preserves pieces and returns a playable board without matches', () => {
+  const rng = seededRandom(2026);
+  const board = createBoard(8, 6, rng);
+  const before = board.slice().sort((a, b) => a - b);
+  const reshuffled = reshuffleBoard(board, 8, rng);
+  const after = reshuffled.slice().sort((a, b) => a - b);
+
+  assert.deepEqual(after, before);
+  assert.equal(findMatches(reshuffled, 8).length, 0);
+  assert.equal(hasValidMove(reshuffled, 8), true);
 });
