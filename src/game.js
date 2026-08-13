@@ -98,19 +98,44 @@ export function resolveBoard(board, size = DEFAULT_SIZE, randomTile = () => 0) {
   return { board: next, score, chain };
 }
 
-export function hasValidMove(board, size = DEFAULT_SIZE) {
+export function getValidMoves(board, size = DEFAULT_SIZE) {
+  const moves = [];
+
   for (let row = 0; row < size; row += 1) {
     for (let col = 0; col < size; col += 1) {
       const current = indexOf(row, col, size);
-      const neighbours = [];
-      if (col + 1 < size) neighbours.push(indexOf(row, col + 1, size));
-      if (row + 1 < size) neighbours.push(indexOf(row + 1, col, size));
-      for (const neighbour of neighbours) {
-        if (findMatches(swap(board, current, neighbour), size).length > 0) return true;
+      if (col + 1 < size) {
+        const right = indexOf(row, col + 1, size);
+        if (findMatches(swap(board, current, right), size).length > 0) moves.push([current, right]);
+      }
+      if (row + 1 < size) {
+        const below = indexOf(row + 1, col, size);
+        if (findMatches(swap(board, current, below), size).length > 0) moves.push([current, below]);
       }
     }
   }
-  return false;
+
+  return moves;
+}
+
+export function hasValidMove(board, size = DEFAULT_SIZE) {
+  return getValidMoves(board, size).length > 0;
+}
+
+export function reshuffleBoard(board, size = DEFAULT_SIZE, rng = Math.random) {
+  const source = board.filter((value) => value !== null && value !== undefined);
+  if (source.length !== size * size) throw new Error('Cannot reshuffle an incomplete board');
+
+  for (let attempt = 0; attempt < 150; attempt += 1) {
+    const next = source.slice();
+    for (let i = next.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(rng() * (i + 1));
+      [next[i], next[j]] = [next[j], next[i]];
+    }
+    if (findMatches(next, size).length === 0 && hasValidMove(next, size)) return next;
+  }
+
+  throw new Error('Could not reshuffle into a playable board');
 }
 
 export function attemptSwap(board, a, b, size = DEFAULT_SIZE, randomTile = () => 0) {
