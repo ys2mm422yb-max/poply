@@ -15,9 +15,12 @@ export const GENERATORS = {
 };
 
 export const PLACE_UPGRADES = [
-  { id: 'lights', label: 'Lichter', cost: 4, copy: 'Warme Lichter machen das Café sichtbar gemütlicher.' },
-  { id: 'counter', label: 'Theke', cost: 6, copy: 'Eine neue Theke macht Bestellungen schneller und schöner.' },
-  { id: 'terrace', label: 'Terrasse', cost: 8, copy: 'Die Terrasse öffnet den Place zum Meer.' },
+  { id: 'lights', label: 'Lichter', cost: 4, copy: 'Warme Lichter machen das Café abends sichtbar und einladend.' },
+  { id: 'counter', label: 'Neue Theke', cost: 6, copy: 'Die alte Theke wird zum Herzstück des Cafés.' },
+  { id: 'menu', label: 'Menüwand', cost: 7, copy: 'Eine neue Menüwand zeigt Gästen, was Poply besonders macht.' },
+  { id: 'seating', label: 'Sitzecke', cost: 9, copy: 'Bequeme Plätze machen aus Laufkundschaft Stammgäste.' },
+  { id: 'terrace', label: 'Meerterrasse', cost: 11, copy: 'Die Terrasse öffnet das Café zum Meer.' },
+  { id: 'sign', label: 'Poply-Schild', cost: 14, copy: 'Das neue Schild vollendet den ersten Poply Place.' },
 ];
 
 const ORDER_TEMPLATES = [
@@ -99,5 +102,10 @@ export function fulfillOrder(inputState,orderId){
   return {state,changed:true,reason:null,rewards:active.rewards};
 }
 export function nextPlaceUpgrade(state){ return PLACE_UPGRADES.find(upgrade=>!state.placeUpgrades.includes(upgrade.id))??null; }
+export function restorationStatus(state){
+  const upgrade=nextPlaceUpgrade(state); const total=PLACE_UPGRADES.length; const completed=state.placeUpgrades.length;
+  if(!upgrade) return {complete:true,total,completed,upgrade:null,current:state.stars,cost:0,missing:0,ratio:1};
+  const current=Math.min(state.stars,upgrade.cost); return {complete:false,total,completed,upgrade,current,cost:upgrade.cost,missing:Math.max(0,upgrade.cost-state.stars),ratio:upgrade.cost?current/upgrade.cost:1};
+}
 export function buildNextUpgrade(inputState){ const upgrade=nextPlaceUpgrade(inputState); if(!upgrade) return {state:inputState,changed:false,reason:'place-complete'}; if(inputState.stars<upgrade.cost) return {state:inputState,changed:false,reason:'not-enough-stars',upgrade}; const state=clone(inputState); state.stars-=upgrade.cost; state.placeUpgrades.push(upgrade.id); state.updatedAt=Date.now(); return {state,changed:true,reason:null,upgrade}; }
 export function addEnergy(inputState,amount){ const state=clone(inputState); state.energy=Math.min(state.maxEnergy,state.energy+Math.max(0,amount)); state.updatedAt=Date.now(); return state; }
