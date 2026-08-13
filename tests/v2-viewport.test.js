@@ -16,6 +16,7 @@ test('mobile V2 uses a visible-viewport single-screen contract',async()=>{
   assert.match(runtime,/window\.visualViewport/);
   assert.match(runtime,/--app-height/);
   assert.match(runtime,/--board-size/);
+  assert.doesNotThrow(()=>new Function(runtime));
 });
 
 test('single-screen nav focuses regions instead of scrolling the page',async()=>{
