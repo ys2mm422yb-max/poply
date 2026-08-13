@@ -12,6 +12,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <title>Poply</title>
   <link rel="stylesheet" href="./src/styles.css">
+  <link rel="stylesheet" href="./src/objectives.css">
 </head>
 <body>
   <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -24,6 +25,7 @@
         <span id="level-pill" class="level-pill">Level 1</span>
       </div>
       <p>Connect. Pop. Flow.</p>
+      <nav id="level-trail" class="level-trail" aria-label="Level progress"></nav>
     </header>
 
     <section class="game-layout" aria-label="Poply game">
@@ -47,6 +49,11 @@
             <span id="best-label">Best chain</span>
             <strong id="best-chain">—</strong>
           </div>
+        </div>
+
+        <div class="objective-block">
+          <span id="goals-label" class="eyebrow">Goals</span>
+          <div id="objectives" class="objective-list" aria-live="polite"></div>
         </div>
 
         <p id="power-tip" class="power-tip">5 matching = Blast · 7+ matching = Prism</p>
@@ -77,6 +84,7 @@
         <h2 id="result-title">Level clear</h2>
         <p id="result-copy">Great chain.</p>
         <strong id="result-score" class="result-score">0</strong>
+        <p id="result-progress" class="result-progress"></p>
         <button id="result-action" class="primary-button" type="button">Next level</button>
       </div>
     </section>
