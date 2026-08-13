@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11131a">
+  <title>Poply</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hud">
+      <div>
+        <h1>Poply</h1>
+        <p>Match. Pop. Flow.</p>
+      </div>
+      <div class="score" aria-live="polite">
+        <span>Score</span>
+        <strong id="score">0</strong>
+      </div>
+    </header>
+
+    <section class="game" aria-label="Poply prototype">
+      <div id="board" class="board" role="grid" aria-label="Match 3 board"></div>
+      <p id="status" class="status" aria-live="polite">Tap two neighbouring pieces to swap.</p>
+      <button id="new-game" type="button">New board</button>
+    </section>
+  </main>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
