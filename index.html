@@ -9,21 +9,37 @@
 </head>
 <body>
   <main class="shell">
-    <header class="hud">
-      <div>
+    <header class="topbar">
+      <div class="brand">
         <h1>Poply</h1>
         <p>Match. Pop. Flow.</p>
       </div>
-      <div class="score" aria-live="polite">
-        <span>Score</span>
-        <strong id="score">0</strong>
+      <div class="level-chip" aria-label="Current level">
+        <span>Level</span>
+        <strong>1</strong>
       </div>
     </header>
 
-    <section class="game" aria-label="Poply prototype">
+    <section class="game" aria-label="Poply level 1">
+      <div class="objective" aria-label="Level progress">
+        <div class="stat score-stat">
+          <span>Score</span>
+          <strong><span id="score">0</span> <small>/ <span id="target">4,500</span></small></strong>
+        </div>
+        <div class="stat moves-stat">
+          <span>Moves</span>
+          <strong id="moves">20</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progress" class="progress-fill"></div>
+        </div>
+      </div>
+
       <div id="board" class="board" role="grid" aria-label="Match 3 board"></div>
-      <p id="status" class="status" aria-live="polite">Tap two neighbouring pieces to swap.</p>
-      <button id="new-game" type="button">New board</button>
+      <p id="status" class="status" data-tone="neutral" aria-live="polite">Swipe a piece to match 3.</p>
+      <div class="controls">
+        <button id="new-game" type="button">Restart level</button>
+      </div>
     </section>
   </main>
   <script type="module" src="./src/main.js"></script>
