@@ -1,52 +1,77 @@
 # Poply – Visual Direction
 
-This is a standing quality target for every visual/game-feel pass.
+Standing visual target for Poply V2.
 
 ## Core impression
+Poply should feel like a polished casual mobile game with a warm, tactile, premium and broadly appealing style.
 
-Poply must look and feel like a deliberate mobile game, not a website with colored buttons. Functional placeholder visuals are not a finished state.
+## Original art direction
+- Create a distinct Poply world and item-art language.
+- Use reference games only to understand hierarchy and interaction patterns.
+- Do not reproduce another game's characters, item illustrations, scenes, icons or exact UI composition.
+- Final central game art should use production-quality assets, not placeholder shapes or emoji.
 
-## Piece identity
+## Item identity
+- Item families need coherent visual evolution from tier to tier.
+- Higher tiers should feel more valuable while remaining readable at phone size.
+- Identical mergeable items should be obvious through art.
+- Generators must look clearly different from generated items.
 
-- Piece identity must not depend on generic printed placeholder symbols such as a circle, triangle, plus or simple diamond inside identical squares.
-- The main five colors should have distinct silhouettes/material character that remains readable even without the inner symbol.
-- Pieces should feel soft, tactile, glossy and premium rather than flat UI controls.
-- Selection must enhance a piece without covering it with a thick white box.
-- Power pieces should look visibly more valuable and energetic than normal pieces while preserving their base color.
+## Merge interaction
+- Dragged items should feel attached to the finger.
+- Valid merge targets react before release.
+- Successful merge uses a short snap, compression, reveal and tier-up moment.
+- Invalid drops return cleanly without punishment.
+- Avoid debug-looking outlines or browser-default drag visuals.
 
-## Chain interaction
+## Board composition
+- The merge board is the main working surface.
+- Avoid nested web cards and excessive borders.
+- Cells guide placement without overwhelming item art.
+- Storage and utility controls remain secondary.
 
-- The active connection is part of Poply's visual identity.
-- It should inherit the active piece color, use a thin bright core plus a soft glow, and visually follow the player's finger.
-- It must never resemble a thick white cable laid over the board.
-- Selected pieces should glow/compress subtly rather than receive heavy white outlines.
-- Diagonal connections remain valid, but the path must stay visually easy to follow.
+## Orders
+- Orders should feel like real requests, not database rows.
+- Requested items are shown mainly through their actual art.
+- Rewards are visible but subordinate.
+- Delivery gets a satisfying reward transition.
+- On phones, order UI must not crush the board vertically.
 
-## Effects
+## Poply Place / restoration
+- The place scene is the emotional payoff layer.
+- It needs visible before/after transformation and multiple build/restoration steps.
+- Restoration is never represented only by a number or progress bar.
+- The first place may be food/café-inspired, but the art and layout must be original to Poply.
 
-- Pops should use color-matched particles/rings and tactile scale timing.
-- Long chains and powers should escalate feedback in a controlled way.
-- Score feedback should feel integrated into the board rather than like debug text.
-- Effects must not obscure the next playable state for too long.
-- Sound/haptics and visual intensity should scale together where supported.
+## HUD
+- Keep currencies compact and consistently placed.
+- Avoid large stat cards above the board.
+- Prioritize active orders, board state and current progression.
+- Settings/restart/debug controls stay secondary.
 
-## Mobile screen composition
+## Motion priorities
+1. merge snap + tier reveal,
+2. generator dispense,
+3. order delivery + reward collection,
+4. restoration/build reveal,
+5. major unlock.
 
-- The board is the hero and should occupy the strongest visual area.
-- Header/HUD/progression must stay compact enough that the game is not pushed down the screen.
-- Avoid large dead areas, floating utility text and controls that look detached from the game.
-- Restart/settings utilities are secondary controls and should not compete with the board.
-- Phone portrait, tablet portrait and tablet landscape should each feel intentionally composed.
+Effects should be satisfying but quickly reveal the next playable state.
 
-## Quality gate
+## Phone / tablet
+- Phone portrait is primary.
+- Respect safe areas and comfortable drag targets.
+- Keep the board large enough for accurate touch.
+- Tablets use extra space intentionally for orders/place context rather than simply stretching the phone UI.
 
-A visual pass is not complete merely because the CSS renders. Compare the actual mobile result against this document and `docs/END_GOAL.md`.
+## Reject / keep iterating if
+- it still looks like the old connect-and-pop game,
+- central art is generic placeholder shapes,
+- UI looks like stacked web cards around a grid,
+- item tiers are unreadable,
+- drag feedback looks like debug UI,
+- restoration is only numbers,
+- there is excessive dead space or clutter.
 
-Reject or continue iterating on any state that still looks like:
-- generic colored UI buttons,
-- placeholder symbols,
-- thick white chain/selection outlines,
-- default particles/confetti,
-- separate web cards stacked around a game board,
-- visually wasted phone screen space,
-- effects that are technically visible but not satisfying.
+## Design workflow
+For major V2 UI/art work, create a coherent full-screen visual concept and matching game-asset direction first, then implement against it. Compare the final live render against the accepted concept before calling the pass finished.
