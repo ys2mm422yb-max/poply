@@ -9,4 +9,12 @@ const toast=document.querySelector('#toast');
 const ghost=document.querySelector('#drag-ghost');
 const ui=createUI(root,toast);
 installDrag({root,ghost,ui});
+const syncViewport=()=>{
+  const viewport=window.visualViewport;
+  const height=viewport?viewport.height:window.innerHeight;
+  document.documentElement.style.setProperty('--app-height',`${Math.round(height)}px`);
+};
+if(window.visualViewport)window.visualViewport.addEventListener('resize',syncViewport);
+window.addEventListener('resize',syncViewport);
+syncViewport();
 ui.render();
