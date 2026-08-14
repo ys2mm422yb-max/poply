@@ -46,9 +46,8 @@ export function totalItemDiscoveryCount(state){
 export function discoveryXpForItem(level){return DISCOVERY_XP_BASE+Math.max(1,Number(level)||1)*10;}
 
 export function recordDiscovery(state,key,{xp=0}={}){
-  const ensured=ensureCollectionState(state).state;
-  if(isDiscovered(ensured,key))return {state:ensured,changed:false,key,progression:null};
-  const next=structuredClone(ensured);next.discoveries.push(key);
+  if(isDiscovered(state,key))return {state,changed:false,key,progression:null};
+  const next=structuredClone(state);if(!Array.isArray(next.discoveries))next.discoveries=[];next.discoveries.push(key);
   if(xp>0){const progression=awardPlayerXp(next,xp);return {state:progression.state,changed:true,key,progression};}
   return {state:next,changed:true,key,progression:null};
 }
