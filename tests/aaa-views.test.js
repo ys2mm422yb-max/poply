@@ -49,6 +49,13 @@ test('phone Place gives spare height to the world instead of stretching the jour
   assert.doesNotMatch(mobile,/\.production-place\{[^}]*grid-template-rows:minmax\(215px,46%\) minmax\(0,1fr\)/);
 });
 
+test('phone Orders distributes service content through the available stage instead of clustering above Deliver',async()=>{
+  const mobile=await read('src/aaa-mobile.css');
+  assert.match(mobile,/\.service-card\{[^}]*grid-template-rows:minmax\(0,1fr\) auto/);
+  assert.match(mobile,/\.service-content\{height:100%;align-content:space-evenly\}/);
+  assert.doesNotMatch(mobile,/\.service-customer,\.service-content\{align-content:center\}/);
+});
+
 test('Board jobs open focused service orders without clipped title cards',async()=>{
   const [view,ui,service]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-ui.js'),read('src/aaa-service.css')]);
   for(const marker of ['board-jobs','board-job','data-focus-order','customer-queue','data-select-order','service-card','resolveSelectedOrder'])assert.ok(view.includes(marker),marker);
