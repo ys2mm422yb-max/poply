@@ -2,20 +2,35 @@
 
 Updated: 2026-08-14
 
-## Active target
-Milestone B is OPEN again after real iPhone QA showed that technical completion was ahead of actual production quality.
+## Active product target
+Poply now runs two progress tracks in parallel:
 
-## Current production pass
-Branch: `milestone-b-production-visual-pass-2`
+1. **Production-quality track** — Milestone B remains OPEN until real mobile/browser screenshots look like a premium commercial casual game rather than a polished prototype.
+2. **Playable-growth track** — Vertical Slice 02 is ACTIVE so the game itself grows instead of repeatedly polishing the same first-screen loop.
 
-Implemented in this pass:
-- layered authored coastal café scene with foreground/midground/background depth;
-- six restoration additions rendered as real scene content;
-- Place changed from a 2x3 status-card wall to a world-first scene + current-goal + journey presentation;
-- Orders changed from form-like cards to character/job quest cards;
-- Board mini orders changed to integrated dark job tickets;
-- Milestone B acceptance criteria now require convincing real-iPhone visual quality, not merely existing stage mappings.
+## Current branch
+`vertical-slice/place-02-sunset`
 
-## Not done yet
-- Milestone B cannot be marked complete until the deployed iPhone screenshots show a materially premium authored world and coherent visual language.
-- Milestone D remains blocked by that visual acceptance.
+Binding milestone document:
+`docs/VERTICAL_SLICE_02_SUNSET.md`
+
+## Current product milestone
+Build the first real chapter transition:
+
+`Café am Meer complete → Place 02 Sonnenkai unlocked → new Tropenbar generator → new fruit merge chain → new jobs → second restoration arc`.
+
+This is deliberately larger than another layout/polish pass.
+
+## Existing foundation that must remain stable
+- clean AAA shell; no legacy V2 live-layer stack;
+- Board / Place / Orders are real functional views;
+- 7x7 persistent merge board and deterministic save flow;
+- service flow and `Jetzt servieren` browser regression;
+- mandatory WebKit Mobile Browser QA + screenshot artifact;
+- authored Place-01 scene, six visible Place-01 restorations, item/customer/game-feel work already shipped.
+
+## Still open
+- Milestone B visual quality is not accepted yet and continues after/alongside this vertical slice.
+- Place 02 must be genuinely playable, not a teaser card.
+- Existing saves must migrate without loss.
+- This branch must add deterministic domain tests and real browser interaction QA for the unlock transition before merge.
