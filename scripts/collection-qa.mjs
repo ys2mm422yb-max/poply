@@ -35,7 +35,13 @@ try{
   assert(discovered.playerXp===40,`first coffee tier 2 discovery should grant 40 XP, got ${discovered.playerXp}`);
   const discoveryReveal=page.locator('.discovery-reveal');assert(await discoveryReveal.isVisible(),'discovery reveal did not appear after real merge');
   const reveal=await discoveryReveal.textContent();assert(reveal?.includes('Kaffeetasse')&&reveal?.includes('+40 XP'),`discovery reveal copy incorrect: ${reveal}`);
-  const revealVisual=await discoveryReveal.evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);return {className:el.className,width:box.width,height:box.height,top:box.top,bottom:box.bottom,opacity:Number(style.opacity),position:style.position,zIndex:style.zIndex,transitionProperty:style.transitionProperty,transitionDuration:style.transitionDuration,animationName:style.animationName};});
+  const revealVisual=await discoveryReveal.evaluate(el=>{
+    const box=el.getBoundingClientRect(),style=getComputedStyle(el),matchedRules=[];
+    const walk=(rules,source,condition='')=>{for(const rule of rules){try{if(rule.selectorText?.includes('.discovery-reveal'))matchedRules.push({source,condition,selector:rule.selectorText,opacity:rule.style?.opacity||'',transform:rule.style?.transform||'',transition:rule.style?.transition||''});if(rule.cssRules)walk(rule.cssRules,source,rule.conditionText||condition);}catch{}}};
+    for(const sheet of document.styleSheets){try{walk(sheet.cssRules,sheet.href||'inline');}catch{}}
+    const animations=el.getAnimations().map(animation=>({type:animation.constructor?.name||'',playState:animation.playState,currentTime:animation.currentTime,transitionProperty:animation.transitionProperty||'',animationName:animation.animationName||'',timing:animation.effect?.getComputedTiming?.()||null}));
+    return {className:el.className,matchesVisible:el.matches('.discovery-reveal.is-visible'),matchesLeaving:el.matches('.discovery-reveal.is-leaving'),width:box.width,height:box.height,top:box.top,bottom:box.bottom,opacity:Number(style.opacity),position:style.position,zIndex:style.zIndex,transitionProperty:style.transitionProperty,transitionDuration:style.transitionDuration,animationName:style.animationName,prefersReduced:matchMedia('(prefers-reduced-motion: reduce)').matches,supportsHas:CSS.supports('selector(:has(*))'),matchedRules,animations};
+  });
   assert(revealVisual.position==='fixed',`discovery reveal is not viewport anchored: ${JSON.stringify(revealVisual)}`);
   assert(revealVisual.width>=270&&revealVisual.height>=100,`discovery reveal is too small to read in screenshot: ${JSON.stringify(revealVisual)}`);
   assert(revealVisual.top>=56&&revealVisual.bottom<=430,`discovery reveal is outside useful mobile area: ${JSON.stringify(revealVisual)}`);
