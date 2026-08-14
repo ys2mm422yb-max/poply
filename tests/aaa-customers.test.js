@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { CUSTOMER_ART, customerArtUrl } from '../src/aaa-customers.js';
+import { ORDER_CHOICE_POLISH_CSS } from '../src/aaa-order-choice-polish.js';
 
 const root=new URL('../',import.meta.url),read=p=>readFile(new URL(p,root),'utf8');
 
@@ -31,4 +32,14 @@ test('Orders service stage uses interaction-safe authored light and distinct rew
   assert.match(css,/\.service-rewards>span:nth-child\(2\)\{/);
   assert.match(css,/@keyframes service-stage-breathe/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.service-card:after\{animation:none!important;transform:none!important\}\}/);
+});
+
+test('compact Orders guest choices preserve two readable title lines without growing the queue',async()=>{
+  const main=await read('src/aaa-main.js');
+  assert.match(main,/aaa-order-choice-polish\.js/);
+  assert.match(ORDER_CHOICE_POLISH_CSS,/\.customer-choice strong/);
+  assert.match(ORDER_CHOICE_POLISH_CSS,/white-space:normal/);
+  assert.match(ORDER_CHOICE_POLISH_CSS,/-webkit-line-clamp:2/);
+  assert.match(ORDER_CHOICE_POLISH_CSS,/\.customer-choice\{height:68px/);
+  assert.doesNotMatch(ORDER_CHOICE_POLISH_CSS,/height:\s*(?:7[3-9]|[89]\d|\d{3,})px/);
 });
