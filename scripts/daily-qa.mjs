@@ -25,7 +25,7 @@ try{
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');const daily=await import('./src/aaa-daily.js');
     const state=game.createInitialState(),dateKey=daily.localDateKey();
-    state.coins=200;state.stars=0;
+    state.coins=200;state.stars=0;state.playerXp=120;
     state.daily={dateKey,goals:[
       {id:'goal-merge-0',type:'merge',label:'1 Item mergen',target:1,progress:0,claimed:false,reward:{coins:10}},
       {id:'goal-serve-1',type:'serve',label:'1 Gast bedienen',target:1,progress:0,claimed:false,reward:{coins:20}},
@@ -48,21 +48,21 @@ try{
   state=await readSave();assert(goal(state,'generate').progress===1,'real generator action did not progress daily generate goal');
 
   await page.locator('.nav-tab[data-view="orders"]').click();await page.waitForSelector('.daily-ribbon');
-  assert((await page.locator('.daily-ribbon').textContent())?.includes('3/3 ZIELE'),'daily ribbon does not show completed goals');await page.locator('.daily-ribbon').click();await page.waitForSelector('.daily-sheet');await assertSheetFits('390x844 daily');await shot('50-daily-goals-ready');
+  assert((await page.locator('.daily-ribbon').textContent())?.includes('3/3 ZIELE'),'daily ribbon does not show completed goals');assert((await page.locator('.daily-ribbon strong').textContent())==='Tagesziele & Gast','daily ribbon label is clipped or stale');await page.locator('.daily-ribbon').click();await page.waitForSelector('.daily-sheet');await assertSheetFits('390x844 daily');assert((await page.locator('.daily-bonus-copy p').textContent())?.includes('1/1 vorbereitet'),'daily bonus readiness must cap at requirement target');await shot('50-daily-goals-ready');
 
   const beforeClaims=(await readSave()).coins;
   for(const id of ['goal-merge-0','goal-serve-1','goal-generate-2']){const button=page.locator(`[data-daily-claim="${id}"]`);assert(await button.isVisible(),`claim button missing for ${id}`);await button.click();await page.waitForTimeout(100);}
   state=await readSave();assert(state.coins===beforeClaims+60,`daily claims did not pay exactly 60 Coins: ${state.coins-beforeClaims}`);assert(state.daily.goals.every(entry=>entry.claimed),'not all daily goals persisted as claimed');
 
-  const beforeBonus={coins:state.coins,stars:state.stars,orders:state.stats.orders,bakery:state.board.filter(item=>item?.kind==='item'&&item.family==='bakery'&&item.level===1).length};
+  const beforeBonus={coins:state.coins,stars:state.stars,orders:state.stats.orders,xp:state.playerXp,bakery:state.board.filter(item=>item?.kind==='item'&&item.family==='bakery'&&item.level===1).length};
   const bonusButton=page.locator('[data-daily-serve]');assert(await bonusButton.isEnabled(),'seeded daily guest should be ready');await bonusButton.click();await page.waitForTimeout(260);
   state=await readSave();const afterBakery=state.board.filter(item=>item?.kind==='item'&&item.family==='bakery'&&item.level===1).length;
-  assert(state.daily.bonus.served===true,'daily bonus guest not persisted as served');assert(state.coins===beforeBonus.coins+100,'daily bonus did not pay exactly 100 Coins');assert(state.stars===beforeBonus.stars+2,'daily bonus did not pay exactly 2 Stars');assert(state.stats.orders===beforeBonus.orders+1,'daily bonus did not count as a served guest');assert(afterBakery===beforeBonus.bakery-1,'daily bonus did not consume exactly one required item');
+  assert(state.daily.bonus.served===true,'daily bonus guest not persisted as served');assert(state.coins===beforeBonus.coins+100,'daily bonus did not pay exactly 100 Coins without an unrelated level-up');assert(state.stars===beforeBonus.stars+2,'daily bonus did not pay exactly 2 Stars');assert(state.stats.orders===beforeBonus.orders+1,'daily bonus did not count as a served guest');assert(state.playerXp===beforeBonus.xp+50,'daily bonus did not award the expected order XP');assert(afterBakery===beforeBonus.bakery-1,'daily bonus did not consume exactly one required item');assert((await page.locator('.daily-bonus-copy strong').textContent())==='Heute bedient','served Daily guest layout lost its copy block');
   await shot('51-daily-bonus-served');
 
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(140);if(!(await page.locator('.daily-sheet').isVisible()))await page.locator('.daily-ribbon').click();await assertSheetFits('390x720 daily');await shot('52-daily-short-safari');
   await page.reload({waitUntil:'networkidle'});state=await readSave();assert(state.daily.goals.every(entry=>entry.claimed)&&state.daily.bonus.served,'daily completion was lost after reload');
-  report={dateKey:state.daily.dateKey,coins:state.coins,stars:state.stars,claimed:state.daily.goals.filter(entry=>entry.claimed).length,bonusServed:state.daily.bonus.served};
+  report={dateKey:state.daily.dateKey,coins:state.coins,stars:state.stars,playerXp:state.playerXp,claimed:state.daily.goals.filter(entry=>entry.claimed).length,bonusServed:state.daily.bonus.served};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('59-daily-failure');}catch{}}
 finally{await writeFile(`${outDir}/daily-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
