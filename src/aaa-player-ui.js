@@ -61,5 +61,5 @@ export function installPlayerUI(root){
   const observer=new MutationObserver(decorate);observer.observe(root,{childList:true,subtree:true});
   document.addEventListener('poply:progression',event=>showProgression(event.detail));
   decorate();
-  return {render:decorate,message:()=>{},refresh:decorate,isMilestonesOpen:()=>milestonesOpen,completedMilestones:()=>completedMilestoneCount(getState()),playerTitle:()=>playerTitleProgress(getState()).current.label};
+  return {refresh:decorate,isMilestonesOpen:()=>milestonesOpen,completedMilestones:()=>completedMilestoneCount(getState()),playerTitle:()=>playerTitleProgress(getState()).current.label};
 }
