@@ -16,3 +16,12 @@ test('AAA stylesheet entry only composes authored modules',async()=>{
   assert.equal(css,"@import './aaa-shell.css';\n@import './aaa-player.css';\n@import './aaa-board.css';\n@import './aaa-views.css';\n@import './aaa-world.css';\n@import './aaa-service.css';\n@import './aaa-sunset.css';\n@import './aaa-energy.css';\n@import './aaa-collection.css';\n@import './aaa-discovery.css';\n@import './aaa-storage-tray.css';\n@import './aaa-mobile.css';\n@import './aaa-motion.css';");
   assert.doesNotMatch(css,/v2-/);
 });
+
+test('mobile composition uses the spare viewport as game surface instead of dead space',async()=>{
+  const mobile=await read('src/aaa-mobile.css'),view=await read('src/aaa-view.js');
+  assert.match(mobile,/\.qa-board \.board-area\{[^}]*background:/);
+  assert.match(mobile,/\.service-orders\{grid-template-rows:auto auto minmax\(0,1fr\) auto;align-content:stretch\}/);
+  assert.match(mobile,/\.service-card\{[^}]*height:100%/);
+  assert.match(view,/boardRule:'Gleiches mergen'/);
+  assert.doesNotMatch(view,/Gleiche Items zusammenziehen/);
+});
