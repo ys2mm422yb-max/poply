@@ -1,0 +1,1 @@
+Active branch purpose: real-iPhone-driven Milestone B production visual pass. No legacy V2 shell layers, no backend changes, no other project changes.
