@@ -20,9 +20,11 @@
   .qa-board .board-title>span{color:#9eb9b6;white-space:nowrap}
   .qa-board .board-frame{box-shadow:0 14px 28px rgba(0,16,23,.38),inset 0 1px 0 rgba(255,255,255,.09),inset 0 -4px 0 rgba(0,0,0,.14)}
 
-  /* Orders: one selected guest becomes a full service stage instead of leaving a giant dead zone. */
+  /* Orders: the selected guest is one full service stage, but the actual service task stays a
+     compact, readable composition. Spare height becomes breathing room around the task rather than
+     a giant blank runway between the task and Deliver or exaggerated spacing inside the task. */
   .service-orders{grid-template-rows:auto auto minmax(0,1fr) auto;align-content:stretch}
-  .service-card{height:100%;min-height:0;grid-template-rows:minmax(0,1fr) auto;align-content:stretch;margin-inline:-9px;padding:16px 20px 14px;border-inline:0;border-bottom:0;border-radius:28px 28px 0 0;background:radial-gradient(circle at 14% 20%,rgba(244,199,93,.15),transparent 24%),radial-gradient(circle at 88% 8%,rgba(73,181,168,.14),transparent 28%),linear-gradient(180deg,#0f4b56,#083543 67%,#062c39);box-shadow:inset 0 1px rgba(255,255,255,.07)}
+  .service-card{height:100%;min-height:0;grid-template-rows:auto auto;align-content:center;row-gap:22px;margin-inline:-9px;padding:16px 20px 14px;border-inline:0;border-bottom:0;border-radius:28px 28px 0 0;background:radial-gradient(circle at 14% 20%,rgba(244,199,93,.15),transparent 24%),radial-gradient(circle at 88% 8%,rgba(73,181,168,.14),transparent 28%),linear-gradient(180deg,#0f4b56,#083543 67%,#062c39);box-shadow:inset 0 1px rgba(255,255,255,.07)}
   .service-customer,.service-content{align-content:center}
   .service-customer{padding-top:0}
   .service-deliver{height:46px}
@@ -38,7 +40,7 @@
   .service-goal{padding:5px 8px}
   .customer-choice{height:58px}
   .choice-avatar img{width:31px;height:31px}
-  .service-card{grid-template-columns:72px minmax(0,1fr);gap:8px;padding:11px 14px 10px}
+  .service-card{grid-template-columns:72px minmax(0,1fr);gap:8px;row-gap:14px;padding:11px 14px 10px}
   .service-avatar-ring{width:60px;height:60px}
   .service-heading h2{font-size:18px}
   .service-content{gap:7px}
