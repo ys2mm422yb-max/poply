@@ -22,6 +22,7 @@ page.on('pageerror',error=>consoleProblems.push(`pageerror: ${error.message}`));
 const shot=async name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const assert=(value,message)=>{if(!value)throw new Error(message);};
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
+let clickTrace=[],toastState=null,afterImmediate=null,afterProgrammatic=null;
 
 let failure=null;
 try{
@@ -56,13 +57,41 @@ try{
   assert((await serve.textContent()||'').includes('Jetzt servieren'),'ready order does not show Jetzt servieren');
   await shot('04-before-serve');
 
+  await page.evaluate(()=>{
+    window.__qaClickTrace=[];
+    const record=(scope,event)=>{
+      const target=event.target instanceof Element?event.target:event.target?.parentElement;
+      window.__qaClickTrace.push({
+        scope,
+        tag:target?.tagName||null,
+        className:typeof target?.className==='string'?target.className:null,
+        dataOrder:target?.closest?.('[data-order]')?.dataset?.order||null,
+        dataAction:target?.closest?.('[data-action]')?.dataset?.action||null,
+        defaultPrevented:event.defaultPrevented,
+      });
+    };
+    document.addEventListener('click',event=>record('document-capture',event),true);
+    document.querySelector('#app')?.addEventListener('click',event=>record('app-bubble',event));
+  });
+
   const before=await readSave();
   await serve.click();
-  await page.waitForTimeout(1100);
+  await page.waitForTimeout(80);
+  afterImmediate=await readSave();
+  clickTrace=await page.evaluate(()=>window.__qaClickTrace||[]);
+  toastState=await page.evaluate(()=>{const el=document.querySelector('#toast');return {text:el?.textContent||'',show:el?.classList.contains('show')||false,tone:el?.dataset?.tone||null};});
+  await page.waitForTimeout(1020);
   const after=await readSave();
   await shot('05-after-serve');
 
-  assert(after.coins===before.coins+45,`coins did not increase by 45 (${before.coins} -> ${after.coins})`);
+  if(after.coins===before.coins){
+    // Diagnostic only: determine whether native programmatic click reaches the same delegated action.
+    await page.evaluate(()=>document.querySelector('button[data-order="order-0"]')?.click());
+    await page.waitForTimeout(100);
+    afterProgrammatic=await readSave();
+  }
+
+  assert(after.coins===before.coins+45,`coins did not increase by 45 (${before.coins} -> ${after.coins}); trace=${JSON.stringify(clickTrace)} toast=${JSON.stringify(toastState)} programmaticCoins=${afterProgrammatic?.coins??'n/a'}`);
   assert(after.stars===before.stars+2,`stars did not increase by 2 (${before.stars} -> ${after.stars})`);
   assert(!after.currentOrders.some(order=>order.id==='order-0'),'served order still exists');
   assert(after.currentOrders.some(order=>order.id==='order-3'),'replacement order was not created');
@@ -70,7 +99,6 @@ try{
   assert(after.stats.orders===before.stats.orders+1,'order statistic did not increment');
   assert(await page.locator('.view-orders').isVisible(),'orders view disappeared after serving');
 
-  // Check primary navigation remains functional after the delivery transition.
   await page.locator('[data-view="board"]').click();
   await page.waitForSelector('.view-board');
   await page.locator('[data-view="orders"]').click();
@@ -83,7 +111,7 @@ try{
   failure=error;
   try{await shot('99-failure');}catch{}
 }finally{
-  await writeFile(`${outDir}/qa-report.json`,JSON.stringify({baseURL,viewport:'390x844 mobile WebKit',consoleProblems,failure:failure?.message||null},null,2));
+  await writeFile(`${outDir}/qa-report.json`,JSON.stringify({baseURL,viewport:'390x844 mobile WebKit',consoleProblems,clickTrace,toastState,afterImmediate,afterProgrammatic,failure:failure?.message||null},null,2));
   await browser.close();
 }
 if(failure)throw failure;
