@@ -1,24 +1,33 @@
 import { getState } from './aaa-session.js';
 import { playerProgress } from './aaa-progression.js';
+import { playerMilestones, completedMilestoneCount } from './aaa-milestones.js';
 
 const safeRemove=node=>{if(node?.isConnected)node.remove();};
+const checkIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 export function installPlayerUI(root){
-  let overlayTimer=0,levelDelayTimer=0;
+  let overlayTimer=0,levelDelayTimer=0,milestonesOpen=false;
+  const milestoneMarkup=state=>{
+    const milestones=playerMilestones(state),done=completedMilestoneCount(state);
+    return `<section class="player-progress-sheet" aria-label="Spielerfortschritt"><header><div><small>DEIN FORTSCHRITT</small><strong>${done}/${milestones.length} Meilensteine</strong></div><button data-player-progress-close aria-label="Fortschritt schließen">×</button></header><div class="milestone-list">${milestones.map(entry=>`<article class="milestone-row ${entry.complete?'complete':''}"><span class="milestone-mark">${entry.complete?checkIcon:`${entry.current}`}</span><div class="milestone-copy"><strong>${entry.label}</strong><small>${entry.detail}</small><div class="milestone-track"><i style="width:${Math.round(entry.ratio*100)}%"></i></div></div><b>${entry.complete?'Fertig':`${entry.current}/${entry.target}`}</b></article>`).join('')}</div></section>`;
+  };
   const decorate=()=>{
     const state=getState(),progress=playerProgress(state.playerXp);
     const topbar=root.querySelector('.topbar'),brand=root.querySelector('.brand');
     if(!topbar||!brand)return;
     let badge=brand.querySelector('.player-level-badge');
-    if(!badge){badge=document.createElement('span');badge.className='player-level-badge';brand.append(badge);}
+    if(!badge){badge=document.createElement('button');badge.type='button';badge.className='player-level-badge';badge.dataset.playerProgress='';brand.append(badge);}
     const badgeText=`LV ${progress.level}`;
     if(badge.textContent!==badgeText)badge.textContent=badgeText;
-    badge.setAttribute('aria-label',`Spielerlevel ${progress.level}`);
+    badge.setAttribute('aria-label',`Spielerlevel ${progress.level} – Fortschritt öffnen`);badge.setAttribute('aria-expanded',String(milestonesOpen));
     let track=topbar.querySelector('.player-xp-track');
     if(!track){track=document.createElement('div');track.className='player-xp-track';track.innerHTML='<i></i>';topbar.append(track);}
     track.style.setProperty('--player-progress',`${Math.round(progress.ratio*100)}%`);
     track.title=`${progress.current}/${progress.next} XP bis Level ${progress.level+1}`;
     track.setAttribute('aria-label',track.title);
+    const existing=root.querySelector('.player-progress-sheet');
+    if(!milestonesOpen){existing?.remove();return;}
+    existing?.remove();topbar.insertAdjacentHTML('afterend',milestoneMarkup(state));
   };
   const revealLevelUp=progression=>{
     clearTimeout(overlayTimer);root.querySelector('.level-up-overlay')?.remove();
@@ -39,8 +48,9 @@ export function installPlayerUI(root){
     }
   };
   const progressingToNewLevel=progression=>Number(progression?.levelsGained||0)>0;
+  root.addEventListener('click',event=>{const target=event.target instanceof Element?event.target:event.target?.parentElement;if(!target)return;if(target.closest('[data-player-progress]')){milestonesOpen=!milestonesOpen;decorate();return;}if(target.closest('[data-player-progress-close]')){milestonesOpen=false;decorate();}});
   const observer=new MutationObserver(decorate);observer.observe(root,{childList:true,subtree:true});
   document.addEventListener('poply:progression',event=>showProgression(event.detail));
   decorate();
-  return {refresh:decorate};
+  return {refresh:decorate,isMilestonesOpen:()=>milestonesOpen};
 }
