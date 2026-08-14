@@ -5,6 +5,7 @@ import { playFeedback } from './aaa-feedback.js';
 export function createUI(root,toast){
   let view='board',menuOpen=false,lastFx=null,toastTimer=0,selectedOrderId=null;
   const message=(text,tone='good')=>{clearTimeout(toastTimer);toast.textContent=text;toast.dataset.tone=tone;toast.classList.add('show');toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);};
+  const emitProgression=(result,source)=>{if(result?.progression)document.dispatchEvent(new CustomEvent('poply:progression',{detail:{...result.progression,source}}));};
   const applyFx=fx=>{
     if(view!=='board'||!fx)return;
     requestAnimationFrame(()=>{
@@ -58,7 +59,7 @@ export function createUI(root,toast){
       const result=buildUpgrade();
       if(!result.changed){playFeedback('invalid');message('Für dieses Ziel fehlen noch Sterne.','bad');}
       else{
-        playFeedback('restoration');view='place';menuOpen=false;render();playRestorationReveal(result.upgrade,result.unlockedPlace);
+        playFeedback('restoration');view='place';menuOpen=false;render();playRestorationReveal(result.upgrade,result.unlockedPlace);emitProgression(result,'restoration');
         message(result.unlockedPlace==='sunset'?'Place 02 freigeschaltet: Sonnenkai':`Ausbau geschafft: ${result.upgrade.label}`);
       }
       return;
@@ -68,9 +69,9 @@ export function createUI(root,toast){
       const card=order.closest('.service-card,.board-job,.mini-order,.focus-order'),orderId=order.dataset.order,result=deliverOrder(orderId);
       if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}
       else{
-        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);
+        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP`);
         if(selectedOrderId===orderId)selectedOrderId=null;
-        setTimeout(()=>{render();playRewards(result.rewards);},320);
+        setTimeout(()=>{render();playRewards(result.rewards);emitProgression(result,'order');},320);
       }
       return;
     }

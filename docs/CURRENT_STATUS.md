@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-## Live baseline
+## Live baseline before PR #37 merge
 `main` currently includes:
 - Place 01 · Café am Meer;
 - playable Place 02 · Sonnenkai;
@@ -17,10 +17,10 @@ Updated: 2026-08-14
 - sound, haptics, merge/delivery/reward/restoration feedback;
 - CI + Mobile WebKit Browser QA + canonical Pages release gates.
 
-The energy defect is fixed and live. Milestone B visual quality remains OPEN: the current product is substantially more coherent, but it is not being claimed as final AAA-casual visual quality.
+Milestone B visual quality remains OPEN: the current product is substantially more coherent, but it is not being claimed as final AAA-casual visual quality.
 
 ## Product phase
-Poply now moves from **vertical-slice foundation** into **feature depth and long-term progression**.
+Poply is in **feature depth and long-term progression** while production-quality work continues in parallel.
 
 Binding feature-growth roadmap:
 `docs/FEATURE_ROADMAP.md`
@@ -28,28 +28,50 @@ Binding feature-growth roadmap:
 Existing rebuild/quality contract:
 `docs/AAA_REBUILD_PLAN.md`
 
-Energy contract:
-`docs/ENERGY_SYSTEM.md`
+## Milestone E1 — Player XP + Level system — ACCEPTED ON PR HEAD
+Binding contract:
+`docs/PLAYER_PROGRESSION.md`
+
+Screenshot acceptance:
+`docs/SCREENSHOT_QA_2026-08-14_PLAYER_PROGRESSION.md`
+
+Accepted implementation:
+- persistent lifetime `playerXp` in the existing save;
+- fair migration for existing players using completed orders/restorations without deleting value;
+- deterministic growing level curve;
+- XP from delivered customer orders with difficulty scaling;
+- XP from completed restorations and bonus XP for a new-Place unlock;
+- +100 Coin reward for every crossed player level;
+- compact `LV N` HUD badge + non-layout-growing XP rail;
+- short XP gain feedback and sequenced level-up reward reveal;
+- level-up state persists and reveal does not replay on reload;
+- deterministic unit tests;
+- real Mobile WebKit order and restoration level-up flows;
+- screenshot review rejected the first overlapping/faded reward presentation and accepted the corrected sequence.
+
+Release gate remaining:
+- exact final PR head CI + Browser QA;
+- merge;
+- exact merged-main CI + Browser QA + Pages deploy.
 
 ## Next implementation milestone
-### Milestone E1 — Player XP + Level system
-Goal: meaningful play must advance a persistent player-level track beyond the current Place/order.
+### E2 — Collection Book + discovery rewards
+Goal: every new item tier, generator and Place becomes a persistent discovery instead of disappearing into the board loop.
 
 Planned first slice:
-- persistent XP + player level in the existing save;
-- XP from customer orders and restoration milestones;
-- visible level progress without overcrowding the Board screen;
-- level-up reward moment;
-- deterministic migration and tests;
-- Browser-QA coverage + self-reviewed phone screenshots;
-- architecture prepared for Collection Book unlocks in E2.
+- persist discovered family+tier entries in the existing save;
+- backfill discoveries fairly from current board/progression without revealing items the player never reached;
+- first-time tier creation produces one discovery event and XP/reward using the E1 progression system;
+- authored Collection view with silhouettes for undiscovered tiers;
+- generator and Place discovery records;
+- real navigation only when the Collection view is implemented;
+- reload/migration tests + Mobile WebKit discovery QA + screenshot review.
 
 ## Following milestones
-1. E2 — Collection Book + item discovery rewards.
-2. F1 — Storage tray + first meaningful Coin sink.
-3. G — Daily goals / fair return loop.
-4. H — World map / Place selector.
-5. I — Place 03 with genuinely new gameplay/content.
+1. F1 — Storage tray + first meaningful Coin sink.
+2. G — Daily goals / fair return loop.
+3. H — World map / Place selector.
+4. I — Place 03 with genuinely new gameplay/content.
 
 ## Product tracks
 1. **Production-quality track** — continue world, order, board, animation and art quality toward premium commercial casual-game presentation.
