@@ -1,0 +1,48 @@
+/* Mobile composition QA: authored responses to 390px iPhone/WebKit screenshots. */
+@media(max-width:430px){
+  /* Place: preserve the six-step journey without crushed labels. Locked future beats use the
+     numbered journey dots; the current/completed labels stay readable. */
+  .journey-steps{gap:3px}
+  .journey-step small{max-width:54px;font-size:7px}
+  .journey-step.locked small{display:none}
+  .journey-step>span{width:32px;height:32px}
+
+  /* Orders: the selected service should feel like a focused task, not a giant empty dashboard card. */
+  .service-orders{grid-template-rows:auto auto auto minmax(0,1fr);align-content:start}
+  .service-card{min-height:0;grid-template-rows:auto auto;align-content:start;padding:14px 14px 13px}
+  .service-customer,.service-content{align-content:start}
+  .service-customer{padding-top:6px}
+  .service-deliver{height:46px}
+  .service-footnote{align-self:end}
+}
+
+@media(max-width:430px) and (max-height:740px){
+  .topbar{padding-block:4px}
+  .service-orders{gap:6px;padding-top:7px;padding-bottom:5px}
+  .service-hero{padding:8px 10px;border-radius:18px}
+  .service-hero h2{font-size:17px}
+  .service-hero p{font-size:8px}
+  .service-goal{padding:5px 8px}
+  .customer-choice{height:58px}
+  .choice-avatar img{width:31px;height:31px}
+  .service-card{grid-template-columns:72px minmax(0,1fr);gap:8px;padding:11px 12px}
+  .service-avatar-ring{width:60px;height:60px}
+  .service-heading h2{font-size:18px}
+  .service-content{gap:7px}
+  .service-card .need{width:52px;height:48px}
+  .service-card .need .item-art{width:39px;height:39px}
+  .service-rewards>span{padding:5px 7px;min-width:78px}
+  .service-purpose{padding:6px 8px}
+  .service-deliver{height:42px}
+  .service-footnote{font-size:7px}
+
+  .production-place{gap:7px;padding:7px 9px 6px;grid-template-rows:minmax(215px,46%) minmax(0,1fr)}
+  .world-copy{left:17px;bottom:13px}
+  .world-copy p{display:none}
+  .place-command{gap:7px;padding:8px}
+  .place-progress-row{grid-template-columns:54px minmax(0,1fr);gap:7px}
+  .place-current-goal{padding:8px 9px}
+  .goal-copy p{display:none}
+  .journey-wrap{gap:4px;padding:5px 5px 2px}
+  .journey-step>span{width:28px;height:28px}
+}
