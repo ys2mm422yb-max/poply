@@ -11,10 +11,11 @@ Current production baseline on `main` includes:
 - Coins, restoration Stars, fair regenerating Energy, Player XP/Levels;
 - Collection/Discovery, persistent Storage + Coin expansion, Daily Goals + Bonus Guest;
 - first Places world-map/revisit slice;
+- Player Milestone shelf behind the existing Level badge;
 - local save/resume and migration safety;
 - mandatory CI + Mobile WebKit + screenshot review + canonical Pages release gates.
 
-Start `main` for the current product-automation run: `194d5b150f9fd4912de4e8f74e3842f7308b72a3`.
+Start `main` for the current product-automation run: `6e01b1d5b353bc37566068b9663379678c08f97d`.
 
 Milestone B visual quality remains OPEN globally.
 
@@ -23,26 +24,28 @@ Milestone B visual quality remains OPEN globally.
 Visual/evidence worker scope. Owns dynamic FX capture/workflow/motion files. Product automation must not overlap it.
 
 ### PR #58 — Milestone I Place 03 · Dachgarten
-Manual product scope. Currently owns Place03 domain/UI/art integration including `src/aaa-session.js`, `src/v2-game.js`, Collection and Place/Map files. Product automation must not start competing Place03 or touch those active files.
+Manual product scope. Owns Place03 domain/UI/art integration including `src/aaa-session.js`, `src/v2-game.js`, Collection and Place/Map files. Product automation must not start competing Place03 or touch those active files.
 
-### Product automation — Player Milestone shelf
-Branch: `feature/progression-milestones`.
+### PR #60 — Orders service-stage lighting
+Visual scope. Owns Orders service presentation in `src/aaa-service.css`; product automation does not overlap it.
+
+### Product automation — next-level reward preview
+Branch: `feature/level-reward-preview`.
 Contract: `docs/PLAYER_MILESTONES.md`.
 
-This slice was selected only after collision checking found that the initially investigated Board-recovery implementation would overlap PR #58 through `src/aaa-session.js`.
-
 Scope:
-- existing `LV N` badge becomes an intentional progress entry point;
-- compact overlay shows five long-term milestones derived from existing persistent progress;
-- no new currency, tab, claim state or duplicate achievement save data;
-- Level completion derives from canonical `playerXp` rather than a second stored level field;
-- deterministic tests and real WebKit progression QA cover interaction and 390×844 / 390×720 layout.
+- reuse the existing `LV N` progress sheet rather than adding another menu/tab;
+- show next Level, exact XP remaining and the existing deterministic `+100 Coins` Level reward;
+- derive everything from canonical `playerXp` and `LEVEL_REWARD_COINS`;
+- no save migration, claim state, new currency or duplicated reward schedule;
+- deterministic unit coverage and real WebKit fit checks at 390×844 / 390×720;
+- opening/closing remains save-neutral.
 
 ## Parked / not active
-`feature/board-recovery-recycling` and the earlier misnamed `feature/place-03-moon-garden` have no PR and are not active implementation scopes. Board-recovery remains a valid future reliability task, but it must be rebased/rebuilt only after the active `aaa-session.js` owner is clear.
+`feature/board-recovery-recycling` and the earlier misnamed `feature/place-03-moon-garden` have no PR and are not active implementation scopes. Board-recovery remains a valid future reliability task, but it must be rebuilt only after the active `aaa-session.js` owner is clear.
 
 ## Next product priorities after active PRs land
-1. Finish/release the independent Player Milestone shelf if exact-head QA accepts it.
+1. Finish/release the independent next-level reward preview if exact-head QA accepts it.
 2. Integrate/verify Place 03 through PR #58 without parallel duplication.
 3. Revisit guaranteed Board-full + Storage-full recovery on a fresh post-Place03 branch.
 4. Continue deeper Collection/achievement/economy balancing only after current slices are released.
