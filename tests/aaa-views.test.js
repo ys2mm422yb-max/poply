@@ -48,7 +48,7 @@ test('Board retains authored workbench hierarchy from the previous iPhone QA pas
 
 test('production shell uses authored vector UI icons instead of emoji navigation glyphs',async()=>{
   const view=await read('src/aaa-view.js');
-  for(const marker of ['icon-energy','icon-coin','icon-star','icon-menu','nav-icon'])assert.ok(view.includes(marker),marker);
+  for(const marker of ["iconMarkup('energy')","iconMarkup('coin')","iconMarkup('star')","iconMarkup('menu')",'nav-icon'])assert.ok(view.includes(marker),marker);
   assert.doesNotMatch(view,/☰|⌂|☑|▦|⚡/);
 });
 
