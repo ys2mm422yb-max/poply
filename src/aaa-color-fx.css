@@ -180,3 +180,43 @@
   .journey-step.current>span,.discovery-reveal::before,.discovery-sparks span,.level-up-overlay::before,.level-up-overlay::after{animation:none!important}
   .discovery-sparks{display:none!important}
 }
+
+/* Atmosphere pass 2: use spare phone Board height as authored game space, not dead UI canvas. */
+@media(max-width:430px){
+  .qa-board .board-area{
+    position:relative;isolation:isolate;
+    background:
+      radial-gradient(ellipse at 14% 100%,rgba(240,154,91,.26),transparent 34%),
+      radial-gradient(ellipse at 86% 96%,rgba(107,188,243,.24),transparent 36%),
+      radial-gradient(ellipse at 52% 78%,rgba(143,220,103,.12),transparent 42%),
+      linear-gradient(180deg,#0f4c58 0,#083844 38%,#062d39 100%)!important;
+    background-size:128% 128%,132% 132%,118% 118%,auto;
+    background-position:0 0,100% 0,50% 100%,0 0;
+    animation:poply-workbench-ambient 8s ease-in-out infinite alternate;
+  }
+  .qa-board .board-area::after{
+    content:'';position:absolute;z-index:0;left:24px;right:24px;bottom:3px;height:74px;pointer-events:none;opacity:.78;
+    background:
+      radial-gradient(circle at 10% 72%,rgba(255,188,116,.24) 0 3px,transparent 4px),
+      radial-gradient(circle at 27% 54%,rgba(102,215,208,.24) 0 2px,transparent 3px),
+      radial-gradient(circle at 73% 60%,rgba(143,220,103,.2) 0 2px,transparent 3px),
+      radial-gradient(circle at 92% 76%,rgba(107,188,243,.23) 0 3px,transparent 4px),
+      linear-gradient(90deg,transparent,rgba(255,255,255,.055) 48%,transparent 74%);
+    filter:drop-shadow(0 0 8px rgba(102,215,208,.14));
+    animation:poply-workbench-glimmer 6.2s ease-in-out infinite alternate;
+  }
+  .qa-board .board-title,.qa-board .board-frame{position:relative;z-index:1}
+}
+
+@keyframes poply-workbench-ambient{
+  from{background-position:0 0,100% 0,50% 100%,0 0}
+  to{background-position:8% 4%,92% 6%,46% 94%,0 0}
+}
+@keyframes poply-workbench-glimmer{
+  from{opacity:.56;transform:translate3d(-4px,1px,0) scale(.98)}
+  to{opacity:.86;transform:translate3d(5px,-2px,0) scale(1.02)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .qa-board .board-area,.qa-board .board-area::after{animation:none!important}
+}
