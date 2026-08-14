@@ -4,14 +4,14 @@ export const BOARD_SIZE = BOARD_COLS * BOARD_ROWS;
 export const SAVE_VERSION = 2;
 
 export const ITEM_FAMILIES = {
-  coffee: { key: 'coffee', label: 'Getränke', stages: ['Kaffeebohnen', 'Kaffeetasse', 'Eiskaffee', 'Poply Mocha'], sprites: [0,1,2,3] },
-  bakery: { key: 'bakery', label: 'Backwaren', stages: ['Weizen', 'Mehl', 'Teig', 'Croissant'], sprites: [4,5,6,7] },
-  sweet: { key: 'sweet', label: 'Süßes', stages: ['Milch', 'Zucker', 'Creme', 'Muffin'], sprites: [8,9,10,11] },
+  coffee: { key: 'coffee', label: 'Getränke', stages: ['Kaffeebohnen', 'Kaffeetasse', 'Eiskaffee', 'Poply Mocha', 'Goldener Brew', 'Sunset Signature'] },
+  bakery: { key: 'bakery', label: 'Backwaren', stages: ['Weizen', 'Mehl', 'Teig', 'Croissant', 'Beerentarte', 'Poply Patisserie'] },
+  sweet: { key: 'sweet', label: 'Süßes', stages: ['Milch', 'Zucker', 'Creme', 'Muffin', 'Küstenkuchen', 'Dessert-Turm'] },
 };
 
 export const GENERATORS = {
-  'coffee-gen': { key: 'coffee-gen', label: 'Kaffeemaschine', sprite: 13, families: ['coffee'], energyCost: 1 },
-  'pantry-gen': { key: 'pantry-gen', label: 'Vorratskiste', sprite: 12, families: ['bakery','sweet'], energyCost: 1 },
+  'coffee-gen': { key: 'coffee-gen', label: 'Küsten-Espresso', families: ['coffee'], energyCost: 1 },
+  'pantry-gen': { key: 'pantry-gen', label: 'Poply-Vorrat', families: ['bakery','sweet'], energyCost: 1 },
 };
 
 export const PLACE_UPGRADES = [
@@ -30,6 +30,9 @@ const ORDER_TEMPLATES = [
   { title:'Eiskaffee-Date', requirements:[{family:'coffee',level:3,qty:1},{family:'bakery',level:2,qty:1}], rewards:{coins:85,stars:3} },
   { title:'Croissant & Kaffee', requirements:[{family:'bakery',level:4,qty:1},{family:'coffee',level:2,qty:1}], rewards:{coins:120,stars:4} },
   { title:'Süßer Nachmittag', requirements:[{family:'sweet',level:4,qty:1},{family:'coffee',level:3,qty:1}], rewards:{coins:145,stars:5} },
+  { title:'Goldene Runde', requirements:[{family:'coffee',level:5,qty:1},{family:'bakery',level:3,qty:1}], rewards:{coins:220,stars:6} },
+  { title:'Küstentisch', requirements:[{family:'bakery',level:5,qty:1},{family:'sweet',level:4,qty:1}], rewards:{coins:260,stars:7} },
+  { title:'Poply Spezial', requirements:[{family:'coffee',level:6,qty:1},{family:'sweet',level:5,qty:1}], rewards:{coins:360,stars:9} },
 ];
 
 const clone = (value) => structuredClone(value);
@@ -44,9 +47,9 @@ export function makeItem(family,level,id){
 export function makeGenerator(generator,id,taps=0){ if(!GENERATORS[generator]) throw new Error(`Unknown generator: ${generator}`); return {id,kind:'generator',generator,taps}; }
 export function itemDefinition(item){
   if(!item) return null;
-  if(item.kind==='generator'){ const def=GENERATORS[item.generator]; return {...def,name:def.label,sprite:def.sprite}; }
+  if(item.kind==='generator'){ const def=GENERATORS[item.generator]; return {...def,name:def.label}; }
   const def=ITEM_FAMILIES[item.family];
-  return {...def,name:def.stages[item.level-1],sprite:def.sprites[item.level-1],maxLevel:def.stages.length};
+  return {...def,name:def.stages[item.level-1],maxLevel:def.stages.length};
 }
 export function createOrder(sequence){ const template=ORDER_TEMPLATES[sequence%ORDER_TEMPLATES.length]; return {id:`order-${sequence}`,sequence,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}}; }
 
