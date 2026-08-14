@@ -15,7 +15,7 @@ test('AAA entry owns visible Safari viewport sizing',async()=>{
   assert.match(source,/--app-height/);
 });
 
-test('Place uses layered authored scene art and six visible restoration additions',async()=>{
+test('Place uses layered authored scene art and six visible Place-01 restoration additions',async()=>{
   const [view,art,world]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-place-art.js'),read('src/aaa-world.css')]);
   assert.match(view,/aaa-place-art\.js/);
   assert.match(view,/placeSceneMarkup\(stage\)/);
@@ -26,6 +26,19 @@ test('Place uses layered authored scene art and six visible restoration addition
   for(let stage=1;stage<=6;stage+=1)assert.ok(art.includes(`show(safeStage,${stage}`),`missing authored scene stage ${stage}`);
   for(const layer of ['lights','counter','menu','seating','terrace','sign'])assert.ok(art.includes(`scene-upgrade ${layer}`),layer);
   for(const selector of ['.world-hero','.place-current-goal','.journey-line','.journey-step.current'])assert.ok(world.includes(selector),selector);
+});
+
+test('Sonnenkai is a distinct authored Place with its own six restoration beats',async()=>{
+  const [view,placeArt,itemArt,css]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-sunset-place.js'),read('src/aaa-sunset-art.js'),read('src/aaa-sunset.css')]);
+  assert.match(view,/sunsetPlaceSceneMarkup\(stage\)/);
+  assert.match(view,/place-\$\{chapter\.id\}/);
+  assert.match(view,/chapter\.id==='sunset'/);
+  assert.match(view,/POPLY PLACE 0\$\{chapter\.number\}/);
+  for(let stage=1;stage<=6;stage+=1)assert.ok(placeArt.includes(`show(safeStage,${stage}`),`missing Sonnenkai scene stage ${stage}`);
+  for(const layer of ['sunset-lanterns','sunset-bar','sunset-lounge','sunset-fire','sunset-stage','sunset-sign'])assert.ok(placeArt.includes(`scene-upgrade ${layer}`),layer);
+  for(let level=1;level<=6;level+=1)assert.ok(itemArt.includes(`'fruit-${level}'`),`fruit-${level}`);
+  assert.match(itemArt,/generator-sunset/);
+  for(const selector of ['.place-sunset','.production-board .board-cell.family-fruit:before','.production-board .board-cell.generator-sunset-gen:before'])assert.ok(css.includes(selector),selector);
 });
 
 test('phone Place gives spare height to the world instead of stretching the journey panel',async()=>{
@@ -63,6 +76,7 @@ test('production shell uses authored vector UI icons instead of emoji navigation
 test('active AAA item rendering uses authored vectors instead of the legacy atlas',async()=>{
   const [view,art,board]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-art.js'),read('src/aaa-board.css')]);
   assert.match(view,/aaa-art\.js/);
+  assert.match(view,/aaa-sunset-art\.js/);
   assert.doesNotMatch(view,/v2-atlas-data\.js/);
   assert.doesNotMatch(view,/v2-hero-data\.js/);
   for(const family of ['coffee','bakery','sweet'])for(let level=1;level<=6;level+=1)assert.ok(art.includes(`'${family}-${level}'`),`${family}-${level}`);

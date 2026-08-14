@@ -22,17 +22,18 @@ test('AAA UI turns fulfilled jobs into delivery and reward travel feedback',asyn
   assert.match(ui,/\.mission-card/);
 });
 
-test('successful builds switch to Place and trigger a named restoration reveal',async()=>{
+test('successful builds switch to Place and support named Place unlock reveals',async()=>{
   const ui=await read('src/aaa-ui.js');
-  assert.match(ui,/playRestorationReveal=result=>|playRestorationReveal=upgrade=>/);
-  assert.match(ui,/view='place';menuOpen=false;render\(\);playRestorationReveal\(result\.upgrade\)/);
+  assert.match(ui,/playRestorationReveal=\(upgrade,unlockedPlace=null\)/);
+  assert.match(ui,/view='place';menuOpen=false;render\(\);playRestorationReveal\(result\.upgrade,result\.unlockedPlace\)/);
   assert.match(ui,/AUSBAU FERTIG/);
-  assert.match(ui,/upgrade\.label/);
+  assert.match(ui,/NEUER PLACE FREIGESCHALTET/);
+  assert.match(ui,/Sonnenkai/);
   assert.match(ui,/fx-restoration-reveal/);
 });
 
 test('AAA motion provides anticipation, delivery, reward, restoration and reduced-motion support',async()=>{
-  const [css,entry]=await Promise.all([read('src/aaa-motion.css'),read('src/aaa.css')]);
+  const [css,entry,sunset]=await Promise.all([read('src/aaa-motion.css'),read('src/aaa.css'),read('src/aaa-sunset.css')]);
   assert.match(entry,/@import '\.\/aaa-motion\.css'/);
   assert.match(css,/merge-target-breathe/);
   assert.match(css,/tier-art-reveal/);
@@ -44,5 +45,7 @@ test('AAA motion provides anticipation, delivery, reward, restoration and reduce
   assert.match(css,/restoration-sweep/);
   assert.match(css,/restoration-badge/);
   assert.match(css,/@media \(prefers-reduced-motion:reduce\)/);
-  assert.match(css,/\.delivery-flight,\.restoration-reveal,\.scene-card\.fx-restoration-reveal::after\{display:none!important\}/);
+  assert.match(sunset,/\.world-hero\.fx-restoration-reveal/);
+  assert.match(sunset,/place-unlock-reveal/);
+  assert.match(sunset,/prefers-reduced-motion:reduce/);
 });

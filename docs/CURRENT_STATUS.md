@@ -2,20 +2,41 @@
 
 Updated: 2026-08-14
 
-## Active target
-Milestone B is OPEN again after real iPhone QA showed that technical completion was ahead of actual production quality.
+## Active product target
+Poply advances on two coordinated tracks:
 
-## Current production pass
-Branch: `milestone-b-production-visual-pass-2`
+1. **Production-quality track** — Milestone B remains OPEN until real mobile/browser screenshots look like a premium commercial casual game rather than a polished prototype.
+2. **Playable-growth track** — Vertical Slice 02 is IMPLEMENTED ON BRANCH and is now in exact-head CI / Browser-QA acceptance.
 
-Implemented in this pass:
-- layered authored coastal café scene with foreground/midground/background depth;
-- six restoration additions rendered as real scene content;
-- Place changed from a 2x3 status-card wall to a world-first scene + current-goal + journey presentation;
-- Orders changed from form-like cards to character/job quest cards;
-- Board mini orders changed to integrated dark job tickets;
-- Milestone B acceptance criteria now require convincing real-iPhone visual quality, not merely existing stage mappings.
+## Current branch
+`vertical-slice/place-02-sunset`
 
-## Not done yet
-- Milestone B cannot be marked complete until the deployed iPhone screenshots show a materially premium authored world and coherent visual language.
-- Milestone D remains blocked by that visual acceptance.
+Binding milestone document:
+`docs/VERTICAL_SLICE_02_SUNSET.md`
+
+## Implemented on this branch
+- Place 01 remains the existing `Café am Meer` six-step arc.
+- Completing `Poply-Schild` unlocks **Place 02 · Sonnenkai** instead of ending progression.
+- Sonnenkai has its own authored sunset scene and six material restoration beats:
+  Lampions → Saftbar → Lounge → Feuerstelle → Abendbühne → Sonnenkai-Schild.
+- New six-tier `fruit` family:
+  Limette → Fruchtmix → Smoothie → Tropen-Drink → Sunset-Bowl → Poply Paradise.
+- New `Tropenbar` generator appears exactly once after Place-01 completion.
+- New Sonnenkai order pool requests fruit together with existing families and pays higher rewards.
+- Board / Orders / Place automatically follow the active chapter while retaining the same three-view architecture.
+- Existing saves retain board, coins, stars, stats and Place-01 progress; completed Place-01 saves gain the Sonnenkai generator without a storage-key reset.
+- Final Place-01 build has a dedicated `Place 02 freigeschaltet: Sonnenkai` reveal.
+- Existing world restoration animation was corrected to target the current `.world-hero` architecture instead of the removed `.scene-card` surface.
+
+## Automated acceptance added
+- deterministic domain tests for chapter unlock, no duplicate generator, lossless migration, fruit generation/merge chain, sunset replacement orders and first Sonnenkai restoration;
+- Mobile WebKit QA now performs the real final Place-01 build, checks the Place-02 transition, taps the Tropenbar, verifies fruit production, builds the first Sonnenkai restoration and reloads the save;
+- screenshots are generated for pre-unlock, unlocked Sonnenkai, Sonnenkai board with fruit and first Sonnenkai restoration.
+
+## Gate still open before merge
+- normal PR CI on the exact branch head;
+- Mobile Browser QA on the exact branch head;
+- self-inspection of generated Sonnenkai screenshots;
+- fix any browser, layout, state or visual regression found there before merge.
+
+Milestone B visual acceptance remains OPEN regardless of whether this vertical slice passes. This branch represents product growth, not a claim that the visual quality target is finished.
