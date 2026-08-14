@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, createOrder } from '../src/v2-game.js';
 import { LEVEL_REWARD_COINS, xpNeededForLevel, playerProgress, legacyXpForState, ensurePlayerProgress, xpForOrder, xpForRestoration, awardPlayerXp } from '../src/aaa-progression.js';
+import { PLAYER_MILESTONES, playerMilestones, completedMilestoneCount } from '../src/aaa-milestones.js';
 
 test('level curve grows predictably and derives progress from total XP',()=>{
   assert.equal(xpNeededForLevel(1),120);assert.equal(xpNeededForLevel(2),180);
@@ -35,4 +36,16 @@ test('large XP grants can cross multiple levels and pay each reward',()=>{
   const state=createInitialState();state.playerXp=0;state.coins=0;
   const result=awardPlayerXp(state,310);
   assert.equal(result.after.level,3);assert.equal(result.levelsGained,2);assert.equal(result.state.coins,2*LEVEL_REWARD_COINS);
+});
+
+test('milestones derive only from existing persistent player progress',()=>{
+  const state=createInitialState();state.stats.orders=3;state.stats.merges=31;state.placeUpgrades=['lights','counter','menu','seating','terrace','sign'];state.playerLevel=5;state.discoveries=Array.from({length:14},(_,i)=>`item:coffee:${i+1}`);
+  const milestones=playerMilestones(state);
+  assert.equal(milestones.length,PLAYER_MILESTONES.length);assert.equal(completedMilestoneCount(state),5);assert.ok(milestones.every(entry=>entry.complete&&entry.ratio===1));
+});
+
+test('milestone progress is capped for display without mutating raw progress',()=>{
+  const state=createInitialState();state.stats.orders=0;state.stats.merges=10;state.placeUpgrades=['lights','counter'];state.playerLevel=2;state.discoveries=['item:coffee:1','item:coffee:2','generator:coffee-gen'];
+  const byId=Object.fromEntries(playerMilestones(state).map(entry=>[entry.id,entry]));
+  assert.equal(byId['first-service'].current,0);assert.equal(byId['merge-rhythm'].current,10);assert.equal(byId['place-maker'].current,2);assert.equal(byId.discoverer.current,2);assert.equal(byId['level-five'].current,2);assert.equal(completedMilestoneCount(state),0);
 });
