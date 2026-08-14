@@ -24,7 +24,7 @@ try{
   await shot('60-place-map-390x844');
   await page.locator('[data-map-place="coast"]').click();assert((await page.locator('.place-map-preview h3').textContent())==='Café am Meer','coast preview did not open');assert((await page.locator('.place-map-preview').textContent())?.includes('vollständig restauriert'),'completed coast status missing');
   await shot('61-place-map-coast-revisit');
-  const after=await readSave();assert.deepEqual(after,before,'opening/revisiting map must not mutate saved Board/meta state');
+  const after=await readSave();assert(JSON.stringify(after)===JSON.stringify(before),'opening/revisiting map must not mutate saved Board/meta state');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(100);await assertFits('390x720 map');await shot('62-place-map-short-safari');
   await page.locator('[data-place-map-close]').last().click();assert(await page.locator('.place-map-sheet').count()===0,'map did not close');
   report={coastProgress:'6/6',sunsetProgress:'2/6',saveUnchanged:true};if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
