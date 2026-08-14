@@ -15,16 +15,19 @@ test('AAA entry owns visible Safari viewport sizing',async()=>{
   assert.match(source,/--app-height/);
 });
 
-test('Place uses layered authored scene art and six visible restoration additions',async()=>{
+test('Place uses layered authored scene art and active-place restoration journeys',async()=>{
   const [view,art,world]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-place-art.js'),read('src/aaa-world.css')]);
   assert.match(view,/aaa-place-art\.js/);
-  assert.match(view,/placeSceneMarkup\(stage\)/);
+  assert.match(view,/placeSceneMarkup\(stage,definition\.id\)/);
+  assert.match(view,/activePlaceDefinition/);
   assert.match(view,/world-hero/);
   assert.match(view,/journey-steps/);
   assert.doesNotMatch(view,/scene-card/);
   assert.doesNotMatch(view,/restore-track/);
-  for(let stage=1;stage<=6;stage+=1)assert.ok(art.includes(`show(safeStage,${stage}`),`missing authored scene stage ${stage}`);
+  for(let stage=1;stage<=6;stage+=1)assert.ok(art.includes(`show(safeStage,${stage}`),`missing authored coast stage ${stage}`);
   for(const layer of ['lights','counter','menu','seating','terrace','sign'])assert.ok(art.includes(`scene-upgrade ${layer}`),layer);
+  for(const harbor of ['harbor-awning','harbor-cooler','harbor-lights'])assert.ok(art.includes(harbor),harbor);
+  assert.match(art,/placeId==='harbor'/);
   for(const selector of ['.world-hero','.place-current-goal','.journey-line','.journey-step.current'])assert.ok(world.includes(selector),selector);
 });
 
@@ -34,6 +37,12 @@ test('phone Place gives spare height to the world instead of stretching the jour
   assert.match(mobile,/\.place-command\{grid-template-rows:auto auto\}/);
   assert.match(mobile,/\.journey-wrap\{grid-template-rows:auto 4px auto\}/);
   assert.doesNotMatch(mobile,/\.production-place\{[^}]*grid-template-rows:minmax\(215px,46%\) minmax\(0,1fr\)/);
+});
+
+test('progression UI exposes real unlock rewards and Place 02 transition CTA',async()=>{
+  const [view,progression]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-progression.css')]);
+  for(const marker of ['mission-unlock','unlock-reward','next-place-ready','data-action="next-place"','PLACE KOMPLETT','Neuer Ort freigeschaltet'])assert.ok(view.includes(marker),marker);
+  for(const marker of ['.mission-unlock','.unlock-reward','.place-transition','data-place'])assert.ok(progression.includes(marker)||view.includes(marker),marker);
 });
 
 test('Board jobs open focused service orders without clipped title cards',async()=>{
