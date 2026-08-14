@@ -34,7 +34,7 @@ test('Board jobs open focused service orders without clipped title cards',async(
   for(const marker of ['selectedOrderId','data-focus-order','data-select-order','ordersView(state,selectedOrderId)'])assert.ok(ui.includes(marker),marker);
   for(const selector of ['.board-job','.customer-choice','.service-card','.service-deliver','.calm-empty'])assert.ok(service.includes(selector),selector);
   assert.doesNotMatch(view,/quest-list/);
-  assert.doesNotMatch(view,/focus-order/);
+  assert.doesNotMatch(view,/class="focus-order/);
   assert.doesNotMatch(view,/mini-order/);
 });
 
