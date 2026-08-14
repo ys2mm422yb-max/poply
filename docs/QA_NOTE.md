@@ -1,0 +1,1 @@
+Real iPhone screenshots remain the visual acceptance gate for Milestone B. Structural completion alone does not close the milestone.
