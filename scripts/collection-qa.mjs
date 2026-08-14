@@ -29,15 +29,20 @@ try{
   const from=await page.locator('.board-cell[data-index="9"]').boundingBox(),to=await page.locator('.board-cell[data-index="10"]').boundingBox();
   assert(from&&to,'merge-ready coffee cells missing');
   await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(to.x+to.width/2,to.y+to.height/2,{steps:8});await page.mouse.up();
-  await page.waitForTimeout(320);
+  await page.waitForTimeout(600);
   const discovered=await readSave();
   assert(discovered.discoveries.includes('item:coffee:2'),'real merge did not persist coffee tier 2 discovery');
   assert(discovered.playerXp===40,`first coffee tier 2 discovery should grant 40 XP, got ${discovered.playerXp}`);
-  assert(await page.locator('.discovery-reveal').isVisible(),'discovery reveal did not appear after real merge');
-  const reveal=await page.locator('.discovery-reveal').textContent();assert(reveal?.includes('Kaffeetasse')&&reveal?.includes('+40 XP'),`discovery reveal copy incorrect: ${reveal}`);
+  const discoveryReveal=page.locator('.discovery-reveal');assert(await discoveryReveal.isVisible(),'discovery reveal did not appear after real merge');
+  const reveal=await discoveryReveal.textContent();assert(reveal?.includes('Kaffeetasse')&&reveal?.includes('+40 XP'),`discovery reveal copy incorrect: ${reveal}`);
+  const revealVisual=await discoveryReveal.evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);return {width:box.width,height:box.height,top:box.top,bottom:box.bottom,opacity:Number(style.opacity),position:style.position,zIndex:style.zIndex};});
+  assert(revealVisual.position==='fixed',`discovery reveal is not viewport anchored: ${JSON.stringify(revealVisual)}`);
+  assert(revealVisual.width>=270&&revealVisual.height>=100,`discovery reveal is too small to read in screenshot: ${JSON.stringify(revealVisual)}`);
+  assert(revealVisual.top>=56&&revealVisual.bottom<=430,`discovery reveal is outside useful mobile area: ${JSON.stringify(revealVisual)}`);
+  assert(revealVisual.opacity>=0.8,`discovery reveal screenshot state is too transparent: ${JSON.stringify(revealVisual)}`);
   await shot('30-item-discovery-reveal');
 
-  await page.waitForTimeout(1350);
+  await page.waitForTimeout(1050);
   await page.locator('.nav-tab[data-view="collection"]').click();await page.waitForSelector('.view-collection');
   await assertFits('390x844 collection');
   assert((await page.locator('.collection-total strong').textContent())==='4/24','collection total does not include the new tier');
@@ -53,7 +58,7 @@ try{
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertFits('390x720 collection');await shot('33-collection-short-safari');
   await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="collection"]').click();
   const reloaded=await readSave();assert(reloaded.discoveries.includes('item:coffee:2'),'collection discovery was lost after reload');assert(reloaded.playerXp===40,'discovery XP was lost after reload');
-  report={discoveries:reloaded.discoveries,playerXp:reloaded.playerXp};
+  report={discoveries:reloaded.discoveries,playerXp:reloaded.playerXp,revealVisual};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('39-collection-failure');}catch{}}
 finally{await writeFile(`${outDir}/collection-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
