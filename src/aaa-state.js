@@ -1,6 +1,7 @@
 import { normalizeState } from './v2-game.js';
 import { ensurePlayerProgress } from './aaa-progression.js';
 import { ensureCollectionState } from './aaa-collection.js';
+import { ensureInventoryState } from './aaa-inventory.js';
 
 const FAMILIES=['coffee','bakery','sweet'];
 const noProgress=state=>Number(state.stats?.generated||0)===0&&Number(state.stats?.orders||0)===0&&(state.placeUpgrades?.length||0)===0;
@@ -29,6 +30,7 @@ export function migrateState(input){
   }
   state=ensurePlayerProgress(state).state;
   state=ensureCollectionState(state).state;
+  state=ensureInventoryState(state).state;
   state.updatedAt=Date.now();
   return state;
 }

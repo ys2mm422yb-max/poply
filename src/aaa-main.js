@@ -4,6 +4,7 @@ import { installDrag } from './aaa-drag.js';
 import { installEnergyUI } from './aaa-energy-ui.js';
 import { installPlayerUI } from './aaa-player-ui.js';
 import { installDiscoveryUI } from './aaa-discovery-ui.js';
+import { installStorageUI } from './aaa-storage-ui.js';
 
 document.documentElement.style.setProperty('--poply-hero',`url(${ASSETS.hero})`);
 document.documentElement.style.setProperty('--poply-atlas',`url(${ASSETS.atlas})`);
@@ -24,3 +25,4 @@ ui.render();
 installEnergyUI(root);
 installPlayerUI(root);
 installDiscoveryUI(root);
+installStorageUI(root,ui);
