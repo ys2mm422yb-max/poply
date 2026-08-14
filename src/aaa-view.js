@@ -10,7 +10,7 @@ export const ASSETS={customers:CUSTOMER_ART};
 export const COPY={
   place:'Place',orders:'Aufträge',board:'Board',next:'NÄCHSTES ZIEL',build:'Bauen',complete:'Place fertig',
   restore:'Restaurierung',jobsFund:'Aufträge finanzieren den Ausbau',deliver:'Liefern',ready:'Bereit',missing:'Fehlt noch',
-  boardTitle:'Werkbank',boardRule:'Gleiche Items zusammenziehen',purpose:'Merge für Kunden. Liefere Jobs. Baue deine Places.',
+  boardTitle:'Werkbank',boardRule:'Gleiches mergen',purpose:'Merge für Kunden. Liefere Jobs. Baue deine Places.',
   progress:'Ausbau-Fortschritt',done:'Fertig',locked:'Danach',menu:'Menü',reset:'Spielstand zurücksetzen'
 };
 
