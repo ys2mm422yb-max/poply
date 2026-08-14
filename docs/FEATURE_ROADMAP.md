@@ -19,6 +19,7 @@ Already live before the current parallel slices:
 - persistent Storage with permanent Coin expansion;
 - Daily Goals + fair Bonus Guest;
 - first Places world-map/revisit slice;
+- Player Milestone shelf behind the existing Level badge;
 - local save/resume and migration safety;
 - CI + Mobile WebKit + screenshot self-review + canonical Pages release gates.
 
@@ -38,6 +39,9 @@ Three deterministic daily goals plus one Bonus Guest, no streak punishment, no f
 ### H — World Map / Places first slice — LIVE via PR #48
 Café and Sonnenkai map presentation with safe completed-Place revisit and independent progress display. Active gameplay Place switching remains deferred until all generator/order semantics can be preserved safely.
 
+### J1 — Player Milestone shelf — LIVE via PR #59
+Existing Level badge opens five long-term milestones derived from persisted orders, merges, restoration, discoveries and XP. No duplicate achievement save field or claim currency.
+
 ### K1 — Replacement-order difficulty bands — LIVE
 Replacement orders scale from visible restoration progress rather than an opaque global sequence.
 
@@ -55,26 +59,26 @@ Target:
 
 No other worker may start a competing Place03 implementation while PR #58 is open.
 
-### J1 — Player Milestone shelf — ACTIVE product-automation slice
+### J2 — Next-level reward preview — ACTIVE product-automation slice
 Contract: `docs/PLAYER_MILESTONES.md`.
 Branch/PR state is logged in Issue #42.
 
 Player value:
-The existing XP Level badge becomes a useful long-term progress entry point instead of a number with no explanation.
+The existing Level sheet should answer the immediate motivation question as well as the long-term one: exactly how much XP is left, which Level comes next and what deterministic reward will be paid.
 
 Scope:
-- tap existing `LV N` badge to open a compact progress sheet;
-- five milestones: first service, 25 merges, six restoration steps, 12 item discoveries, Level 5;
-- all progress derives from already-persisted counters/state;
-- no new currency, claim flow, expiration, streak or duplicate achievement save field;
-- Level milestone derives from canonical `playerXp`;
-- overlay must fit 390×844 and 390×720 without moving or covering primary navigation;
-- opening/closing must not mutate save state.
+- reuse the existing `LV N` sheet, no extra navigation;
+- show target Level, exact remaining XP and existing `+100 Coins` Level reward;
+- derive all values from canonical `playerXp`, `playerProgress()` and `LEVEL_REWARD_COINS`;
+- no new save field, currency, claim flow, expiration or alternate reward schedule;
+- opening/closing is state-neutral;
+- fit both 390×844 and 390×720 above primary navigation;
+- deterministic tests + real progression WebKit evidence.
 
 Why this is safe in parallel:
 - it does not touch PR #58 Place03 domain/session/Collection/Map files;
-- it does not touch PR #55 dynamic-FX workflow/motion scope;
-- it uses the already-installed Player UI surface and existing progression QA.
+- it does not touch PR #55 workflow/motion/Collection-QA files;
+- it does not touch PR #60 Orders service CSS.
 
 ### Milestone B — visual production quality — OPEN in parallel
 Current goals remain stronger color/material identity, better item/generator differentiation, more authored Board atmosphere, stronger merge/discovery/delivery/restoration effects and less dashboard-like presentation. Generated phone screenshots remain the acceptance evidence.
@@ -85,7 +89,7 @@ Binding rules require full-board states to remain fairly recoverable. Storage so
 An exploratory branch exists but has **no PR and is not active** because its required session integration overlaps current Place03 work. Rebuild it from then-current `main` only after the active session owner is clear.
 
 ## J — Collection depth & achievements
-After J1 and Place03:
+After J2 and Place03:
 - family mastery/completion;
 - guest/customer collection;
 - Place completion badges;
@@ -110,7 +114,7 @@ Only after base progression has enough depth. No punitive urgency, forced ads or
 Shared codebase, PWA/native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance/battery/accessibility audits.
 
 # Immediate build order
-1. Finish independent exact-head gates for the active J1 milestone shelf.
+1. Finish independent exact-head gates for J2 next-level reward preview.
 2. Let PR #58 continue Place03 without duplicate/overlapping edits.
 3. Continue visual/effects work independently through screenshot-first PRs.
 4. After Place03/session ownership clears, implement guaranteed Board-full + Storage-full recovery on a fresh main branch.
@@ -127,7 +131,7 @@ Before adding a feature, answer:
 If those answers are weak, do not build it yet.
 
 # Autonomous coordination rule
-Every worker reads current `main`, all open PRs and Issue #42 before writes. Active changed-file overlap means choose another task. Every substantive run writes a final Issue #42 handoff with start main, branch/PR/exact head, files/systems, tests/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and next free work.
+Every worker reads current `main`, all open PRs and Issue #42 before writes. Active changed-file overlap means choose another task. Every substantive run writes a final Issue #42 handoff with start main, branch/PR/exact head, files/systems, tests/run IDs, screenshots actually opened, visual findings, merge/deploy state, blockers and next free work.
 
 # Release rule
 `fresh branch from current main → implementation → deterministic tests → Mobile WebKit QA → screenshot self-review → exact-head green → merge → exact-main CI + Browser QA + Pages deploy`.
