@@ -17,10 +17,10 @@ Updated: 2026-08-14
 - sound, haptics, merge/delivery/reward/restoration feedback;
 - CI + Mobile WebKit Browser QA + canonical Pages release gates.
 
-The energy defect is fixed and live. Milestone B visual quality remains OPEN: the current product is substantially more coherent, but it is not being claimed as final AAA-casual visual quality.
+Milestone B visual quality remains OPEN: the current product is substantially more coherent, but it is not being claimed as final AAA-casual visual quality.
 
 ## Product phase
-Poply now moves from **vertical-slice foundation** into **feature depth and long-term progression**.
+Poply is in **feature depth and long-term progression** while production-quality work continues in parallel.
 
 Binding feature-growth roadmap:
 `docs/FEATURE_ROADMAP.md`
@@ -31,18 +31,31 @@ Existing rebuild/quality contract:
 Energy contract:
 `docs/ENERGY_SYSTEM.md`
 
-## Next implementation milestone
-### Milestone E1 — Player XP + Level system
-Goal: meaningful play must advance a persistent player-level track beyond the current Place/order.
+## Active implementation branch
+`feature/player-xp-levels`
 
-Planned first slice:
-- persistent XP + player level in the existing save;
-- XP from customer orders and restoration milestones;
-- visible level progress without overcrowding the Board screen;
-- level-up reward moment;
-- deterministic migration and tests;
-- Browser-QA coverage + self-reviewed phone screenshots;
-- architecture prepared for Collection Book unlocks in E2.
+Binding E1 contract:
+`docs/PLAYER_PROGRESSION.md`
+
+### Milestone E1 — Player XP + Level system — IMPLEMENTED ON BRANCH, QA PENDING
+Implemented:
+- persistent lifetime `playerXp` in the existing save;
+- fair migration for existing players using completed orders/restorations without deleting value;
+- deterministic growing level curve;
+- XP from delivered customer orders with difficulty scaling;
+- XP from completed restorations and bonus XP for a new-Place unlock;
+- +100 Coin reward for every crossed player level;
+- compact `LV N` HUD badge + non-layout-growing XP rail;
+- short XP gain feedback and dedicated level-up reward reveal;
+- level-up state persists and reveal does not replay on reload;
+- dedicated deterministic unit tests;
+- dedicated WebKit progression QA that performs real order and build level-ups and captures screenshots.
+
+Required before merge:
+- exact-head normal CI green;
+- exact-head Mobile WebKit QA green;
+- self-review the generated level-up screenshots for clipping/cheap overlay appearance;
+- then merge and require exact-main CI + Browser QA + Pages deploy.
 
 ## Following milestones
 1. E2 — Collection Book + item discovery rewards.
