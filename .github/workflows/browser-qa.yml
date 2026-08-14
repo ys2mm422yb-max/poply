@@ -50,6 +50,9 @@ jobs:
       - name: Run Place Map WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/place-map-qa.mjs
+      - name: Run Dynamic FX WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/dynamic-fx-qa.mjs
       - name: Upload mobile QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
