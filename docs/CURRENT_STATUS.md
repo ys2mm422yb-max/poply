@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-## Live baseline
+## Live baseline before PR #37 merge
 `main` currently includes:
 - Place 01 · Café am Meer;
 - playable Place 02 · Sonnenkai;
@@ -28,17 +28,14 @@ Binding feature-growth roadmap:
 Existing rebuild/quality contract:
 `docs/AAA_REBUILD_PLAN.md`
 
-Energy contract:
-`docs/ENERGY_SYSTEM.md`
-
-## Active implementation branch
-`feature/player-xp-levels`
-
-Binding E1 contract:
+## Milestone E1 — Player XP + Level system — ACCEPTED ON PR HEAD
+Binding contract:
 `docs/PLAYER_PROGRESSION.md`
 
-### Milestone E1 — Player XP + Level system — IMPLEMENTED ON BRANCH, QA PENDING
-Implemented:
+Screenshot acceptance:
+`docs/SCREENSHOT_QA_2026-08-14_PLAYER_PROGRESSION.md`
+
+Accepted implementation:
 - persistent lifetime `playerXp` in the existing save;
 - fair migration for existing players using completed orders/restorations without deleting value;
 - deterministic growing level curve;
@@ -46,23 +43,35 @@ Implemented:
 - XP from completed restorations and bonus XP for a new-Place unlock;
 - +100 Coin reward for every crossed player level;
 - compact `LV N` HUD badge + non-layout-growing XP rail;
-- short XP gain feedback and dedicated level-up reward reveal;
+- short XP gain feedback and sequenced level-up reward reveal;
 - level-up state persists and reveal does not replay on reload;
-- dedicated deterministic unit tests;
-- dedicated WebKit progression QA that performs real order and build level-ups and captures screenshots.
+- deterministic unit tests;
+- real Mobile WebKit order and restoration level-up flows;
+- screenshot review rejected the first overlapping/faded reward presentation and accepted the corrected sequence.
 
-Required before merge:
-- exact-head normal CI green;
-- exact-head Mobile WebKit QA green;
-- self-review the generated level-up screenshots for clipping/cheap overlay appearance;
-- then merge and require exact-main CI + Browser QA + Pages deploy.
+Release gate remaining:
+- exact final PR head CI + Browser QA;
+- merge;
+- exact merged-main CI + Browser QA + Pages deploy.
+
+## Next implementation milestone
+### E2 — Collection Book + discovery rewards
+Goal: every new item tier, generator and Place becomes a persistent discovery instead of disappearing into the board loop.
+
+Planned first slice:
+- persist discovered family+tier entries in the existing save;
+- backfill discoveries fairly from current board/progression without revealing items the player never reached;
+- first-time tier creation produces one discovery event and XP/reward using the E1 progression system;
+- authored Collection view with silhouettes for undiscovered tiers;
+- generator and Place discovery records;
+- real navigation only when the Collection view is implemented;
+- reload/migration tests + Mobile WebKit discovery QA + screenshot review.
 
 ## Following milestones
-1. E2 — Collection Book + item discovery rewards.
-2. F1 — Storage tray + first meaningful Coin sink.
-3. G — Daily goals / fair return loop.
-4. H — World map / Place selector.
-5. I — Place 03 with genuinely new gameplay/content.
+1. F1 — Storage tray + first meaningful Coin sink.
+2. G — Daily goals / fair return loop.
+3. H — World map / Place selector.
+4. I — Place 03 with genuinely new gameplay/content.
 
 ## Product tracks
 1. **Production-quality track** — continue world, order, board, animation and art quality toward premium commercial casual-game presentation.
