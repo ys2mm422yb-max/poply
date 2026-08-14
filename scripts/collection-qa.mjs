@@ -29,11 +29,13 @@ try{
   const from=await page.locator('.board-cell[data-index="9"]').boundingBox(),to=await page.locator('.board-cell[data-index="10"]').boundingBox();
   assert(from&&to,'merge-ready coffee cells missing');
   await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(to.x+to.width/2,to.y+to.height/2,{steps:8});await page.mouse.up();
-  await page.waitForTimeout(600);
+  await page.waitForFunction(()=>{try{return JSON.parse(localStorage.getItem('poply-v2-state-1')||'null')?.discoveries?.includes('item:coffee:2')===true;}catch{return false;}},null,{timeout:1200});
+  const discoveryReveal=page.locator('.discovery-reveal');await discoveryReveal.waitFor({state:'visible',timeout:1200});
+  await page.waitForFunction(()=>{const el=document.querySelector('.discovery-reveal');if(!el)return false;const opacity=Number(getComputedStyle(el).opacity);return el.classList.contains('is-visible')&&!el.classList.contains('is-leaving')&&opacity>=.95;},null,{timeout:1000});
   const discovered=await readSave();
   assert(discovered.discoveries.includes('item:coffee:2'),'real merge did not persist coffee tier 2 discovery');
   assert(discovered.playerXp===40,`first coffee tier 2 discovery should grant 40 XP, got ${discovered.playerXp}`);
-  const discoveryReveal=page.locator('.discovery-reveal');assert(await discoveryReveal.isVisible(),'discovery reveal did not appear after real merge');
+  assert(await discoveryReveal.isVisible(),'discovery reveal did not appear after real merge');
   const reveal=await discoveryReveal.textContent();assert(reveal?.includes('Kaffeetasse')&&reveal?.includes('+40 XP'),`discovery reveal copy incorrect: ${reveal}`);
   const revealVisual=await discoveryReveal.evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);return {width:box.width,height:box.height,top:box.top,bottom:box.bottom,opacity:Number(style.opacity),position:style.position,zIndex:style.zIndex};});
   assert(revealVisual.position==='fixed',`discovery reveal is not viewport anchored: ${JSON.stringify(revealVisual)}`);
