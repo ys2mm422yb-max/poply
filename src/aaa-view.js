@@ -1,5 +1,6 @@
 import { CUSTOMER_ART, customerArtUrl } from './aaa-customers.js';
 import { artMarkup } from './aaa-art.js';
+import { placeSceneMarkup } from './aaa-place-art.js';
 import { PLACE_UPGRADES, itemDefinition, canFulfillOrder, countRequirement, restorationStatus } from './v2-game.js';
 
 export const ASSETS={customers:CUSTOMER_ART};
@@ -9,6 +10,15 @@ export const COPY={
   restore:'Restaurierung',jobsFund:'Aufträge finanzieren den Ausbau',deliver:'Liefern',ready:'Bereit',missing:'Fehlt noch',
   boardTitle:'Merge-Board',boardRule:'2 gleiche Items → nächste Stufe',purpose:'Merge für Kunden. Liefere Jobs. Baue dein Café.',
   progress:'Ausbau-Fortschritt',done:'Fertig',locked:'Danach',menu:'Menü',reset:'Spielstand zurücksetzen'
+};
+
+const UPGRADE_STORY={
+  lights:'Abends sichtbar und einladend',
+  counter:'Mehr Platz für Service und neue Bestellungen',
+  menu:'Das Café bekommt seine eigene Handschrift',
+  seating:'Aus Laufkundschaft werden Stammgäste',
+  terrace:'Mehr Gäste, Meerblick und längere Abende',
+  sign:'Der erste Poply Place ist komplett'
 };
 
 export function itemMarkup(item,compact=false){
@@ -41,13 +51,16 @@ function requirementMarkup(state,req){
   const have=countRequirement(state,req),sample={kind:'item',family:req.family,level:req.level};
   return `<span class="need ${have>=req.qty?'met':''}">${itemMarkup(sample,true)}<b>${have}/${req.qty}</b></span>`;
 }
+function missingForOrder(state,order){
+  return order.requirements.reduce((sum,req)=>sum+Math.max(0,req.qty-countRequirement(state,req)),0);
+}
 function miniOrder(state,order){
-  const ready=canFulfillOrder(state,order);
-  return `<article class="mini-order ${ready?'ready':''}"><img src="${customer(order)}" alt="" class="avatar"><div class="mini-order-main"><strong>${order.title}</strong><div>${order.requirements.map(req=>requirementMarkup(state,req)).join('')}</div></div><span class="mini-reward">★${order.rewards.stars}</span>${ready?`<button data-order="${order.id}" class="mini-deliver" aria-label="${COPY.deliver}">✓</button>`:''}</article>`;
+  const ready=canFulfillOrder(state,order),missing=missingForOrder(state,order);
+  return `<article class="job-ticket ${ready?'ready':''}"><div class="job-person"><img src="${customer(order)}" alt="" class="job-avatar"><i></i></div><div class="job-ticket-main"><div class="job-ticket-title"><strong>${order.title}</strong><span>★${order.rewards.stars}</span></div><div class="job-ticket-needs">${order.requirements.map(req=>requirementMarkup(state,req)).join('')}</div></div>${ready?`<button data-order="${order.id}" class="job-deliver" aria-label="${COPY.deliver}">✓</button>`:`<small class="job-missing">${missing}</small>`}</article>`;
 }
 function focusOrder(state,order){
-  const ready=canFulfillOrder(state,order);
-  return `<article class="focus-order ${ready?'ready':''}"><img src="${customer(order)}" alt="" class="focus-avatar"><div class="focus-order-copy"><small>${ready?COPY.ready:COPY.missing}</small><h3>${order.title}</h3><div class="focus-needs">${order.requirements.map(req=>requirementMarkup(state,req)).join('')}</div><div class="focus-reward"><span>● ${order.rewards.coins}</span><span>★ ${order.rewards.stars}</span><b>→ ${COPY.restore}</b></div></div><button data-order="${order.id}" class="deliver-button" ${ready?'':'disabled'}>${COPY.deliver}</button></article>`;
+  const ready=canFulfillOrder(state,order),missing=missingForOrder(state,order);
+  return `<article class="quest-card ${ready?'ready':''}"><div class="quest-person"><div class="quest-avatar-ring"><img src="${customer(order)}" alt=""></div><span>${ready?'BEREIT':'KUNDE WARTET'}</span></div><div class="quest-body"><div class="quest-heading"><div><small>${ready?'Alles da':'Noch zusammenstellen'}</small><h3>${order.title}</h3></div><span class="quest-status">${ready?'✓':`${missing} fehlt`}</span></div><div class="quest-needs">${order.requirements.map(req=>requirementMarkup(state,req)).join('')}</div><div class="quest-reward"><span><i>●</i><b>${order.rewards.coins}</b> Coins</span><span><i>★</i><b>${order.rewards.stars}</b> Ausbau</span></div></div><button data-order="${order.id}" class="quest-deliver" ${ready?'':'disabled'}>${ready?'Jetzt liefern':COPY.deliver}</button></article>`;
 }
 
 function boardMarkup(state){
@@ -60,11 +73,20 @@ function boardMarkup(state){
   }).join('');
   return `<section class="board-area"><div class="board-title"><div><strong>${COPY.boardTitle}</strong><small>${COPY.boardRule}</small></div><span>${state.board.filter(Boolean).length}/49</span></div><div class="board-frame"><div id="merge-board" class="merge-board">${cells}</div></div></section>`;
 }
-export function boardView(state){return `<main class="game-view view-board">${missionMarkup(state,true)}<section class="orders-strip">${state.currentOrders.map(order=>miniOrder(state,order)).join('')}</section>${boardMarkup(state)}</main>`;}
+export function boardView(state){return `<main class="game-view view-board production-board">${missionMarkup(state,true)}<section class="orders-strip production-orders-strip">${state.currentOrders.map(order=>miniOrder(state,order)).join('')}</section>${boardMarkup(state)}</main>`;}
 
 export function placeView(state){
-  const status=restorationStatus(state),stage=state.placeUpgrades.length;
-  const track=PLACE_UPGRADES.map((upgrade,index)=>{const done=state.placeUpgrades.includes(upgrade.id),current=status.upgrade?.id===upgrade.id;return `<div class="restore-step ${done?'done':current?'current':''}"><span>${done?'✓':index+1}</span><div><strong>${upgrade.label}</strong><small>${done?COPY.done:current?`★ ${status.current}/${status.cost}`:COPY.locked}</small></div></div>`;}).join('');
-  return `<main class="game-view view-place"><section class="scene-card stage-${stage}"><div class="scene-shade"></div><div class="scene-label"><small>POPLY PLACE 01</small><h1>${COPY.placeName}</h1><p>${COPY.purpose}</p></div></section><section class="restoration-panel"><div class="place-summary"><div><small>${COPY.progress}</small><strong>${stage}/${PLACE_UPGRADES.length} ${COPY.done}</strong></div>${missionMarkup(state,false)}</div><div class="restore-track">${track}</div></section></main>`;
+  const status=restorationStatus(state),stage=state.placeUpgrades.length,next=status.upgrade;
+  const journey=PLACE_UPGRADES.map((upgrade,index)=>{
+    const done=state.placeUpgrades.includes(upgrade.id),current=next?.id===upgrade.id;
+    return `<div class="journey-step ${done?'done':current?'current':'locked'}"><span>${done?'✓':index+1}</span><small>${upgrade.label}</small></div>`;
+  }).join('');
+  const overall=Math.round(stage/PLACE_UPGRADES.length*100);
+  const story=next?UPGRADE_STORY[next.id]||'Der nächste Schritt macht deinen Place sichtbarer.':'Dein erster Poply Place ist vollständig restauriert.';
+  const goal=next?`<div class="place-current-goal"><div class="goal-copy"><small>${COPY.next}</small><strong>${next.label}</strong><p>${story}</p><span>★ ${status.current}/${status.cost}</span></div><button data-action="build" ${state.stars<next.cost?'disabled':''}>${COPY.build}</button></div>`:`<div class="place-current-goal complete"><div class="goal-copy"><small>${COPY.progress}</small><strong>${COPY.complete}</strong><p>${story}</p></div><span class="goal-complete-mark">✓</span></div>`;
+  return `<main class="game-view view-place production-place"><section class="world-hero" data-stage="${stage}"><div class="world-art">${placeSceneMarkup(stage)}</div><div class="world-vignette"></div><div class="world-copy"><span class="world-kicker">POPLY PLACE 01 · KÜSTE</span><h1>${COPY.placeName}</h1><p>${stage?`${stage} von ${PLACE_UPGRADES.length} Ausbauten fertig`:'Dein erster Place wartet auf dich'}</p></div><div class="world-progress"><b>${stage}</b><span>/ ${PLACE_UPGRADES.length}</span></div></section><section class="place-command"><div class="place-progress-row"><div class="place-progress-dial" style="--progress:${overall}%"><div><b>${stage}</b><small>/6</small></div></div>${goal}</div><div class="journey-wrap"><div class="journey-head"><strong>DEIN CAFÉ WÄCHST</strong><span>${overall}%</span></div><div class="journey-line"><i style="width:${overall}%"></i></div><div class="journey-steps">${journey}</div></div></section></main>`;
 }
-export function ordersView(state){return `<main class="game-view view-orders"><section class="orders-purpose"><div><small>${COPY.progress}</small><strong>${COPY.jobsFund}</strong></div>${missionMarkup(state,true)}</section><section class="focus-orders">${state.currentOrders.map(order=>focusOrder(state,order)).join('')}</section></main>`;}
+export function ordersView(state){
+  const status=restorationStatus(state),next=status.upgrade;
+  return `<main class="game-view view-orders production-orders"><section class="orders-hero"><div><small>HEUTIGE JOBS</small><h2>Gäste glücklich machen</h2><p>${next?`Jeder Auftrag bringt dich näher zu „${next.label}“.`:'Dein Café ist fertig – sammle weiter Coins.'}</p></div><div class="orders-goal"><span>★</span><div><small>Ausbau</small><strong>${next?`${status.current}/${status.cost}`:'Fertig'}</strong></div></div></section><section class="quest-list">${state.currentOrders.map(order=>focusOrder(state,order)).join('')}</section><footer class="orders-footnote">Liefern → Sterne sammeln → ${next?next.label:'Place abschließen'}</footer></main>`;
+}
