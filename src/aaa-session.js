@@ -3,8 +3,10 @@ import { generateFromSlot, moveOrMerge, fulfillOrder, buildNextUpgrade } from '.
 import { ensureEnergyClock, regenerateEnergy, recordEnergySpend } from './aaa-energy.js';
 import { ensurePlayerProgress, awardPlayerXp, xpForOrder, xpForRestoration } from './aaa-progression.js';
 import { ensureCollectionState, recordItemDiscovery, recordGeneratorDiscovery, recordPlaceDiscovery } from './aaa-collection.js';
+import { ensureInventoryState, storeBoardItem, restoreStoredItem, upgradeStorage } from './aaa-inventory.js';
 
-let state=ensureCollectionState(ensurePlayerProgress(loadSavedState()).state).state;
+const ensureMeta=source=>ensureInventoryState(ensureCollectionState(ensurePlayerProgress(source).state).state).state;
+let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
 const syncEnergy=(now=Date.now())=>{
   const result=regenerateEnergy(state,now);
@@ -16,7 +18,7 @@ syncEnergy();
 export const getState=()=>syncEnergy().state;
 export const refreshEnergy=(now=Date.now())=>syncEnergy(now);
 export function resetSession(){
-  const fresh=ensureCollectionState(ensurePlayerProgress(freshState()).state).state,tracked=ensureEnergyClock(fresh);
+  const fresh=ensureMeta(freshState()),tracked=ensureEnergyClock(fresh);
   state=tracked.state;saveGameState(state);return state;
 }
 export function generateAt(index){
@@ -38,6 +40,9 @@ export function moveOrMergeAt(from,to){
   }
   return result;
 }
+export function storeAt(boardIndex){const result=storeBoardItem(state,boardIndex);if(result.changed)keep(result.state);return result;}
+export function restoreAt(storageIndex,targetIndex=null){const result=restoreStoredItem(state,storageIndex,targetIndex);if(result.changed)keep(result.state);return result;}
+export function expandStorage(){const result=upgradeStorage(state);if(result.changed)keep(result.state);return result;}
 export function deliverOrder(id){
   const order=state.currentOrders.find(entry=>entry.id===id);
   const result=fulfillOrder(state,id);
