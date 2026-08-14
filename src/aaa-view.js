@@ -1,11 +1,10 @@
-import { HERO_IMAGE } from './v2-hero-data.js';
-import { ATLAS_IMAGE } from './v2-atlas-data.js';
 import { CUSTOMER_A } from './v2-customer-a.js';
 import { CUSTOMER_B } from './v2-customer-b.js';
 import { CUSTOMER_C } from './v2-customer-c.js';
+import { artMarkup } from './aaa-art.js';
 import { PLACE_UPGRADES, itemDefinition, canFulfillOrder, countRequirement, restorationStatus } from './v2-game.js';
 
-export const ASSETS={hero:HERO_IMAGE,atlas:ATLAS_IMAGE,customers:[CUSTOMER_A,CUSTOMER_B,CUSTOMER_C]};
+export const ASSETS={customers:[CUSTOMER_A,CUSTOMER_B,CUSTOMER_C]};
 
 export const COPY={
   place:'Place',orders:'Aufträge',board:'Board',placeName:'Café am Meer',next:'NÄCHSTES ZIEL',build:'Bauen',complete:'Café fertig',
@@ -14,10 +13,11 @@ export const COPY={
   progress:'Ausbau-Fortschritt',done:'Fertig',locked:'Danach',menu:'Menü',reset:'Spielstand zurücksetzen'
 };
 
-const spriteClass=sprite=>`sprite-${sprite}`;
 export function itemMarkup(item,compact=false){
   const def=itemDefinition(item);
-  return def?`<span class="item-art ${spriteClass(def.sprite)}${compact?' compact':''}" aria-hidden="true"></span>`:'';
+  if(!def)return '';
+  const markup=artMarkup(def.art);
+  return compact?markup.replace('class="item-art ','class="item-art compact '):markup;
 }
 const customer=order=>ASSETS.customers[order.sequence%ASSETS.customers.length];
 const neededByOrders=(state,item)=>item?.kind==='item'&&state.currentOrders.some(order=>order.requirements.some(req=>req.family===item.family&&req.level===item.level));
