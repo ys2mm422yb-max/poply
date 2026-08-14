@@ -1,3 +1,4 @@
+.world-art{overflow:hidden}.world-art .place-scene-svg{position:absolute;left:50%;top:50%;width:auto;height:100%;min-width:100%;max-width:none;transform:translate(-50%,-50%)}
 .place-sunset{background:linear-gradient(180deg,#1b2941 0,#122738 42%,#0a2d39 100%)}
 .place-sunset .world-hero{border-color:rgba(247,177,100,.32);box-shadow:0 14px 34px rgba(36,20,32,.34),inset 0 1px 0 rgba(255,255,255,.08)}
 .place-sunset .world-vignette{background:linear-gradient(180deg,rgba(17,26,48,.04) 24%,rgba(13,24,37,.12) 52%,rgba(9,24,35,.88) 100%)}
