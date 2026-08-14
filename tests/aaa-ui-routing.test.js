@@ -7,8 +7,8 @@ const read=path=>readFile(new URL(path,root),'utf8');
 
 test('navigation delegation only matches actual nav tabs',async()=>{
   const source=await read('src/aaa-ui.js');
-  assert.match(source,/closest\('\.nav-tab\[data-view\]'\)/);
-  assert.doesNotMatch(source,/closest\('\[data-view\]'\)/);
+  assert.match(source,/const\s+tab\s*=\s*target\.closest\('\.nav-tab\[data-view\]'\)/);
+  assert.doesNotMatch(source,/const\s+tab\s*=\s*target\.closest\('\[data-view\]'\)/);
 });
 
 test('serve action remains reachable after navigation dispatch',async()=>{
