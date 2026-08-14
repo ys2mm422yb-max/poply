@@ -9,6 +9,7 @@
   .journey-step small{max-width:54px;font-size:7px}
   .journey-step.locked small{display:none}
   .journey-step>span{width:32px;height:32px}
+  .place-scene-svg{transform:scale(1.13);transform-origin:50% 62%}
 
   /* Orders: the selected service should feel like a focused task, not a giant empty dashboard card. */
   .service-orders{grid-template-rows:auto auto auto minmax(0,1fr);align-content:start}
