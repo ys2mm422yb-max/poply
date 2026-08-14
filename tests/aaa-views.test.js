@@ -31,13 +31,14 @@ test('Place uses layered authored scene art and six visible Place-01 restoration
 test('Sonnenkai is a distinct authored Place with its own six restoration beats',async()=>{
   const [view,placeArt,itemArt,css]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-sunset-place.js'),read('src/aaa-sunset-art.js'),read('src/aaa-sunset.css')]);
   assert.match(view,/sunsetPlaceSceneMarkup\(stage\)/);
-  assert.match(view,/place-sunset/);
+  assert.match(view,/place-\$\{chapter\.id\}/);
+  assert.match(view,/chapter\.id==='sunset'/);
   assert.match(view,/POPLY PLACE 0\$\{chapter\.number\}/);
   for(let stage=1;stage<=6;stage+=1)assert.ok(placeArt.includes(`show(safeStage,${stage}`),`missing Sonnenkai scene stage ${stage}`);
   for(const layer of ['sunset-lanterns','sunset-bar','sunset-lounge','sunset-fire','sunset-stage','sunset-sign'])assert.ok(placeArt.includes(`scene-upgrade ${layer}`),layer);
   for(let level=1;level<=6;level+=1)assert.ok(itemArt.includes(`'fruit-${level}'`),`fruit-${level}`);
   assert.match(itemArt,/generator-sunset/);
-  for(const selector of ['.place-sunset','.board-cell.family-fruit','.board-cell.generator-sunset-gen'])assert.ok(css.includes(selector),selector);
+  for(const selector of ['.place-sunset','.production-board .board-cell.family-fruit:before','.production-board .board-cell.generator-sunset-gen:before'])assert.ok(css.includes(selector),selector);
 });
 
 test('phone Place gives spare height to the world instead of stretching the journey panel',async()=>{
