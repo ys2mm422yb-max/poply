@@ -36,6 +36,14 @@ test('Orders use quest presentation rather than legacy focus cards',async()=>{
   for(const selector of ['.quest-card','.quest-avatar-ring','.quest-reward','.job-ticket'])assert.ok(world.includes(selector),selector);
 });
 
+test('Board renders an authored workbench hierarchy instead of equal-weight tiles',async()=>{
+  const [view,world]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-world.css')]);
+  assert.match(view,/boardTitle:'Werkbank'/);
+  for(const marker of ['family-${item.family}','tier-${item.level}','order-needed','merge-ready'])assert.ok(view.includes(marker),marker);
+  for(const selector of ['.production-board .board-cell.empty','.production-board .board-cell.occupied:before','.production-board .board-cell.family-coffee:before','.production-board .board-cell.family-bakery:before','.production-board .board-cell.family-sweet:before','.production-board .board-cell.generator:before','.production-board .board-cell.order-needed:before','.production-board .board-cell.merge-ready:before'])assert.ok(world.includes(selector),selector);
+  assert.match(world,/\.production-board \.board-cell\.merge-ready\{outline:0\}/);
+});
+
 test('active AAA item rendering uses authored vectors instead of the legacy atlas',async()=>{
   const [view,art,board]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-art.js'),read('src/aaa-board.css')]);
   assert.match(view,/aaa-art\.js/);
