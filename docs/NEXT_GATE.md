@@ -1,0 +1,1 @@
+Next gate: open PR, run exact-head CI, merge only if green, then verify main CI and canonical Pages deploy on the merged commit.
