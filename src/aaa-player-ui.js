@@ -11,7 +11,8 @@ export function installPlayerUI(root){
     if(!topbar||!brand)return;
     let badge=brand.querySelector('.player-level-badge');
     if(!badge){badge=document.createElement('span');badge.className='player-level-badge';brand.append(badge);}
-    badge.textContent=`LV ${progress.level}`;
+    const badgeText=`LV ${progress.level}`;
+    if(badge.textContent!==badgeText)badge.textContent=badgeText;
     badge.setAttribute('aria-label',`Spielerlevel ${progress.level}`);
     let track=topbar.querySelector('.player-xp-track');
     if(!track){track=document.createElement('div');track.className='player-xp-track';track.innerHTML='<i></i>';topbar.append(track);}
