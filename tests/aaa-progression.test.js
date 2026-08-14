@@ -1,13 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, createOrder } from '../src/v2-game.js';
-import { LEVEL_REWARD_COINS, xpNeededForLevel, playerProgress, legacyXpForState, ensurePlayerProgress, xpForOrder, xpForRestoration, awardPlayerXp } from '../src/aaa-progression.js';
+import { LEVEL_REWARD_COINS, xpNeededForLevel, playerProgress, nextLevelRewardPreview, legacyXpForState, ensurePlayerProgress, xpForOrder, xpForRestoration, awardPlayerXp } from '../src/aaa-progression.js';
 import { PLAYER_MILESTONES, playerMilestones, completedMilestoneCount } from '../src/aaa-milestones.js';
 
 test('level curve grows predictably and derives progress from total XP',()=>{
   assert.equal(xpNeededForLevel(1),120);assert.equal(xpNeededForLevel(2),180);
   assert.deepEqual(playerProgress(0),{level:1,totalXp:0,current:0,next:120,ratio:0});
   const p=playerProgress(150);assert.equal(p.level,2);assert.equal(p.current,30);assert.equal(p.next,180);assert.equal(p.ratio,1/6);
+});
+
+test('next-level preview exposes only deterministic canonical XP progress and reward',()=>{
+  assert.deepEqual(nextLevelRewardPreview(0),{level:2,remainingXp:120,rewardCoins:LEVEL_REWARD_COINS,currentXp:0,requiredXp:120,ratio:0});
+  const preview=nextLevelRewardPreview(150);
+  assert.equal(preview.level,3);assert.equal(preview.remainingXp,150);assert.equal(preview.rewardCoins,100);assert.equal(preview.currentXp,30);assert.equal(preview.requiredXp,180);assert.equal(preview.ratio,1/6);
 });
 
 test('legacy progress seeds XP without deleting existing value',()=>{
