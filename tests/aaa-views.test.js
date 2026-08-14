@@ -49,11 +49,11 @@ test('phone Place gives spare height to the world instead of stretching the jour
   assert.doesNotMatch(mobile,/\.production-place\{[^}]*grid-template-rows:minmax\(215px,46%\) minmax\(0,1fr\)/);
 });
 
-test('phone Orders distributes service content through the available stage instead of clustering above Deliver',async()=>{
+test('phone Orders keeps the selected service task compact inside the full-height stage',async()=>{
   const mobile=await read('src/aaa-mobile.css');
-  assert.match(mobile,/\.service-card\{[^}]*grid-template-rows:minmax\(0,1fr\) auto/);
-  assert.match(mobile,/\.service-content\{height:100%;align-content:space-evenly\}/);
-  assert.doesNotMatch(mobile,/\.service-customer,\.service-content\{align-content:center\}/);
+  assert.match(mobile,/\.service-card\{[^}]*grid-template-rows:auto auto;align-content:center;row-gap:22px/);
+  assert.match(mobile,/\.service-customer,\.service-content\{align-content:center\}/);
+  assert.doesNotMatch(mobile,/\.service-content\{height:100%;align-content:space-evenly\}/);
 });
 
 test('Board jobs open focused service orders without clipped title cards',async()=>{
