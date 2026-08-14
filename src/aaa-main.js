@@ -1,6 +1,7 @@
 import { ASSETS } from './aaa-view.js';
 import { createUI } from './aaa-ui.js';
 import { installDrag } from './aaa-drag.js';
+import { installEnergyUI } from './aaa-energy-ui.js';
 
 document.documentElement.style.setProperty('--poply-hero',`url(${ASSETS.hero})`);
 document.documentElement.style.setProperty('--poply-atlas',`url(${ASSETS.atlas})`);
@@ -18,3 +19,4 @@ if(window.visualViewport)window.visualViewport.addEventListener('resize',syncVie
 window.addEventListener('resize',syncViewport);
 syncViewport();
 ui.render();
+installEnergyUI(root);

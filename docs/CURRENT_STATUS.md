@@ -2,41 +2,45 @@
 
 Updated: 2026-08-14
 
-## Active product target
-Poply advances on two coordinated tracks:
+## Live baseline
+`main` currently includes the merged Vertical Slice 02 release:
+- Place 01 · Café am Meer;
+- playable Place 02 · Sonnenkai;
+- Tropenbar generator and six-tier fruit chain;
+- two six-step restoration arcs;
+- automatic chapter-aware Board / Orders / Place views;
+- exact-main CI, Mobile WebKit Browser QA and canonical GitHub Pages deployment passed on the Sonnenkai merge commit.
 
-1. **Production-quality track** — Milestone B remains OPEN until real mobile/browser screenshots look like a premium commercial casual game rather than a polished prototype.
-2. **Playable-growth track** — Vertical Slice 02 is IMPLEMENTED ON BRANCH and is now in exact-head CI / Browser-QA acceptance.
+Milestone B visual quality remains OPEN. The current product is materially larger and more cohesive, but it is not being claimed as final AAA-casual visual quality.
 
-## Current branch
-`vertical-slice/place-02-sunset`
+## Active branch
+`fix/energy-regeneration-visibility`
 
-Binding milestone document:
-`docs/VERTICAL_SLICE_02_SUNSET.md`
+Binding system document:
+`docs/ENERGY_SYSTEM.md`
+
+## Active defect being fixed
+The live build displays an energy resource and generators consume it, but the shipped domain has no automatic energy regeneration and the UI does not explain how energy returns. This is treated as a gameplay/comprehension defect.
 
 ## Implemented on this branch
-- Place 01 remains the existing `Café am Meer` six-step arc.
-- Completing `Poply-Schild` unlocks **Place 02 · Sonnenkai** instead of ending progression.
-- Sonnenkai has its own authored sunset scene and six material restoration beats:
-  Lampions → Saftbar → Lounge → Feuerstelle → Abendbühne → Sonnenkai-Schild.
-- New six-tier `fruit` family:
-  Limette → Fruchtmix → Smoothie → Tropen-Drink → Sunset-Bowl → Poply Paradise.
-- New `Tropenbar` generator appears exactly once after Place-01 completion.
-- New Sonnenkai order pool requests fruit together with existing families and pays higher rewards.
-- Board / Orders / Place automatically follow the active chapter while retaining the same three-view architecture.
-- Existing saves retain board, coins, stars, stats and Place-01 progress; completed Place-01 saves gain the Sonnenkai generator without a storage-key reset.
-- Final Place-01 build has a dedicated `Place 02 freigeschaltet: Sonnenkai` reveal.
-- Existing world restoration animation was corrected to target the current `.world-hero` architecture instead of the removed `.scene-card` surface.
+- deterministic energy clock persisted inside the existing save object;
+- **1 energy every 2 minutes** below the 40-energy cap;
+- offline elapsed-time regeneration when Poply is reopened;
+- no timer reset when spending while already below full;
+- a fresh two-minute interval when spending from full;
+- live top-bar text: `Auto · 2 Min` at full, otherwise `+1 in M:SS`;
+- live on-screen energy value update when a refill arrives;
+- accessible explanation that regeneration continues while Poply is closed;
+- no paid refill, ad gate or storage-key reset.
 
-## Automated acceptance added
-- deterministic domain tests for chapter unlock, no duplicate generator, lossless migration, fruit generation/merge chain, sunset replacement orders and first Sonnenkai restoration;
-- Mobile WebKit QA now performs the real final Place-01 build, checks the Place-02 transition, taps the Tropenbar, verifies fruit production, builds the first Sonnenkai restoration and reloads the save;
-- screenshots are generated for pre-unlock, unlocked Sonnenkai, Sonnenkai board with fruit and first Sonnenkai restoration.
+## Required acceptance before merge
+- energy unit tests and syntax checks green on the exact PR head;
+- existing full test suite remains green;
+- Mobile WebKit Browser QA green on the exact PR head;
+- self-inspect the generated phone screenshots to confirm the extra timer line fits the real top bar without overlap or clipping;
+- after merge, exact-main CI + Browser QA + canonical Pages deploy must all succeed.
 
-## Gate still open before merge
-- normal PR CI on the exact branch head;
-- Mobile Browser QA on the exact branch head;
-- self-inspection of generated Sonnenkai screenshots;
-- fix any browser, layout, state or visual regression found there before merge.
-
-Milestone B visual acceptance remains OPEN regardless of whether this vertical slice passes. This branch represents product growth, not a claim that the visual quality target is finished.
+## Product tracks
+1. **Production-quality track** — continue world, order, board and motion quality toward premium commercial casual-game presentation.
+2. **Playable-growth track** — continue adding meaningful progression and systems rather than repeatedly restyling the same screens.
+3. **Clarity/fairness track** — every limiting resource or progression gate must visibly explain how it works; players must not have to infer hidden rules.
