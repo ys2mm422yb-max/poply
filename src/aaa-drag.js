@@ -37,7 +37,8 @@ export function installDrag({root,ghost,ui}){
       const to=Number(target.dataset.index),result=moveOrMergeAt(from,to);
       if(result.changed){
         ui.setFx({type:result.type,sourceIndex:from,index:result.type==='merge'?result.mergedIndex:to});
-        ui.render();ui.feedback(result.type==='merge'?'merge':'move');ui.message(result.type==='merge'?'Neue Stufe!':'Item verschoben');
+        ui.render();ui.feedback(result.type==='merge'?'merge':'move');ui.message(result.discovery?'Neue Entdeckung!':result.type==='merge'?'Neue Stufe!':'Item verschoben');
+        if(result.discovery)ui.discovery(result);
       }else if(to!==from){ui.feedback('invalid');ui.message('Diese Items passen nicht zusammen.','bad');}
     }
     drag=null;

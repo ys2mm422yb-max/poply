@@ -34,7 +34,7 @@ export function installPlayerUI(root){
     const chip=document.createElement('span');chip.className='xp-gain-chip';chip.textContent=`+${progression.gained} XP`;topbar.append(chip);setTimeout(()=>safeRemove(chip),1100);
     if(progressingToNewLevel(progression)){
       clearTimeout(levelDelayTimer);
-      const delay=progression.source==='restoration'?1750:850;
+      const delay=progression.source==='restoration'?1750:progression.source==='discovery'?1650:850;
       levelDelayTimer=setTimeout(()=>revealLevelUp(progression),delay);
     }
   };
