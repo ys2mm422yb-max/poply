@@ -1,12 +1,12 @@
 # Poply – Feature Roadmap
 
-Status: ACTIVE · updated 2026-08-14.
+Status: ACTIVE · updated 2026-08-15.
 Coordination / autonomous work log: GitHub Issue #42.
 
 This document defines the product-growth order for Poply. Production quality and feature depth run in parallel: the game must become larger without returning to web/dashboard UI, and visual polish may not replace real gameplay progress.
 
 ## Live playable baseline
-Already live on `main` before Milestone H:
+Already live on `main` before the current F2 reliability slice:
 - persistent 7×7 merge Board / Werkbank;
 - four six-tier item families across two Places;
 - three generators including Sonnenkai/Tropenbar progression;
@@ -20,6 +20,7 @@ Already live on `main` before Milestone H:
 - persistent item Storage with 4 starting slots and permanent Coin-funded expansion to 6/8;
 - fair Daily Goals + deterministic Daily Bonus Guest without streak punishment;
 - replacement orders banded by visible Place restoration progress;
+- World Map / Places overlay with safe completed-Place revisit;
 - local save/resume and migrations;
 - Board / Orders / Place / Sammlung navigation;
 - sound, haptics, merge/delivery/reward/restoration feedback;
@@ -46,7 +47,7 @@ This is now a meaningful multi-system vertical slice, not yet a full commercial 
 - generators cannot be stored;
 - 4 starting slots;
 - permanent expansion 4→6 for 200 Coins and 6→8 for 450 Coins;
-- no-loss/full-board/full-storage safety and real Mobile WebKit QA.
+- no-loss/full-board/full-storage safety for transfer operations and real Mobile WebKit QA.
 
 ### G — Daily goals & fair return loop — LIVE
 Contract: `docs/DAILY_GOALS.md`.
@@ -65,21 +66,11 @@ Shipped:
 - real WebKit flow for progress, claims, Bonus Guest and reload;
 - accepted 390×844 and 390×720 screenshot review.
 
-### K1 — Replacement-order difficulty bands — LIVE
-Pulled forward safely before full Milestone K:
-- replacement orders are selected from deterministic bands based on visible restoration progress inside the current Place;
-- freshly unlocked Sonnenkai no longer inherits a late global sequence into an immediate high-tier wall;
-- existing active orders and payouts remain unchanged;
-- no hidden dynamic difficulty or rigging.
-
-## Active milestone
-### H — World map / Poply Places progression — ACTIVE
+### H — World map / Poply Places progression — FIRST SLICE LIVE
 Contract: `docs/WORLD_MAP.md`.
-Active PR is recorded in Issue #42.
+Merged PR: #48.
 
-Goal: turn the existing two Places into the beginning of a real world.
-
-First shipping slice:
+Shipped:
 - authored Place map inside the existing Place screen, not another primary tab;
 - Café am Meer and Sonnenkai shown as completed/current destinations;
 - independent progress/completion per Place;
@@ -88,11 +79,34 @@ First shipping slice:
 - locked/current/completed states remain explicit and deterministic;
 - real WebKit map/revisit flow at 390×844 and 390×720.
 
-Acceptance:
-- player understands where they are, what is complete and what comes next;
-- map/revisit never loses or rewrites Board/meta progress;
-- map feels like game world, not a level-select spreadsheet;
-- explicit active-Place gameplay switching is only added later if order/generator semantics preserve progress safely.
+Explicit active-Place gameplay switching remains deferred until order/generator semantics can preserve progress safely.
+
+### K1 — Replacement-order difficulty bands — LIVE
+- replacement orders are selected from deterministic bands based on visible restoration progress inside the current Place;
+- freshly unlocked Sonnenkai no longer inherits a late global sequence into an immediate high-tier wall;
+- existing active orders and payouts remain unchanged;
+- no hidden dynamic difficulty or rigging.
+
+## Active reliability milestone
+### F2 — Guaranteed Board recovery via confirmed recycling — ACTIVE
+Contract: `docs/STORAGE_SYSTEM.md`.
+Active branch/PR is recorded in Issue #42.
+
+Player problem:
+Storage made Board management much safer, but a save with **Board full + Storage full** still had no guaranteed escape route. That violates the binding rule that full-board states remain recoverable.
+
+Shipping contract:
+- normal Board items expose a compact recycle action from the existing Lager drawer;
+- recycling is never available for generators;
+- every destructive action requires explicit confirmation;
+- exactly one chosen item is removed;
+- a small deterministic Coin return by tier is shown before confirmation and paid exactly once;
+- no Energy cost, no hidden deletion, no Storage mutation;
+- full Board + full Storage can always free one Board cell as long as a normal merge item exists;
+- reload persists the freed slot and Coin return;
+- deterministic unit tests plus real WebKit interaction and 390×844 / 390×720 screenshot acceptance.
+
+Recycling is intentionally a recovery tool, not an economy shortcut. Its Coin return stays below the value of progressing through orders.
 
 ## Parallel production-quality track — Milestone B remains OPEN
 GitHub Issue #42 contains the current user-facing visual direction and is binding for manual + automated visual work.
@@ -109,7 +123,7 @@ Current priority:
 - visual changes must be accepted from generated 390×844 + 390×720 screenshots, not only by green tests.
 
 ## I — Place 03 & content expansion
-Only after H is solid.
+Start after F2 is solid unless a more severe gameplay/save/release defect appears.
 
 Requirements:
 - own world/art direction;
@@ -143,7 +157,7 @@ Build:
 Only after local schema is stable.
 
 Build:
-- dedicated Poply Neon-backed cloud-save model;
+- dedicated Poply cloud-save model;
 - optional account/sign-in;
 - conflict-safe sync;
 - local-first offline behavior;
@@ -172,7 +186,7 @@ No punitive urgency, forced ads or pay-to-win.
 
 # Immediate build order
 Unless a real gameplay/save/release bug takes priority:
-1. **Finish H — World map / safe Place revisit.**
+1. **Finish F2 — guaranteed Board recovery.**
 2. **Continue screenshot-driven color/effects production passes in parallel.**
 3. **I — Place 03.**
 4. **J/K — deeper collection, achievements, economy/balancing.**
