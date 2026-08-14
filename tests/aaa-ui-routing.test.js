@@ -19,3 +19,12 @@ test('serve action remains reachable after navigation dispatch',async()=>{
   assert.ok(orderIndex>navIndex,'order dispatch missing after nav routing');
   assert.match(source,/deliverOrder\(orderId\)/);
 });
+
+test('Collection is rendered as a real view and family buttons change its focus',async()=>{
+  const source=await read('src/aaa-ui.js');
+  assert.match(source,/view==='collection'\?collectionView\(state,collectionFamily\)/);
+  assert.match(source,/closest\('\[data-collection-family\]'\)/);
+  assert.match(source,/collectionFamily=family\.dataset\.collectionFamily/);
+  const collection=await read('src/aaa-collection-view.js');
+  assert.match(collection,/data-view="collection"/);assert.match(collection,/Sammlung/);
+});
