@@ -22,22 +22,60 @@ page.on('pageerror',error=>consoleProblems.push(`pageerror: ${error.message}`));
 const shot=async name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const assert=(value,message)=>{if(!value)throw new Error(message);};
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
+const assertShellFits=async label=>{
+  const metrics=await page.evaluate(()=>{
+    const rect=selector=>{const el=document.querySelector(selector);if(!el)return null;const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height};};
+    return {
+      innerHeight:window.innerHeight,
+      visualHeight:window.visualViewport?.height||window.innerHeight,
+      app:rect('.app-shell'),
+      view:rect('.game-view'),
+      nav:rect('.main-nav'),
+      board:rect('.board-frame'),
+      scrollHeight:document.documentElement.scrollHeight,
+    };
+  });
+  assert(metrics.app&&metrics.view&&metrics.nav,`${label}: shell elements missing`);
+  assert(metrics.nav.top>=0&&metrics.nav.bottom<=metrics.visualHeight+1,`${label}: bottom navigation is outside visible viewport ${JSON.stringify(metrics)}`);
+  assert(metrics.app.bottom<=metrics.visualHeight+1,`${label}: app shell exceeds visual viewport ${JSON.stringify(metrics)}`);
+  assert(metrics.scrollHeight<=metrics.innerHeight+1,`${label}: document scrolls vertically ${JSON.stringify(metrics)}`);
+  if(metrics.board)assert(metrics.board.bottom<=metrics.nav.top+1,`${label}: board overlaps navigation ${JSON.stringify(metrics)}`);
+  return metrics;
+};
 let clickTrace=[],toastState=null,afterImmediate=null,afterProgrammatic=null;
+let viewportReports={};
 
 let failure=null;
 try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
   await page.waitForSelector('.game-view');
   assert((await page.title()).toLowerCase().includes('poply'),'page title is not Poply');
-  await shot('01-board-smoke');
+  viewportReports.board844=await assertShellFits('390x844 board');
+  await shot('01-board-390x844');
 
   await page.locator('[data-view="place"]').click();
   await page.waitForSelector('.view-place');
-  await shot('02-place-smoke');
+  viewportReports.place844=await assertShellFits('390x844 place');
+  await shot('02-place-390x844');
 
   await page.locator('[data-view="orders"]').click();
   await page.waitForSelector('.view-orders');
-  await shot('03-orders-smoke');
+  viewportReports.orders844=await assertShellFits('390x844 orders');
+  await shot('03-orders-390x844');
+
+  // Real Safari exposes less webpage height than the physical 844px screen because browser chrome is visible.
+  // Exercise the authored one-screen layouts at a deliberately short visual viewport too.
+  await page.setViewportSize({width:390,height:720});
+  await page.waitForTimeout(120);
+  await page.locator('[data-view="board"]').click();
+  viewportReports.board720=await assertShellFits('390x720 board');
+  await shot('04-board-short-safari');
+  await page.locator('[data-view="place"]').click();
+  viewportReports.place720=await assertShellFits('390x720 place');
+  await shot('05-place-short-safari');
+  await page.locator('[data-view="orders"]').click();
+  viewportReports.orders720=await assertShellFits('390x720 orders');
+  await shot('06-orders-short-safari');
 
   // Seed one deterministic ready order through the same persisted state used by the live app.
   await page.evaluate(async()=>{
@@ -55,7 +93,9 @@ try{
   await serve.waitFor({state:'visible'});
   assert(await serve.isEnabled(),'ready order serve button is disabled');
   assert((await serve.textContent()||'').includes('Jetzt servieren'),'ready order does not show Jetzt servieren');
-  await shot('04-before-serve');
+  const serveBox=await serve.boundingBox(),navBox=await page.locator('.main-nav').boundingBox();
+  assert(serveBox&&navBox&&serveBox.y+serveBox.height<=navBox.y+1,`serve button is clipped by navigation: ${JSON.stringify({serveBox,navBox})}`);
+  await shot('07-before-serve-short-safari');
 
   await page.evaluate(()=>{
     window.__qaClickTrace=[];
@@ -82,10 +122,10 @@ try{
   toastState=await page.evaluate(()=>{const el=document.querySelector('#toast');return {text:el?.textContent||'',show:el?.classList.contains('show')||false,tone:el?.dataset?.tone||null};});
   await page.waitForTimeout(1020);
   const after=await readSave();
-  await shot('05-after-serve');
+  await shot('08-after-serve-short-safari');
 
   if(after.coins===before.coins){
-    // Diagnostic only: determine whether native programmatic click reaches the same delegated action.
+    // Diagnostic only: determines whether native programmatic click reaches the same delegated action.
     await page.evaluate(()=>document.querySelector('button[data-order="order-0"]')?.click());
     await page.waitForTimeout(100);
     afterProgrammatic=await readSave();
@@ -111,7 +151,7 @@ try{
   failure=error;
   try{await shot('99-failure');}catch{}
 }finally{
-  await writeFile(`${outDir}/qa-report.json`,JSON.stringify({baseURL,viewport:'390x844 mobile WebKit',consoleProblems,clickTrace,toastState,afterImmediate,afterProgrammatic,failure:failure?.message||null},null,2));
+  await writeFile(`${outDir}/qa-report.json`,JSON.stringify({baseURL,screen:'390x844',testedViewports:['390x844','390x720 short Safari'],viewportReports,consoleProblems,clickTrace,toastState,afterImmediate,afterProgrammatic,failure:failure?.message||null},null,2));
   await browser.close();
 }
 if(failure)throw failure;
