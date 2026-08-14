@@ -6,10 +6,11 @@ const coinIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="
 const boxIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 8.5 12 4l7.5 4.5v8L12 20l-7.5-3.5v-8Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 8.5 12 12.8l7.2-4.3M12 12.8V20" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
 
 export function installStorageUI(root,ui){
-  let open=false;
+  let open=false,decorating=false;
   const stateNow=()=>getState();
   const storageSlot=(item,index)=>item?`<button class="storage-slot occupied" data-storage-restore="${index}" aria-label="${item.family} Stufe ${item.level} zurück auf die Werkbank">${itemMarkup(item)}<span>${item.level}</span></button>`:`<div class="storage-slot empty" aria-hidden="true"><i></i></div>`;
   const boardChoice=(item,index)=>`<button class="storage-board-choice" data-storage-store="${index}" aria-label="Item Stufe ${item.level} einlagern">${itemMarkup(item)}<span>${item.level}</span></button>`;
+  const signature=state=>`${open?'1':'0'}:${state.coins}:${state.storageCapacity}:${(state.storage||[]).map(item=>item?.id).join(',')}:${state.board.map(item=>item?.id||'').join(',')}`;
   const drawerMarkup=state=>{
     const storage=state.storage||[],capacity=state.storageCapacity||4,cost=storageUpgradeCost(state),boardItems=state.board.map((item,index)=>item?.kind==='item'?{item,index}:null).filter(Boolean);
     const slots=Array.from({length:capacity},(_,index)=>storageSlot(storage[index]||null,index)).join('');
@@ -18,12 +19,19 @@ export function installStorageUI(root,ui){
     return `<section class="storage-drawer" aria-label="Lager"><header><div><small>WERKBANK-LAGER</small><strong>${storage.length}/${capacity} belegt</strong></div>${upgrade}<button class="storage-close" data-storage-close aria-label="Lager schließen">×</button></header><div class="storage-slots">${slots}</div><div class="storage-source"><div><strong>Von der Werkbank</strong><small>Tippen = sicher einlagern · für Aufträge zurück aufs Board</small></div><div class="storage-board-items">${choices}</div></div></section>`;
   };
   const decorate=()=>{
-    const board=root.querySelector('.view-board'),title=board?.querySelector('.board-title');if(!board||!title)return;
-    let handle=title.querySelector('.storage-handle');
-    if(!handle){handle=document.createElement('button');handle.className='storage-handle';handle.dataset.storageToggle='';title.append(handle);}
-    const state=stateNow(),used=state.storage?.length||0,capacity=state.storageCapacity||4;
-    handle.classList.toggle('active',open);handle.setAttribute('aria-expanded',String(open));handle.innerHTML=`<span class="storage-handle-icon">${boxIcon}</span><b>Lager</b><small>${used}/${capacity}</small>`;
-    board.querySelector('.storage-drawer')?.remove();if(open)board.insertAdjacentHTML('beforeend',drawerMarkup(state));
+    if(decorating)return;decorating=true;
+    try{
+      const board=root.querySelector('.view-board'),title=board?.querySelector('.board-title');if(!board||!title)return;
+      const state=stateNow(),used=state.storage?.length||0,capacity=state.storageCapacity||4,sig=signature(state);
+      let handle=title.querySelector('.storage-handle');
+      if(!handle){handle=document.createElement('button');handle.className='storage-handle';handle.dataset.storageToggle='';title.append(handle);}
+      const handleSig=`${open?'1':'0'}:${used}:${capacity}`;
+      if(handle.dataset.signature!==handleSig){handle.dataset.signature=handleSig;handle.classList.toggle('active',open);handle.setAttribute('aria-expanded',String(open));handle.innerHTML=`<span class="storage-handle-icon">${boxIcon}</span><b>Lager</b><small>${used}/${capacity}</small>`;}
+      const drawer=board.querySelector('.storage-drawer');
+      if(!open){drawer?.remove();return;}
+      if(drawer?.dataset.signature===sig)return;
+      drawer?.remove();board.insertAdjacentHTML('beforeend',drawerMarkup(state));board.querySelector('.storage-drawer').dataset.signature=sig;
+    }finally{decorating=false;}
   };
   root.addEventListener('click',event=>{
     const target=event.target instanceof Element?event.target:event.target?.parentElement;if(!target)return;
