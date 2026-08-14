@@ -28,6 +28,8 @@ try{
   await handle.click();await page.waitForSelector('.storage-drawer');await assertFits('390x844 storage');
   assert(await page.locator('[data-storage-store="0"]').count()===0,'coffee generator is incorrectly offered for storage');
   assert(await page.locator('[data-storage-store="6"]').count()===0,'pantry generator is incorrectly offered for storage');
+  assert(await page.locator('[data-storage-recycle="0"]').count()===0,'coffee generator is incorrectly offered for recycling');
+  assert(await page.locator('[data-storage-recycle="6"]').count()===0,'pantry generator is incorrectly offered for recycling');
 
   const before=await readSave(),storedId=before.board[9].id;
   await page.locator('[data-storage-store="9"]').click();await page.waitForTimeout(120);
@@ -47,11 +49,18 @@ try{
   assert((await page.locator('.storage-handle').textContent())?.includes('0/6'),'storage handle did not update to capacity 6');
   await shot('41-storage-expanded');
 
+  const recycleIndex=10,recycleBefore=await readSave(),recycledId=recycleBefore.board[recycleIndex]?.id;
+  assert(recycledId,'expected recyclable starter item is missing');
+  const recycleButton=page.locator(`[data-storage-recycle="${recycleIndex}"]`);assert(await recycleButton.isVisible(),'recycle action is not visible in storage tray');
+  page.once('dialog',dialog=>dialog.accept());await recycleButton.click();await page.waitForTimeout(160);
+  const recycled=await readSave();assert(recycled.board[recycleIndex]===null,'recycled item did not free its board slot');assert(recycled.coins===101,`tier-1 recycle should return exactly 1 Coin, got ${recycled.coins}`);assert(recycled.storage.length===0,'recycling unexpectedly changed stored items');
+  await shot('43-storage-recycled');
+
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);if(!(await page.locator('.storage-drawer').isVisible()))await page.locator('.storage-handle').click();await assertFits('390x720 storage');await shot('42-storage-short-safari');
-  await page.reload({waitUntil:'networkidle'});const persisted=await readSave();assert(persisted.storageCapacity===6&&persisted.coins===100,'storage capacity/Coin spend was lost after reload');
-  report={storedId,storageCapacity:persisted.storageCapacity,coins:persisted.coins};
+  await page.reload({waitUntil:'networkidle'});const persisted=await readSave();assert(persisted.storageCapacity===6&&persisted.coins===101,'storage/recycle state was lost after reload');assert(persisted.board[recycleIndex]===null,'recycled item returned after reload');
+  report={storedId,recycledId,storageCapacity:persisted.storageCapacity,coins:persisted.coins,recycleFreedIndex:recycleIndex};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('49-storage-failure');}catch{}}
 finally{await writeFile(`${outDir}/storage-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
 if(failure)throw failure;
-console.log('Storage WebKit QA passed.');
+console.log('Storage + board recovery WebKit QA passed.');
