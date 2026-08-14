@@ -1,0 +1,41 @@
+const esc=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const svg=body=>`<svg class="poply-svg" viewBox="0 0 96 96" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+const defs=`<defs><linearGradient id="cream" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff7df"/><stop offset="1" stop-color="#e7c98d"/></linearGradient><linearGradient id="teal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#55d1bd"/><stop offset="1" stop-color="#177b7b"/></linearGradient><linearGradient id="coral" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff9c72"/><stop offset="1" stop-color="#d94d52"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe296"/><stop offset="1" stop-color="#c9892e"/></linearGradient></defs>`;
+const shadow='<ellipse cx="48" cy="82" rx="29" ry="7" fill="#062d36" opacity=".16"/>';
+const sparkle='<path d="M76 17l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffe59a"/>';
+
+const coffee=[
+()=>`${defs}${shadow}<g transform="rotate(-18 48 48)"><ellipse cx="39" cy="47" rx="17" ry="25" fill="#8e4f31"/><path d="M37 25c10 12 10 31-2 44" fill="none" stroke="#f0b16a" stroke-width="5" stroke-linecap="round"/></g><circle cx="66" cy="34" r="10" fill="#ad6641"/><path d="M63 26c5 6 5 11-1 17" fill="none" stroke="#efb26c" stroke-width="3"/>`,
+()=>`${defs}${shadow}<path d="M24 35h48v30c0 9-7 16-16 16H40c-9 0-16-7-16-16z" fill="url(#cream)"/><path d="M72 43h7c10 0 10 17 1 21h-8" fill="none" stroke="#d3a766" stroke-width="6"/><ellipse cx="48" cy="36" rx="24" ry="8" fill="#5a3025"/><path d="M37 25c-5-7 5-9 0-16M52 24c-5-7 5-9 0-16" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-linecap="round"/>`,
+()=>`${defs}${shadow}<path d="M28 24h40l-5 56H33z" fill="#d8f3ee" stroke="#7fc6bf" stroke-width="3"/><path d="M31 47h34l-3 31H34z" fill="#7a4b37"/><path d="M33 37l28 8M45 29l16 49" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/><path d="M65 12l-8 18" stroke="#ef7b63" stroke-width="5" stroke-linecap="round"/>`,
+()=>`${defs}${shadow}<path d="M26 38h44v33c0 7-6 12-12 12H38c-7 0-12-5-12-12z" fill="url(#teal)"/><path d="M70 45h5c13 0 13 20 0 20h-5" fill="none" stroke="#bfece4" stroke-width="6"/><path d="M31 39c5-16 29-18 35 0" fill="#fff0d0"/><path d="M39 35c5-7 13-7 18 0" fill="none" stroke="#bf7443" stroke-width="4"/>${sparkle}`,
+()=>`${defs}${shadow}<path d="M33 18h30l8 14-7 48H32l-7-48z" fill="url(#gold)" stroke="#9c6426" stroke-width="3"/><path d="M31 38h34" stroke="#fff4cb" stroke-width="6"/><path d="M39 18v-7h18v7" fill="none" stroke="#91603a" stroke-width="5"/><ellipse cx="48" cy="53" rx="13" ry="10" fill="#f7e8c5"/><path d="M42 55c5-8 10-8 13 0" fill="none" stroke="#8b5134" stroke-width="3"/>${sparkle}`,
+()=>`${defs}${shadow}<path d="M31 25h34l7 49c1 7-4 11-10 11H34c-6 0-11-4-10-11z" fill="url(#coral)"/><path d="M36 25c2-13 22-13 24 0" fill="url(#cream)"/><path d="M34 45h29" stroke="#fff4d3" stroke-width="7"/><path d="M48 8v19M41 13h14" stroke="#e7ba55" stroke-width="4" stroke-linecap="round"/><circle cx="48" cy="58" r="10" fill="#fff1d0"/><path d="M43 61c4-7 8-7 11 0" fill="none" stroke="#a25a38" stroke-width="3"/>${sparkle}`
+];
+const bakery=[
+()=>`${defs}${shadow}<path d="M49 75V23" stroke="#c98b38" stroke-width="6" stroke-linecap="round"/><path d="M48 37c-17-9-20-19-17-24 13 2 18 11 17 24zm2 9c16-8 21-17 19-23-13 1-19 9-19 23zm-2 9c-15-7-20-16-18-22 12 1 19 9 18 22zm2 8c14-6 19-14 18-20-12 1-18 8-18 20z" fill="#e8b950"/>`,
+()=>`${defs}${shadow}<path d="M27 28h42l7 50H20z" fill="url(#cream)" stroke="#d1aa69" stroke-width="3"/><path d="M31 28c0-10 34-10 34 0" fill="#fff5d7"/><circle cx="48" cy="55" r="15" fill="#fff9ea"/><path d="M38 55h20M48 45v20" stroke="#d4ab68" stroke-width="3"/>`,
+()=>`${defs}${shadow}<ellipse cx="48" cy="58" rx="31" ry="22" fill="#e9bf78"/><path d="M26 50c10-15 34-17 45 1" fill="none" stroke="#fff0c9" stroke-width="6" stroke-linecap="round"/><circle cx="36" cy="60" r="3" fill="#c98a46"/><circle cx="58" cy="67" r="3" fill="#c98a46"/>`,
+()=>`${defs}${shadow}<path d="M18 61c9-30 23-39 30-39s21 9 30 39c-16-9-21-4-30 13-9-17-14-22-30-13z" fill="url(#gold)"/><path d="M25 56c15-4 31-4 46 0M31 44c11-4 23-4 34 0" fill="none" stroke="#fff2c7" stroke-width="4" stroke-linecap="round"/>`,
+()=>`${defs}${shadow}<path d="M24 45h48l-6 34H30z" fill="#d77f56"/><path d="M27 45c3-18 39-18 42 0" fill="url(#cream)"/><circle cx="39" cy="38" r="6" fill="#ef6c59"/><circle cx="56" cy="35" r="6" fill="#ef6c59"/><path d="M31 53h34" stroke="#f7d39c" stroke-width="4"/>${sparkle}`,
+()=>`${defs}${shadow}<path d="M25 62h46l-5 18H30z" fill="url(#gold)"/><path d="M31 44h34l-4 18H35z" fill="url(#cream)"/><path d="M37 29h22l-3 15H40z" fill="url(#coral)"/><circle cx="48" cy="22" r="7" fill="#55c3a8"/><path d="M23 62h50M29 44h38" stroke="#fff4d3" stroke-width="3"/>${sparkle}`
+];
+const sweet=[
+()=>`${defs}${shadow}<path d="M35 19h26l4 12v47H31V31z" fill="#eef8f4" stroke="#9dc9c1" stroke-width="3"/><path d="M38 20v-8h20v8" fill="none" stroke="#72aaa1" stroke-width="5"/><path d="M34 46h28" stroke="#7ed0c0" stroke-width="8"/><circle cx="49" cy="61" r="8" fill="#fff"/>`,
+()=>`${defs}${shadow}<path d="M29 28h38l5 49H24z" fill="#f7f2e4" stroke="#c9b78f" stroke-width="3"/><path d="M33 28c0-13 30-13 30 0" fill="#e6d6b2"/><path d="M31 51h34" stroke="#efc76b" stroke-width="7"/><path d="M48 39l4 7 8 1-6 6 2 8-8-4-8 4 2-8-6-6 8-1z" fill="#fff7da"/>`,
+()=>`${defs}${shadow}<path d="M22 47h52c-3 24-13 34-26 34S25 71 22 47z" fill="url(#teal)"/><path d="M28 46c5-17 35-19 41 0" fill="#fff4dd"/><path d="M35 39c8-9 18-9 26 0" fill="none" stroke="#efb8a1" stroke-width="5" stroke-linecap="round"/><circle cx="48" cy="32" r="5" fill="#e86c67"/>`,
+()=>`${defs}${shadow}<path d="M29 45h38l-5 35H34z" fill="#d99663"/><path d="M26 45c2-18 10-27 22-27s20 9 22 27z" fill="url(#coral)"/><path d="M36 33c6 6 18 6 24 0" fill="none" stroke="#fff0c8" stroke-width="5"/><circle cx="48" cy="22" r="5" fill="#ffe09a"/>`,
+()=>`${defs}${shadow}<path d="M28 40h40l-4 40H32z" fill="#f0a58b"/><path d="M31 40c4-17 30-17 34 0" fill="#fff0d3"/><path d="M31 52h34" stroke="#fff" stroke-width="5"/><circle cx="40" cy="35" r="5" fill="#e95959"/><circle cx="56" cy="34" r="5" fill="#55bda5"/>${sparkle}`,
+()=>`${defs}${shadow}<path d="M20 67h56l-4 15H24z" fill="url(#gold)"/><path d="M27 50h42l-3 17H30z" fill="#f3b29b"/><path d="M34 35h28l-3 15H37z" fill="#fff0d5"/><path d="M41 21h14l-2 14H43z" fill="url(#coral)"/><circle cx="48" cy="16" r="6" fill="#63c5aa"/>${sparkle}`
+];
+
+export function itemArt(family,level){const set={coffee,bakery,sweet}[family];if(!set||!set[level-1])return '';return svg(set[level-1]());}
+export function generatorArt(key){
+  if(key==='coffee-gen')return svg(`${defs}${shadow}<rect x="20" y="20" width="56" height="59" rx="12" fill="url(#teal)"/><rect x="27" y="28" width="42" height="22" rx="6" fill="#123f49"/><circle cx="37" cy="39" r="5" fill="#ffe09a"/><circle cx="57" cy="39" r="5" fill="#ff8d70"/><path d="M34 57h28M39 57v13M57 57v13" stroke="#fff0d0" stroke-width="5" stroke-linecap="round"/><path d="M42 68h12" stroke="#7d4a32" stroke-width="7" stroke-linecap="round"/>${sparkle}`);
+  return svg(`${defs}${shadow}<path d="M20 31l28-16 28 16v48H20z" fill="url(#gold)"/><path d="M28 38h40v34H28z" fill="#fff1ca"/><path d="M48 38v34M28 55h40" stroke="#b77b37" stroke-width="4"/><circle cx="42" cy="47" r="4" fill="#55b99d"/><circle cx="57" cy="64" r="4" fill="#e76c5e"/>${sparkle}`);
+}
+export function customerArt(index=0){
+  const palettes=[['#f4b07a','#5b3429','#ffe1c0'],['#d39a72','#203f4b','#f2c7a3'],['#f1c38d','#7f4a2c','#ffe0b0']];const [skin,hair,shirt]=palettes[index%palettes.length];
+  return svg(`${defs}<circle cx="48" cy="48" r="43" fill="${shirt}"/><path d="M20 86c3-20 14-29 28-29s25 9 28 29" fill="url(#teal)"/><circle cx="48" cy="42" r="22" fill="${skin}"/><path d="M26 40c0-22 13-30 25-30 13 0 24 9 24 28-8-7-14-9-23-9-9 0-16 4-26 11z" fill="${hair}"/><circle cx="40" cy="43" r="2.5" fill="#163843"/><circle cx="56" cy="43" r="2.5" fill="#163843"/><path d="M40 52c5 4 11 4 16 0" fill="none" stroke="#a4544d" stroke-width="3" stroke-linecap="round"/>`);
+}
+export function artLabel(name){return esc(name);}
