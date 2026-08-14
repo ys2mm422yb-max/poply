@@ -37,9 +37,15 @@ try{
 
   /* Scenario B: fresh state so the previous screenshot cannot consume Discovery's short peak window. */
   await seedFresh();await mergeCoffee();
-  const discovery=page.locator('.discovery-reveal');await discovery.waitFor({state:'visible'});await page.waitForTimeout(120);
+  const discovery=page.locator('.discovery-reveal');await discovery.waitFor({state:'visible'});
+  await page.waitForFunction(()=>{
+    const el=document.querySelector('.discovery-reveal');if(!el)return false;
+    const opacity=Number(getComputedStyle(el).opacity),rays=Number(getComputedStyle(el,'::before').opacity);
+    const sparks=[...el.querySelectorAll('.discovery-sparks span')].map(node=>Number(getComputedStyle(node).opacity));
+    return el.classList.contains('is-visible')&&!el.classList.contains('is-leaving')&&opacity>=.8&&rays>.08&&sparks.some(value=>value>.08);
+  },null,{timeout:1200});
   const discoveryFx=await discovery.evaluate(el=>{const style=getComputedStyle(el),rays=getComputedStyle(el,'::before'),sparks=[...el.querySelectorAll('.discovery-sparks span')].map(node=>{const s=getComputedStyle(node);return {animation:s.animationName,opacity:s.opacity,transform:s.transform};});return {className:el.className,opacity:Number(style.opacity),raysAnimation:rays.animationName,raysOpacity:Number(rays.opacity),sparkCount:sparks.length,sparks};});
-  assert(discoveryFx.className.includes('family-coffee'),`Discovery lost family identity ${JSON.stringify(discoveryFx)}`);assert(discoveryFx.opacity>=.8,`Discovery card is not screenshot-stable ${JSON.stringify(discoveryFx)}`);assert(discoveryFx.raysAnimation.includes('poply-discovery-rays'),`Discovery rays not active ${JSON.stringify(discoveryFx)}`);assert(discoveryFx.sparkCount===6&&discoveryFx.sparks.some(s=>s.animation.includes('poply-discovery-spark')),`Discovery sparks not active ${JSON.stringify(discoveryFx)}`);await shot('71-dynamic-discovery-burst');
+  assert(discoveryFx.className.includes('family-coffee'),`Discovery lost family identity ${JSON.stringify(discoveryFx)}`);assert(discoveryFx.opacity>=.8,`Discovery card is not screenshot-stable ${JSON.stringify(discoveryFx)}`);assert(discoveryFx.raysAnimation.includes('poply-discovery-rays'),`Discovery rays not active ${JSON.stringify(discoveryFx)}`);assert(discoveryFx.sparkCount===6&&discoveryFx.sparks.some(s=>s.animation.includes('poply-discovery-spark')&&Number(s.opacity)>.08),`Discovery sparks not visibly active ${JSON.stringify(discoveryFx)}`);await shot('71-dynamic-discovery-burst');
 
   /* Scenario C: another fresh Board so generator impact is not visually covered by Discovery. */
   await seedFresh();
