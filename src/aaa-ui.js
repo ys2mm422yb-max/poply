@@ -1,9 +1,9 @@
 import { COPY, headerMarkup, navMarkup, boardView, placeView, ordersView } from './aaa-view.js';
 import { getState, resetSession, generateAt, deliverOrder, buildUpgrade } from './aaa-session.js';
+import { playFeedback } from './aaa-feedback.js';
 
 export function createUI(root,toast){
   let view='board',menuOpen=false,lastFx=null,toastTimer=0;
-  const buzz=pattern=>{try{navigator.vibrate?.(pattern);}catch{}};
   const message=(text,tone='good')=>{clearTimeout(toastTimer);toast.textContent=text;toast.dataset.tone=tone;toast.classList.add('show');toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);};
   const applyFx=fx=>{
     if(view!=='board'||!fx)return;
@@ -37,6 +37,7 @@ export function createUI(root,toast){
     orderElement?.querySelectorAll('.need .item-art').forEach((item,index)=>flyNode(item,target,'item-flight',index*55));
   };
   const playRewards=rewards=>requestAnimationFrame(()=>{
+    playFeedback('reward');
     const origin=root.querySelector('.resource.star')||root.querySelector('.mission-card');
     const starTarget=root.querySelector('.mission-card');
     const coinTarget=root.querySelector('.resource.coin');
@@ -66,15 +67,15 @@ export function createUI(root,toast){
     const action=event.target.closest('[data-action]')?.dataset.action;
     if(action==='menu'){menuOpen=!menuOpen;render();return;}
     if(action==='reset'){if(window.confirm('Spielstand wirklich zurücksetzen?')){resetSession();view='board';menuOpen=false;render();message(COPY.purpose);}return;}
-    if(action==='build'){const result=buildUpgrade();if(!result.changed)message('Für dieses Ziel fehlen noch Sterne.','bad');else{buzz([16,22,20,28,28]);view='place';menuOpen=false;render();playRestorationReveal(result.upgrade);message(`Ausbau geschafft: ${result.upgrade.label}`);}return;}
-    const order=event.target.closest('[data-order]');if(order){const card=order.closest('.mini-order,.focus-order');const result=deliverOrder(order.dataset.order);if(!result.changed)message('Auftrag ist noch nicht fertig.','bad');else{playDelivery(card);buzz([10,18,14]);message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);setTimeout(()=>{render();playRewards(result.rewards);},320);}return;}
+    if(action==='build'){const result=buildUpgrade();if(!result.changed){playFeedback('invalid');message('Für dieses Ziel fehlen noch Sterne.','bad');}else{playFeedback('restoration');view='place';menuOpen=false;render();playRestorationReveal(result.upgrade);message(`Ausbau geschafft: ${result.upgrade.label}`);}return;}
+    const order=event.target.closest('[data-order]');if(order){const card=order.closest('.mini-order,.focus-order');const result=deliverOrder(order.dataset.order);if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}else{playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);setTimeout(()=>{render();playRewards(result.rewards);},320);}return;}
     if(event.detail===0){const generator=event.target.closest('.board-cell.generator');if(generator)spawn(Number(generator.dataset.index));}
   });
   const spawn=index=>{
     const result=generateAt(index);
-    if(!result.changed){message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
+    if(!result.changed){playFeedback('invalid');message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
     lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};
-    buzz([5,8]);message('Neues Item');render();
+    playFeedback('spawn');message('Neues Item');render();
   };
-  return {render,message,spawn,getView:()=>view,buzz,setFx:fx=>{lastFx=fx;}};
+  return {render,message,spawn,getView:()=>view,feedback:playFeedback,setFx:fx=>{lastFx=fx;}};
 }
