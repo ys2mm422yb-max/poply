@@ -1,7 +1,7 @@
-.world-art{overflow:hidden}.world-art .place-scene-svg{position:absolute;left:50%;top:50%;width:auto;height:100%;min-width:100%;max-width:none;transform:translate(-50%,-50%)}
+.production-place.place-coast .world-hero{background:linear-gradient(180deg,#78d8df 0,#bde9ec 42%,#f5d59a 100%)}
 .place-sunset{background:linear-gradient(180deg,#1b2941 0,#122738 42%,#0a2d39 100%)}
-.place-sunset .world-hero{border-color:rgba(247,177,100,.32);box-shadow:0 14px 34px rgba(36,20,32,.34),inset 0 1px 0 rgba(255,255,255,.08)}
-.place-sunset .world-vignette{background:linear-gradient(180deg,rgba(17,26,48,.04) 24%,rgba(13,24,37,.12) 52%,rgba(9,24,35,.88) 100%)}
+.place-sunset .world-hero{background:linear-gradient(180deg,#574f88 0,#c66d79 42%,#f1ad69 76%,#ffd496 100%);border-color:rgba(247,177,100,.32);box-shadow:0 14px 34px rgba(36,20,32,.34),inset 0 1px 0 rgba(255,255,255,.08)}
+.place-sunset .world-vignette{background:linear-gradient(180deg,rgba(17,26,48,.02) 22%,rgba(13,24,37,.1) 53%,rgba(9,24,35,.88) 100%)}
 .place-sunset .world-kicker{color:#ffd078}.place-sunset .world-copy h1{color:#fff7e8;text-shadow:0 2px 12px rgba(36,20,32,.4)}
 .place-sunset .place-command{background:linear-gradient(155deg,rgba(33,48,67,.96),rgba(9,43,55,.98));border-color:rgba(247,177,100,.2)}
 .place-sunset .place-current-goal{background:linear-gradient(145deg,#fff1d5,#f4c679);box-shadow:0 10px 24px rgba(31,17,27,.28)}
