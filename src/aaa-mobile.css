@@ -1,11 +1,15 @@
 /* Mobile composition QA: authored responses to 390px iPhone/WebKit screenshots. */
 @media(max-width:430px){
-  /* Place: preserve the six-step journey without crushed labels. Locked future beats use the
-     numbered journey dots; the current/completed labels stay readable. */
-  .journey-steps{gap:3px}
+  /* Place: the scene is the hero. The command/journey area sizes to its actual content instead of
+     stretching into dead space, so every spare pixel returns to the authored café world. */
+  .production-place{grid-template-rows:minmax(0,1fr) auto}
+  .place-command{grid-template-rows:auto auto}
+  .journey-wrap{grid-template-rows:auto 4px auto}
+  .journey-steps{min-height:48px;gap:3px}
   .journey-step small{max-width:54px;font-size:7px}
   .journey-step.locked small{display:none}
   .journey-step>span{width:32px;height:32px}
+  .place-scene-svg{transform:scale(1.13);transform-origin:50% 62%}
 
   /* Orders: the selected service should feel like a focused task, not a giant empty dashboard card. */
   .service-orders{grid-template-rows:auto auto auto minmax(0,1fr);align-content:start}
@@ -36,13 +40,14 @@
   .service-deliver{height:42px}
   .service-footnote{font-size:7px}
 
-  .production-place{gap:7px;padding:7px 9px 6px;grid-template-rows:minmax(215px,46%) minmax(0,1fr)}
+  .production-place{gap:7px;padding:7px 9px 6px;grid-template-rows:minmax(0,1fr) auto}
   .world-copy{left:17px;bottom:13px}
   .world-copy p{display:none}
-  .place-command{gap:7px;padding:8px}
+  .place-command{gap:7px;padding:8px;grid-template-rows:auto auto}
   .place-progress-row{grid-template-columns:54px minmax(0,1fr);gap:7px}
   .place-current-goal{padding:8px 9px}
   .goal-copy p{display:none}
-  .journey-wrap{gap:4px;padding:5px 5px 2px}
+  .journey-wrap{gap:4px;padding:5px 5px 2px;grid-template-rows:auto 4px auto}
+  .journey-steps{min-height:42px}
   .journey-step>span{width:28px;height:28px}
 }
