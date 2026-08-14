@@ -1,3 +1,5 @@
+import { playerProgress } from './aaa-progression.js';
+
 const itemDiscoveryCount=state=>(state?.discoveries||[]).filter(key=>String(key).startsWith('item:')).length;
 
 export const PLAYER_MILESTONES=[
@@ -5,7 +7,7 @@ export const PLAYER_MILESTONES=[
   {id:'merge-rhythm',label:'Merge-Rhythm',detail:'Schaffe 25 echte Merges.',target:25,measure:state=>Number(state?.stats?.merges)||0},
   {id:'place-maker',label:'Place-Maker',detail:'Baue 6 Place-Schritte fertig.',target:6,measure:state=>(state?.placeUpgrades||[]).length},
   {id:'discoverer',label:'Entdecker',detail:'Entdecke 12 Item-Stufen.',target:12,measure:itemDiscoveryCount},
-  {id:'level-five',label:'Stammspieler',detail:'Erreiche Spielerlevel 5.',target:5,measure:state=>Number(state?.playerLevel)||1}
+  {id:'level-five',label:'Stammspieler',detail:'Erreiche Spielerlevel 5.',target:5,measure:state=>playerProgress(state?.playerXp).level}
 ];
 
 export function milestoneProgress(state,definition){
