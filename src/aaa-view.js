@@ -8,7 +8,7 @@ export const ASSETS={customers:CUSTOMER_ART};
 export const COPY={
   place:'Place',orders:'Aufträge',board:'Board',placeName:'Café am Meer',next:'NÄCHSTES ZIEL',build:'Bauen',complete:'Café fertig',
   restore:'Restaurierung',jobsFund:'Aufträge finanzieren den Ausbau',deliver:'Liefern',ready:'Bereit',missing:'Fehlt noch',
-  boardTitle:'Merge-Board',boardRule:'2 gleiche Items → nächste Stufe',purpose:'Merge für Kunden. Liefere Jobs. Baue dein Café.',
+  boardTitle:'Werkbank',boardRule:'2 gleiche Items → nächste Stufe',purpose:'Merge für Kunden. Liefere Jobs. Baue dein Café.',
   progress:'Ausbau-Fortschritt',done:'Fertig',locked:'Danach',menu:'Menü',reset:'Spielstand zurücksetzen'
 };
 
@@ -68,7 +68,8 @@ function boardMarkup(state){
   const cells=state.board.map((item,index)=>{
     if(!item)return `<button class="board-cell empty" data-index="${index}" aria-label="Leer"></button>`;
     const def=itemDefinition(item),generator=item.kind==='generator';
-    const classes=['board-cell','occupied',generator?'generator':'',!generator&&neededByOrders(state,item)?'order-needed':'',!generator&&ready.has(index)?'merge-ready':''].filter(Boolean).join(' ');
+    const identity=generator?'generator':`family-${item.family} tier-${item.level}`;
+    const classes=['board-cell','occupied',identity,!generator&&neededByOrders(state,item)?'order-needed':'',!generator&&ready.has(index)?'merge-ready':''].filter(Boolean).join(' ');
     return `<button class="${classes}" data-index="${index}" aria-label="${def.name}">${itemMarkup(item)}${generator?'<span class="generator-mark">⚡</span>':`<span class="tier">${item.level}</span>`}${!generator&&neededByOrders(state,item)?'<span class="job-mark">★</span>':''}</button>`;
   }).join('');
   return `<section class="board-area"><div class="board-title"><div><strong>${COPY.boardTitle}</strong><small>${COPY.boardRule}</small></div><span>${state.board.filter(Boolean).length}/49</span></div><div class="board-frame"><div id="merge-board" class="merge-board">${cells}</div></div></section>`;
