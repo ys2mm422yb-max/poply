@@ -1,14 +1,14 @@
 # Poply – AAA-Casual Rebuild Plan
 
-Status: ACTIVE from 2026-08-14. This document is the execution contract for the current rebuild.
+Status: ACTIVE from 2026-08-14. This document is the execution contract for architecture and production quality. Feature-growth priorities are defined in `docs/FEATURE_ROADMAP.md`.
 
 ## Why this rebuild exists
 The V2 merge loop proved the product direction, but the live UI accumulated many corrective CSS/runtime layers. Real iPhone screenshots exposed recurring layout overlap, empty focused views, inconsistent visual hierarchy and fragile navigation. Further patch stacking is prohibited.
 
-A second failure mode also became visible: repeatedly polishing the same Board / Orders / Place slice can improve screenshots without making Poply feel like a growing game. From this point forward Poply advances on two coordinated tracks: production quality and playable product growth.
+A second failure mode also became visible: repeatedly polishing the same Board / Orders / Place slice can improve screenshots without making Poply feel like a growing game. Poply therefore advances on two coordinated tracks: production quality and playable product growth.
 
 ## Product promise
-Poply is an original premium-feeling merge-and-build casual game. Every short board action feeds a clear long-term purpose: fulfill customer jobs, earn restoration progress, visibly transform a Poply Place, unlock genuinely new content, move into a new Place, repeat.
+Poply is an original premium-feeling merge-and-build casual game. Every short board action feeds a clear long-term purpose: fulfill customer jobs, earn restoration progress, visibly transform a Poply Place, unlock genuinely new content, grow the player's long-term progression, move into new Places, repeat.
 
 ## Rebuild rules
 1. One authored application shell. The canonical page loads one active stylesheet entry and one active app entry module. Old V2 polish/focus/runtime layers are legacy and are not loaded by the live shell.
@@ -26,9 +26,9 @@ Poply is an original premium-feeling merge-and-build casual game. Every short bo
 Milestone B remains OPEN until real mobile screenshots look like a polished commercial casual game. Board, Orders and Place continue to improve in art cohesion, world depth, hierarchy, motion and emotional payoff.
 
 ### Track B — Playable growth
-Large product milestones may advance in parallel when they add a complete, tested gameplay loop without reintroducing architecture debt. This prevents Poply from endlessly polishing one prototype screen while the game itself stands still.
+Large product milestones advance in parallel when they add a complete, tested gameplay loop without reintroducing architecture debt. This prevents Poply from endlessly polishing one prototype screen while the game itself stands still.
 
-Current Track-B milestone: `docs/VERTICAL_SLICE_02_SUNSET.md`.
+Current Track-B roadmap: `docs/FEATURE_ROADMAP.md`.
 
 ## Visual quality bar
 Target: high-end commercial casual-game presentation, not enterprise/web-card UI.
@@ -55,7 +55,8 @@ Required traits:
 5. Delivery consumes exactly those items and grants coins + restoration stars.
 6. The current restoration target shows how many stars are available/needed.
 7. Build the target; stars are spent and the Place visibly advances.
-8. Finishing a restoration arc unlocks genuinely new content rather than ending in the same loop forever.
+8. Finishing a restoration arc unlocks genuinely new content.
+9. Player-wide systems such as XP, discoveries and future utility progression provide motivation beyond the current Place.
 
 ## Milestone A – Foundation — DONE
 - Clean authored shell and state gateway.
@@ -65,11 +66,11 @@ Required traits:
 - Regression gates preventing old live-layer stack from returning.
 
 ## Milestone B – Production art & restoration — OPEN
-Already shipped: authored coastal world foundation, six visible Place-01 restoration steps, six-tier item families, authored item/generator art, authored guests, focused service flow, material workbench, game-feel hooks and WebKit self-QA.
+Already shipped: authored coastal and Sonnenkai world foundations, two six-step restoration arcs, six-tier item families, authored item/generator art, authored guests, focused service flow, material workbench, game-feel hooks and WebKit self-QA.
 
 Still required:
 - increase environmental depth, lighting, material richness and emotional restoration payoff;
-- continue removing prototype/dashboard language from the remaining screens;
+- continue removing prototype/dashboard language from remaining screens;
 - make Place, Board and Orders feel like one authored premium game on real iPhone screenshots;
 - keep this milestone OPEN until screenshot quality is genuinely convincing.
 
@@ -80,27 +81,49 @@ Still required:
 - Restoration reveal/scene transition.
 - Sound/haptic hooks with reduced-motion support.
 
-## Milestone D1 – Second playable Place — ACTIVE
-Binding spec: `docs/VERTICAL_SLICE_02_SUNSET.md`.
+## Milestone D1 – Second playable Place — DONE
+- Café am Meer completion unlocks Sonnenkai.
+- Tropenbar generator and six-tier fruit chain.
+- Sonnenkai-specific jobs.
+- second six-step restoration arc.
+- migration, deterministic domain tests, Browser QA and screenshot self-review.
 
-Goal:
-`Café am Meer complete → Sonnenkai unlock → new Tropenbar generator → new fruit chain → new jobs → second six-step restoration arc`.
+Binding historical spec: `docs/VERTICAL_SLICE_02_SUNSET.md`.
 
-This milestone is allowed to progress while Milestone B remains visually open because it is a complete tested vertical slice, not cosmetic scope creep.
+## Milestone D2 – Fair energy visibility — DONE
+- 40 max energy;
+- generator taps cost 1 energy;
+- +1 energy every 2 minutes below cap, including offline time;
+- visible `Auto · 2 Min` / `+1 in M:SS` HUD status;
+- deterministic energy timing tests and Browser QA.
+
+Binding system spec: `docs/ENERGY_SYSTEM.md`.
+
+## Milestone E – Player progression & discovery — NEXT
+Defined in `docs/FEATURE_ROADMAP.md`.
+
+Immediate order:
+1. E1 — persistent Player XP + Level system;
+2. E2 — Collection Book + discovery rewards;
+3. F1 — Storage + meaningful Coin utility;
+4. G — fair daily goals / return loop;
+5. H — World map / Place selector;
+6. I — Place 03 after the long-term systems exist.
 
 ## Later depth
-After D1 and continued B-quality work:
-- balance order progression and generator output;
-- fair board-pressure tools only when real play proves they are needed;
-- collection only when it adds useful progression;
-- additional Places/areas through the same tested chapter architecture.
+After the immediate feature sequence:
+- deeper collection/achievements;
+- data-driven economy and balancing tools;
+- cloud save/account layer only when the local schema is stable;
+- themed events/live content;
+- native release packaging and device QA.
 
 ## Definition of Done for any visible release
 A release is not ready unless:
 - normal PR CI and mandatory Mobile Browser QA are green on the exact head;
 - generated screenshot artifacts are inspected for visible/interaction changes when tooling permits;
 - main CI, main Browser QA and canonical Pages deploy succeed on the exact merged commit;
-- Board/Place/Orders work, not merely highlight;
+- Board/Place/Orders and any new visible feature work, not merely highlight;
 - phone portrait uses the visible viewport correctly;
 - no old shell CSS/runtime layer is loaded by index.html;
 - no obvious overlap, clipped navigation, giant empty card/image area or dead control exists;
