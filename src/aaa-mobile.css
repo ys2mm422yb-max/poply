@@ -11,11 +11,20 @@
   .journey-step>span{width:32px;height:32px}
   .place-scene-svg{transform:scale(1.13);transform-origin:50% 62%}
 
-  /* Orders: the selected service should feel like a focused task, not a giant empty dashboard card. */
-  .service-orders{grid-template-rows:auto auto auto minmax(0,1fr);align-content:start}
-  .service-card{min-height:0;grid-template-rows:auto auto;align-content:start;padding:14px 14px 13px}
-  .service-customer,.service-content{align-content:start}
-  .service-customer{padding-top:6px}
+  /* Board: the remaining viewport is still part of the workbench, not an empty webpage below it. */
+  .qa-board .board-area{margin:0 -7px -5px;padding:0 7px 10px;border-radius:22px 22px 0 0;background:radial-gradient(circle at 50% 2%,rgba(72,181,166,.18),transparent 34%),linear-gradient(180deg,#0d4652 0,#083642 34%,#062b37 100%);box-shadow:inset 0 1px rgba(255,255,255,.08)}
+  .qa-board .board-title{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:3px 6px 2px;color:#e9f6f2}
+  .qa-board .board-title>div{min-width:0;overflow:hidden}
+  .qa-board .board-title strong{color:#f4fbf8}
+  .qa-board .board-title small{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#9eb9b6}
+  .qa-board .board-title>span{color:#9eb9b6;white-space:nowrap}
+  .qa-board .board-frame{box-shadow:0 14px 28px rgba(0,16,23,.38),inset 0 1px 0 rgba(255,255,255,.09),inset 0 -4px 0 rgba(0,0,0,.14)}
+
+  /* Orders: one selected guest becomes a full service stage instead of leaving a giant dead zone. */
+  .service-orders{grid-template-rows:auto auto minmax(0,1fr) auto;align-content:stretch}
+  .service-card{height:100%;min-height:0;grid-template-rows:minmax(0,1fr) auto;align-content:stretch;margin-inline:-9px;padding:16px 20px 14px;border-inline:0;border-bottom:0;border-radius:28px 28px 0 0;background:radial-gradient(circle at 14% 20%,rgba(244,199,93,.15),transparent 24%),radial-gradient(circle at 88% 8%,rgba(73,181,168,.14),transparent 28%),linear-gradient(180deg,#0f4b56,#083543 67%,#062c39);box-shadow:inset 0 1px rgba(255,255,255,.07)}
+  .service-customer,.service-content{align-content:center}
+  .service-customer{padding-top:0}
   .service-deliver{height:46px}
   .service-footnote{align-self:end}
 }
@@ -29,7 +38,7 @@
   .service-goal{padding:5px 8px}
   .customer-choice{height:58px}
   .choice-avatar img{width:31px;height:31px}
-  .service-card{grid-template-columns:72px minmax(0,1fr);gap:8px;padding:11px 12px}
+  .service-card{grid-template-columns:72px minmax(0,1fr);gap:8px;padding:11px 14px 10px}
   .service-avatar-ring{width:60px;height:60px}
   .service-heading h2{font-size:18px}
   .service-content{gap:7px}
