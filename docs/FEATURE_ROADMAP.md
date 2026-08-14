@@ -1,198 +1,120 @@
 # Poply – Feature Roadmap
 
-Status: ACTIVE · updated 2026-08-14.
-Coordination / autonomous work log: GitHub Issue #42.
+Status: ACTIVE · updated 2026-08-15.
+Durable coordination: GitHub Issue #42.
 
-This document defines the product-growth order for Poply. Production quality and feature depth run in parallel: the game must become larger without returning to web/dashboard UI, and visual polish may not replace real gameplay progress.
+Poply grows on two parallel tracks: real product/gameplay depth and screenshot-driven production quality. Neither track may overwrite active work from the other.
 
-## Live playable baseline
-Already live on `main` before Milestone H:
+## Live product baseline
+Already live before the current parallel slices:
 - persistent 7×7 merge Board / Werkbank;
-- four six-tier item families across two Places;
-- three generators including Sonnenkai/Tropenbar progression;
-- three active customer orders;
-- exact item consumption + Coins + restoration Stars;
-- two Places with six restoration beats each;
-- automatic fair Energy regeneration with visible countdown;
-- persistent Player XP + Level system;
-- Collection Book / Sammlung with item, generator and Place discoveries;
-- discovery XP + authored discovery reward moment;
-- persistent item Storage with 4 starting slots and permanent Coin-funded expansion to 6/8;
-- fair Daily Goals + deterministic Daily Bonus Guest without streak punishment;
-- replacement orders banded by visible Place restoration progress;
-- local save/resume and migrations;
-- Board / Orders / Place / Sammlung navigation;
-- sound, haptics, merge/delivery/reward/restoration feedback;
-- deterministic CI + Mobile WebKit Browser QA + screenshot review + canonical Pages release gates.
-
-This is now a meaningful multi-system vertical slice, not yet a full commercial game.
+- four six-tier item families across Café am Meer and Sonnenkai;
+- three generators;
+- three simultaneous customer orders with deterministic replacement-order difficulty bands;
+- exact delivery consumption + Coins + restoration Stars;
+- two six-step restoration arcs;
+- fair regenerating Energy;
+- Player XP + Levels;
+- Collection / Discovery;
+- persistent Storage with permanent Coin expansion;
+- Daily Goals + fair Bonus Guest;
+- first Places world-map/revisit slice;
+- local save/resume and migration safety;
+- CI + Mobile WebKit + screenshot self-review + canonical Pages release gates.
 
 ## Completed milestones
-### E1 — Player XP + Level system — LIVE
-- persistent XP and player level;
-- XP from orders/restoration/discoveries;
-- level-up Coin rewards;
-- level-up presentation and reload safety.
+### E1 — Player XP + Level — LIVE
+Persistent XP, deterministic level curve, XP from orders/restoration/discovery, Coin rewards on crossed levels, reload-safe presentation.
 
-### E2 — Collection Book + discovery rewards — LIVE
-- persistent discoveries;
-- family/tier silhouettes for unknown content;
-- generator/Place discoveries;
-- one-time discovery XP and reward moment.
+### E2 — Collection Book + discovery — LIVE
+Persistent item/generator/Place discoveries, silhouettes, one-time discovery XP and reveal.
 
-### F1 — Storage tray + first meaningful Coin sink — LIVE
-- item-only persistent Storage integrated with the Board;
-- identity-safe Board ↔ Storage transfer;
-- generators cannot be stored;
-- 4 starting slots;
-- permanent expansion 4→6 for 200 Coins and 6→8 for 450 Coins;
-- no-loss/full-board/full-storage safety and real Mobile WebKit QA.
+### F1 — Storage + first permanent Coin sink — LIVE
+4 starting slots, identity-safe Board ↔ Storage transfer, generators excluded, upgrades 4→6 for 200 Coins and 6→8 for 450 Coins.
 
-### G — Daily goals & fair return loop — LIVE
-Contract: `docs/DAILY_GOALS.md`.
-Merged PR: #43.
+### G — Daily Goals + fair return loop — LIVE via PR #43
+Three deterministic daily goals plus one Bonus Guest, no streak punishment, no forced ad, no new currency.
 
-Shipped:
-- deterministic local-calendar Daily state;
-- exactly three goals using real actions;
-- guaranteed merge + serve goals;
-- contextual generate/discover/restore third goal;
-- one-time Coin claims;
-- one deterministic Daily Bonus Guest using a real Board item;
-- Bonus Guest pays existing Coins + restoration Stars;
-- no new token, no forced ad, no streak loss, no missed-day punishment;
-- compact `HEUTE` entry inside Orders rather than another main tab;
-- real WebKit flow for progress, claims, Bonus Guest and reload;
-- accepted 390×844 and 390×720 screenshot review.
+### H — World Map / Places first slice — LIVE via PR #48
+Café and Sonnenkai map presentation with safe completed-Place revisit and independent progress display. Active gameplay Place switching remains deferred until all generator/order semantics can be preserved safely.
 
 ### K1 — Replacement-order difficulty bands — LIVE
-Pulled forward safely before full Milestone K:
-- replacement orders are selected from deterministic bands based on visible restoration progress inside the current Place;
-- freshly unlocked Sonnenkai no longer inherits a late global sequence into an immediate high-tier wall;
-- existing active orders and payouts remain unchanged;
-- no hidden dynamic difficulty or rigging.
+Replacement orders scale from visible restoration progress rather than an opaque global sequence.
 
-## Active milestone
-### H — World map / Poply Places progression — ACTIVE
-Contract: `docs/WORLD_MAP.md`.
-Active PR is recorded in Issue #42.
+## Active parallel slices
+### Milestone I — Place 03 · Dachgarten — ACTIVE in PR #58
+Manual product worker owns the current Place03 files and integration.
 
-Goal: turn the existing two Places into the beginning of a real world.
+Target:
+- genuinely distinct third Place;
+- new item family and producer behavior;
+- six restoration beats;
+- new orders;
+- clear fair gameplay wrinkle rather than only higher numbers;
+- Collection/Map integration, migration safety and dedicated browser evidence.
 
-First shipping slice:
-- authored Place map inside the existing Place screen, not another primary tab;
-- Café am Meer and Sonnenkai shown as completed/current destinations;
-- independent progress/completion per Place;
-- completed Places can be revisited without changing live Board/meta state;
-- authored scene preview at each Place's own restoration stage;
-- locked/current/completed states remain explicit and deterministic;
-- real WebKit map/revisit flow at 390×844 and 390×720.
+No other worker may start a competing Place03 implementation while PR #58 is open.
 
-Acceptance:
-- player understands where they are, what is complete and what comes next;
-- map/revisit never loses or rewrites Board/meta progress;
-- map feels like game world, not a level-select spreadsheet;
-- explicit active-Place gameplay switching is only added later if order/generator semantics preserve progress safely.
+### J1 — Player Milestone shelf — ACTIVE product-automation slice
+Contract: `docs/PLAYER_MILESTONES.md`.
+Branch/PR state is logged in Issue #42.
 
-## Parallel production-quality track — Milestone B remains OPEN
-GitHub Issue #42 contains the current user-facing visual direction and is binding for manual + automated visual work.
+Player value:
+The existing XP Level badge becomes a useful long-term progress entry point instead of a number with no explanation.
 
-Current priority:
-- Poply is still too dark / restrained / dashboard-like;
-- introduce more authored color variety without losing hierarchy;
-- stronger visual identity per item family and generator;
-- warmer/colder Place contrast and brighter gameplay focal points;
-- richer merge, discovery, delivery, level-up and restoration effects;
-- performance-safe particles, glows, light sweeps and small environment motion;
-- stronger Coin/Star/XP/reward moments;
-- keep Reduced Motion support and one-screen Phone Board contract;
-- visual changes must be accepted from generated 390×844 + 390×720 screenshots, not only by green tests.
+Scope:
+- tap existing `LV N` badge to open a compact progress sheet;
+- five milestones: first service, 25 merges, six restoration steps, 12 item discoveries, Level 5;
+- all progress derives from already-persisted counters/state;
+- no new currency, claim flow, expiration, streak or duplicate achievement save field;
+- Level milestone derives from canonical `playerXp`;
+- overlay must fit 390×844 and 390×720 without moving or covering primary navigation;
+- opening/closing must not mutate save state.
 
-## I — Place 03 & content expansion
-Only after H is solid.
+Why this is safe in parallel:
+- it does not touch PR #58 Place03 domain/session/Collection/Map files;
+- it does not touch PR #55 dynamic-FX workflow/motion scope;
+- it uses the already-installed Player UI surface and existing progression QA.
 
-Requirements:
-- own world/art direction;
-- at least one genuinely new family or producer behavior;
-- six meaningful restoration beats;
-- new customer/order combinations;
-- one fair readable gameplay wrinkle beyond higher numbers;
-- migration + browser QA + screenshot acceptance.
+### Milestone B — visual production quality — OPEN in parallel
+Current goals remain stronger color/material identity, better item/generator differentiation, more authored Board atmosphere, stronger merge/discovery/delivery/restoration effects and less dashboard-like presentation. Generated phone screenshots remain the acceptance evidence.
+
+## Parked reliability follow-up — Board recovery beyond Storage
+Binding rules require full-board states to remain fairly recoverable. Storage solves most pressure but a future fresh slice should explicitly solve the Board-full + Storage-full deadlock without item loss, hidden deletion or monetization pressure.
+
+An exploratory branch exists but has **no PR and is not active** because its required session integration overlaps current Place03 work. Rebuild it from then-current `main` only after the active session owner is clear.
 
 ## J — Collection depth & achievements
-Candidates:
-- item mastery/completion per family;
-- guest book/customer collection;
+After J1 and Place03:
+- family mastery/completion;
+- guest/customer collection;
 - Place completion badges;
 - non-grindy achievements;
-- cosmetic rewards for meaningful milestones;
-- profile/stat screen only when it contains genuinely useful progression.
+- cosmetic-only milestone rewards if they add visible value;
+- no disconnected generic profile dashboard.
 
-## K — Economy, balancing & content configuration
-Goal: make progression tunable before broad content scale.
-
-Build:
-- move order templates, rewards, generator output and Place costs into clearer data/config modules;
-- automated progression simulations/tests;
-- continue difficulty/pacing work beyond the shipped K1 order bands;
+## K — Economy, balancing & configuration
+- continue moving content/reward/generator/Place costs toward data-driven configuration;
+- automated progression simulations;
 - pacing targets for Energy, merges, orders, Stars, Coins and restoration;
-- audit every currency for a clear purpose;
-- no hidden rigging or dynamic difficulty that falsifies outcomes.
+- every currency must have a clear player purpose;
+- no hidden rigging/dynamic difficulty that falsifies outcomes.
 
-## L — Cloud save / account layer
-Only after local schema is stable.
+## L — Optional cloud/account layer
+Only after local schema and progression are stable: local-first, conflict-safe sync, privacy-minimal account data.
 
-Build:
-- dedicated Poply Neon-backed cloud-save model;
-- optional account/sign-in;
-- conflict-safe sync;
-- local-first offline behavior;
-- privacy-minimal data.
-
-## M — Events / live content
-Only after the base progression is deep enough.
-
-Candidates:
-- themed limited order sets;
-- temporary Place themes;
-- fair event reward tracks;
-- special customer stories;
-- event-specific Collection pages.
-
-No punitive urgency, forced ads or pay-to-win.
+## M — Events/live content
+Only after base progression has enough depth. No punitive urgency, forced ads or pay-to-win.
 
 ## N — Native release readiness
-- installable PWA quality pass;
-- iOS/iPadOS + Android packaging from the same codebase;
-- device QA matrix;
-- app icons, launch assets, store screenshots and metadata;
-- privacy disclosures;
-- performance/battery/network audits;
-- accessibility/reduced-motion checks.
+Shared codebase, PWA/native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance/battery/accessibility audits.
 
 # Immediate build order
-Unless a real gameplay/save/release bug takes priority:
-1. **Finish H — World map / safe Place revisit.**
-2. **Continue screenshot-driven color/effects production passes in parallel.**
-3. **I — Place 03.**
-4. **J/K — deeper collection, achievements, economy/balancing.**
-5. **L/N — cloud/native release only when local product systems are stable.**
-
-# Autonomous coordination rule
-GitHub Issue #42 is the durable cross-worker memory.
-
-Every manual/Product-Automation/Visual-Automation work session must record:
-- worker;
-- start `main` SHA;
-- branch / PR / exact head;
-- concrete files/systems changed;
-- tests and workflow run IDs;
-- generated screenshots actually opened;
-- visible findings / rejected variants;
-- merge/deploy state;
-- next free task.
-
-A substantial autonomous run is not complete without GitHub documentation.
+1. Finish independent exact-head gates for the active J1 milestone shelf.
+2. Let PR #58 continue Place03 without duplicate/overlapping edits.
+3. Continue visual/effects work independently through screenshot-first PRs.
+4. After Place03/session ownership clears, implement guaranteed Board-full + Storage-full recovery on a fresh main branch.
+5. Continue deeper J/K content/economy work.
 
 # Feature-selection rule
 Before adding a feature, answer:
@@ -200,13 +122,15 @@ Before adding a feature, answer:
 - What new decision, motivation or reward does it create?
 - Does it connect to the core loop rather than sit as a disconnected menu?
 - Can it be tested deterministically?
-- Can it fit the current mobile shell without returning to web-dashboard UI?
+- Can it fit the mobile shell without returning to web-dashboard UI?
 
 If those answers are weak, do not build it yet.
 
-# Release rule
-Every non-trivial feature ships through:
-`fresh branch from current main → implementation → deterministic tests → Mobile WebKit QA → screenshot self-review → PR exact-head green → merge → exact-main CI + Browser QA + Pages deploy`.
+# Autonomous coordination rule
+Every worker reads current `main`, all open PRs and Issue #42 before writes. Active changed-file overlap means choose another task. Every substantive run writes a final Issue #42 handoff with start main, branch/PR/exact head, files/systems, tests/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and next free work.
 
-Canonical test URL remains:
+# Release rule
+`fresh branch from current main → implementation → deterministic tests → Mobile WebKit QA → screenshot self-review → exact-head green → merge → exact-main CI + Browser QA + Pages deploy`.
+
+Canonical build only:
 `https://ys2mm422yb-max.github.io/poply/`

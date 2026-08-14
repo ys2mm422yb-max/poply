@@ -46,9 +46,9 @@ test('mobile Board title keeps high contrast after the final color layer',()=>{
   assert.match(css,/\.qa-board \.board-title small\{color:#9eb9b6!important/);
 });
 
-test('combined map and color effects release cache key is explicit',()=>{
+test('combined shell release cache key is explicit',()=>{
   const html=read('index.html');
-  assert.match(html,/aaa\.css\?v=20260814-map-colorfx2/);
-  assert.match(html,/aaa-main\.js\?v=20260814-map-colorfx2/);
-  assert.match(html,/data-build="aaa-foundation-20260814-map-colorfx2"/);
+  assert.match(html,/aaa\.css\?v=20260815-milestones1/);
+  assert.match(html,/aaa-main\.js\?v=20260815-milestones1/);
+  assert.match(html,/data-build="aaa-foundation-20260815-milestones1"/);
 });
