@@ -1,3 +1,4 @@
+import './aaa-order-choice-polish.js';
 import { ASSETS } from './aaa-view.js';
 import { createUI } from './aaa-ui.js';
 import { installDrag } from './aaa-drag.js';
