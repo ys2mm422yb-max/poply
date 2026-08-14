@@ -9,14 +9,12 @@ test('AAA shell keeps map then loads authored color effects and integration guar
   assert.match(css,/@import '\.\/aaa-place-map\.css';[\s\S]*@import '\.\/aaa-motion\.css';\s*@import '\.\/aaa-color-fx\.css';\s*@import '\.\/aaa-integration\.css';/);
 });
 
-test('color effects layer gives all item families authored identity and reduced-motion safety',()=>{
-  const css=read('src/aaa-color-fx.css');
+test('color effects layers give all item families authored identity and reduced-motion safety',()=>{
+  const css=read('src/aaa-color-fx.css'),garden=read('src/aaa-garden.css');
   for(const family of ['coffee','bakery','sweet','fruit'])assert.match(css,new RegExp(`family-${family}`));
   for(const generator of ['coffee-gen','pantry-gen','sunset-gen'])assert.match(css,new RegExp(`generator-${generator}`));
-  assert.match(css,/\.service-orders/);
-  assert.match(css,/\.discovery-sparks/);
-  assert.match(css,/\.level-up-overlay::before/);
-  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(garden,/family-herb/);assert.match(garden,/generator-garden-gen/);assert.match(garden,/@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(css,/\.service-orders/);assert.match(css,/\.discovery-sparks/);assert.match(css,/\.level-up-overlay::before/);assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
 
 test('Board atmosphere uses spare phone height without stealing interaction',()=>{
@@ -27,10 +25,17 @@ test('Board atmosphere uses spare phone height without stealing interaction',()=
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{[\s\S]*\.qa-board \.board-area[\s\S]*animation:none!important/);
 });
 
-test('discovery UI exposes family color hook and authored spark burst',()=>{
+test('discovery UI exposes family color hook, authored sparks and Dachgarten art route',()=>{
   const source=read('src/aaa-discovery-ui.js');
-  assert.match(source,/discovery-reveal family-\$\{item\.family\}/);
-  assert.match(source,/class="discovery-sparks"/);
+  assert.match(source,/discovery-reveal family-\$\{item\.family\}/);assert.match(source,/class="discovery-sparks"/);
+  assert.match(source,/canRenderGardenArt/);assert.match(source,/gardenArtMarkup/);
+});
+
+test('discovery reward remains readable long enough for player and deterministic screenshot acceptance',()=>{
+  const source=read('src/aaa-discovery-ui.js'),qa=read('scripts/collection-qa.mjs');
+  assert.match(source,/setTimeout\(\(\)=>node\.classList\.add\('is-leaving'\),1800\)/);
+  assert.match(source,/setTimeout\(\(\)=>node\.remove\(\),2150\)/);
+  assert.match(qa,/opacity>=\.95;\},null,\{timeout:1600\}\)/);
 });
 
 test('Daily ribbon participates in Orders grid instead of creating a dead flexible row',()=>{
@@ -46,9 +51,15 @@ test('mobile Board title keeps high contrast after the final color layer',()=>{
   assert.match(css,/\.qa-board \.board-title small\{color:#9eb9b6!important/);
 });
 
-test('combined shell release cache key is explicit',()=>{
+test('Player milestone shelf remains installed on the combined Place 03 shell',()=>{
+  const source=read('src/aaa-player-ui.js'),milestones=read('src/aaa-milestones.js');
+  assert.match(source,/playerMilestones/);assert.match(source,/player-progress-sheet/);assert.match(source,/data-player-progress/);
+  assert.match(milestones,/PLAYER_MILESTONES/);assert.match(milestones,/level-five/);
+});
+
+test('combined Place 03 and milestone shell release cache key is explicit',()=>{
   const html=read('index.html');
-  assert.match(html,/aaa\.css\?v=20260815-milestones1/);
-  assert.match(html,/aaa-main\.js\?v=20260815-milestones1/);
-  assert.match(html,/data-build="aaa-foundation-20260815-milestones1"/);
+  assert.match(html,/aaa\.css\?v=20260815-place03-milestones1/);
+  assert.match(html,/aaa-main\.js\?v=20260815-place03-milestones1/);
+  assert.match(html,/data-build="aaa-foundation-20260815-place03-milestones1"/);
 });

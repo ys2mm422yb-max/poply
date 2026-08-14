@@ -6,13 +6,23 @@ import { collectionView, navWithCollection } from '../src/aaa-collection-view.js
 
 test('Collection Book renders known starting tiers and hides future names',()=>{
   const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'coffee');
-  assert.match(html,/Deine Entdeckungen/);assert.match(html,/3\/24/);assert.match(html,/Getränke/);assert.match(html,/Kaffeebohnen/);assert.match(html,/1\/6/);
+  assert.match(html,/Deine Entdeckungen/);assert.match(html,/3\/30/);assert.match(html,/Getränke/);assert.match(html,/Kaffeebohnen/);assert.match(html,/1\/6/);
   assert.ok((html.match(/Noch entdecken/g)||[]).length>=5);assert.doesNotMatch(html,/Kaffeetasse/);
 });
 
 test('undiscovered fruit family is represented by six locked silhouettes',()=>{
   const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'fruit');
   assert.match(html,/Sonnenfrüchte/);assert.match(html,/0\/6/);assert.equal((html.match(/collection-tier locked/g)||[]).length,6);
+});
+
+test('undiscovered Dachgarten family has six silhouettes and no leaked tier names',()=>{
+  const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'herb');
+  assert.match(html,/Dachgarten/);assert.match(html,/0\/6/);assert.equal((html.match(/collection-tier locked/g)||[]).length,6);assert.doesNotMatch(html,/Kräutersirup|Garten-Spritz|Poply Gartenfest/);
+});
+
+test('Collection world section includes locked Place 03 and Gewächshaus',()=>{
+  const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'coffee');
+  assert.match(html,/Place 03/);assert.equal((html.match(/Unentdeckt/g)||[]).length>=4,true);
 });
 
 test('Collection is a real fourth navigation destination',()=>{

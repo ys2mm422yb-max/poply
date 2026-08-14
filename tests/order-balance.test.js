@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PLACE_01_UPGRADES, PLACE_02_UPGRADES, createInitialState, createOrder, createProgressionOrder, orderDifficultyBand, fulfillOrder, makeItem, syncProgressionContent } from '../src/v2-game.js';
+import { PLACE_01_UPGRADES, PLACE_02_UPGRADES, PLACE_03_UPGRADES, createInitialState, createOrder, createProgressionOrder, orderDifficultyBand, fulfillOrder, makeItem, syncProgressionContent } from '../src/v2-game.js';
 
 const maxRequiredTier=order=>Math.max(...order.requirements.map(req=>req.level));
 
@@ -61,6 +61,27 @@ test('Sonnenkai grows into higher tiers only after its own restoration advances'
   assert.ok(orders.every(order=>order.chapter==='sunset'));
 });
 
+test('fresh Dachgarten starts with readable herb orders even after a long global sequence',()=>{
+  const state=createInitialState();
+  state.placeUpgrades=[...PLACE_01_UPGRADES.map(upgrade=>upgrade.id),...PLACE_02_UPGRADES.map(upgrade=>upgrade.id)];
+  state.orderSequence=173;syncProgressionContent(state);
+  assert.equal(orderDifficultyBand(state,'garden').key,'starter');
+  const orders=Array.from({length:8},(_,offset)=>createProgressionOrder(state,state.orderSequence+offset,'garden'));
+  assert.ok(orders.every(order=>order.chapter==='garden'&&order.difficulty==='starter'));
+  assert.ok(orders.every(order=>order.requirements.some(req=>req.family==='herb')));
+  assert.ok(orders.every(order=>maxRequiredTier(order)<=3));
+});
+
+test('Dachgarten order depth advances only with its own restoration',()=>{
+  const state=createInitialState();
+  state.placeUpgrades=[...PLACE_01_UPGRADES.map(upgrade=>upgrade.id),...PLACE_02_UPGRADES.map(upgrade=>upgrade.id),...PLACE_03_UPGRADES.slice(0,4).map(upgrade=>upgrade.id)];
+  syncProgressionContent(state);
+  assert.equal(orderDifficultyBand(state,'garden').key,'established');
+  const orders=Array.from({length:12},(_,sequence)=>createProgressionOrder(state,sequence+60,'garden'));
+  assert.ok(orders.some(order=>maxRequiredTier(order)>=5));
+  assert.ok(orders.every(order=>order.requirements.some(req=>req.family==='herb')));
+});
+
 test('fulfilling an order uses the progression band for its replacement without changing payout or exact consumption',()=>{
   const state=createInitialState();
   state.placeUpgrades=PLACE_01_UPGRADES.map(upgrade=>upgrade.id);
@@ -85,4 +106,12 @@ test('fulfilling an order uses the progression band for its replacement without 
     const remaining=result.state.board.filter(item=>item?.kind==='item'&&item.family===req.family&&item.level===req.level).length;
     assert.equal(remaining,0);
   }
+});
+
+test('finishing a Sonnenkai order after Place completion replaces it from the garden starter band',()=>{
+  const state=createInitialState();
+  state.placeUpgrades=[...PLACE_01_UPGRADES.map(upgrade=>upgrade.id),...PLACE_02_UPGRADES.map(upgrade=>upgrade.id)];
+  state.currentOrders=[createOrder(0,'sunset')];state.orderSequence=201;syncProgressionContent(state);readyFor(state.currentOrders[0],state);
+  const result=fulfillOrder(state,state.currentOrders[0].id);assert.equal(result.changed,true);
+  const replacement=result.state.currentOrders[0];assert.equal(replacement.chapter,'garden');assert.equal(replacement.difficulty,'starter');assert.ok(replacement.requirements.some(req=>req.family==='herb'));
 });

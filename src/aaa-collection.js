@@ -1,4 +1,4 @@
-import { ITEM_FAMILIES, PLACE_01_UPGRADES } from './v2-game.js';
+import { ITEM_FAMILIES, PLACE_01_UPGRADES, PLACE_02_UPGRADES } from './v2-game.js';
 import { awardPlayerXp } from './aaa-progression.js';
 
 export const DISCOVERY_XP_BASE=20;
@@ -22,6 +22,8 @@ export function inferredDiscoveries(state){
   if((state?.placeUpgrades||[]).some(id=>PLACE_01_UPGRADES.some(upgrade=>upgrade.id===id)))found.push(discoveryGeneratorKey('coffee-gen'),discoveryGeneratorKey('pantry-gen'));
   const coastComplete=PLACE_01_UPGRADES.every(upgrade=>(state?.placeUpgrades||[]).includes(upgrade.id));
   if(coastComplete)found.push(discoveryPlaceKey('sunset'),discoveryGeneratorKey('sunset-gen'));
+  const sunsetComplete=PLACE_02_UPGRADES.every(upgrade=>(state?.placeUpgrades||[]).includes(upgrade.id));
+  if(sunsetComplete)found.push(discoveryPlaceKey('garden'),discoveryGeneratorKey('garden-gen'));
   return uniq(found);
 }
 

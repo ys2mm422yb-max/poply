@@ -13,7 +13,7 @@ test('live shell has one AAA entry and no legacy V2 layer stack',async()=>{
 
 test('AAA stylesheet entry only composes authored modules',async()=>{
   const css=(await read('src/aaa.css')).trim();
-  assert.equal(css,"@import './aaa-shell.css';\n@import './aaa-player.css';\n@import './aaa-board.css';\n@import './aaa-views.css';\n@import './aaa-world.css';\n@import './aaa-service.css';\n@import './aaa-sunset.css';\n@import './aaa-energy.css';\n@import './aaa-collection.css';\n@import './aaa-discovery.css';\n@import './aaa-storage-tray.css';\n@import './aaa-daily.css';\n@import './aaa-place-map.css';\n@import './aaa-mobile.css';\n@import './aaa-motion.css';\n@import './aaa-color-fx.css';\n@import './aaa-integration.css';");
+  assert.equal(css,"@import './aaa-shell.css';\n@import './aaa-player.css';\n@import './aaa-board.css';\n@import './aaa-views.css';\n@import './aaa-world.css';\n@import './aaa-service.css';\n@import './aaa-sunset.css';\n@import './aaa-garden.css';\n@import './aaa-energy.css';\n@import './aaa-collection.css';\n@import './aaa-discovery.css';\n@import './aaa-storage-tray.css';\n@import './aaa-daily.css';\n@import './aaa-place-map.css';\n@import './aaa-mobile.css';\n@import './aaa-motion.css';\n@import './aaa-color-fx.css';\n@import './aaa-integration.css';");
   assert.doesNotMatch(css,/v2-/);
 });
 

@@ -69,9 +69,11 @@ export function buildUpgrade(){
   const progression=awardPlayerXp(result.state,xpForRestoration(result));
   result.state=progression.state;result.progression=progression;
   const discoveries=[];
-  if(result.unlockedPlace==='sunset'){
-    const place=recordPlaceDiscovery(result.state,'sunset');result.state=place.state;if(place.changed)discoveries.push(place.key);
-    const generator=recordGeneratorDiscovery(result.state,'sunset-gen');result.state=generator.state;if(generator.changed)discoveries.push(generator.key);
+  const generatorByPlace={sunset:'sunset-gen',garden:'garden-gen'};
+  if(result.unlockedPlace){
+    const place=recordPlaceDiscovery(result.state,result.unlockedPlace);result.state=place.state;if(place.changed)discoveries.push(place.key);
+    const generatorKey=generatorByPlace[result.unlockedPlace];
+    if(generatorKey){const generator=recordGeneratorDiscovery(result.state,generatorKey);result.state=generator.state;if(generator.changed)discoveries.push(generator.key);}
   }
   result.state=progressDailyEvent(result.state,'restore').state;
   result.discoveries=discoveries;keep(result.state);return result;

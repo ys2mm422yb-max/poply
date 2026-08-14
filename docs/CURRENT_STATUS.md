@@ -2,53 +2,40 @@
 
 Updated: 2026-08-15
 
-## Live baseline
-Current production baseline on `main` includes:
+## Production baseline after Milestone I release
+`main` includes:
 - persistent 7×7 merge Board / Werkbank;
-- Place 01 · Café am Meer and Place 02 · Sonnenkai with six restoration steps each;
-- four six-tier item families and three generators;
-- three simultaneous customer orders with deterministic replacement difficulty bands;
-- Coins, restoration Stars, fair regenerating Energy, Player XP/Levels;
-- Collection/Discovery, persistent Storage + Coin expansion, Daily Goals + Bonus Guest;
-- first Places world-map/revisit slice;
-- Player Milestone shelf behind the existing Level badge;
+- Place 01 · Café am Meer, Place 02 · Sonnenkai and Place 03 · Dachgarten, each with six authored restoration steps;
+- five six-tier item families and four generators;
+- Dachgarten `Gewächshaus` with a visible deterministic four-production harvest cycle; every fourth successful production yields herb tier 2, with no randomness or hidden weighting;
+- three simultaneous customer orders with Place-local deterministic replacement difficulty bands;
+- Coins, restoration Stars, fair regenerating Energy, Player XP/Levels and the persistent Player Milestone shelf;
+- Collection/Discovery with 30 item tiers plus generator/Place discoveries;
+- persistent Storage + permanent Coin expansion;
+- Daily Goals + fair Bonus Guest;
+- three-Place World Map with sequential unlocks and safe revisit/preview;
 - local save/resume and migration safety;
-- mandatory CI + Mobile WebKit + screenshot review + canonical Pages release gates.
+- mandatory CI + Mobile WebKit + dedicated Place03 WebKit + screenshot review + canonical Pages release gates.
 
-Start `main` for the current product-automation run: `6e01b1d5b353bc37566068b9663379678c08f97d`.
+Milestone B visual quality remains OPEN globally: presentation can keep improving, but current feature work may not regress into dark dashboard/web-app styling.
 
-Milestone B visual quality remains OPEN globally.
+## Current release evidence
+Milestone I implementation is tracked in PR #58 and `docs/PLACE_03_DACHGARTEN.md`.
+The accepted release must preserve Player Milestone shelf commit `6e01b1d5b353bc37566068b9663379678c08f97d` and pass all exact-head and exact-main gates logged in Issue #42.
 
-## Active parallel work
+## Active independent work
 ### PR #55 — dynamic gameplay FX evidence
-Visual/evidence worker scope. Owns dynamic FX capture/workflow/motion files. Product automation must not overlap it.
+Independent visual/evidence scope. It owns dynamic FX workflow/motion files and must be integrated only from current `main` without overwriting Place03.
 
-### PR #58 — Milestone I Place 03 · Dachgarten
-Manual product scope. Owns Place03 domain/UI/art integration including `src/aaa-session.js`, `src/v2-game.js`, Collection and Place/Map files. Product automation must not start competing Place03 or touch those active files.
+## Next product priorities
+1. Guarantee fair Board-full + Storage-full recovery on a fresh post-Place03 branch without deleting items or requiring monetization.
+2. Deepen Collection/achievements/Guest Book using existing persistent progress instead of a disconnected profile dashboard.
+3. Continue economy/balancing/configuration work and automated progression simulation.
+4. Continue screenshot-driven color/effects polish where real captures show weak reward or environmental feedback.
+5. Keep cloud/account work deferred until local progression/content schema is stable.
 
-### PR #60 — Orders service-stage lighting
-Visual scope. Owns Orders service presentation in `src/aaa-service.css`; product automation does not overlap it.
-
-### Product automation — next-level reward preview
-Branch: `feature/level-reward-preview`.
-Contract: `docs/PLAYER_MILESTONES.md`.
-
-Scope:
-- reuse the existing `LV N` progress sheet rather than adding another menu/tab;
-- show next Level, exact XP remaining and the existing deterministic `+100 Coins` Level reward;
-- derive everything from canonical `playerXp` and `LEVEL_REWARD_COINS`;
-- no save migration, claim state, new currency or duplicated reward schedule;
-- deterministic unit coverage and real WebKit fit checks at 390×844 / 390×720;
-- opening/closing remains save-neutral.
-
-## Parked / not active
-`feature/board-recovery-recycling` and the earlier misnamed `feature/place-03-moon-garden` have no PR and are not active implementation scopes. Board-recovery remains a valid future reliability task, but it must be rebuilt only after the active `aaa-session.js` owner is clear.
-
-## Next product priorities after active PRs land
-1. Finish/release the independent next-level reward preview if exact-head QA accepts it.
-2. Integrate/verify Place 03 through PR #58 without parallel duplication.
-3. Revisit guaranteed Board-full + Storage-full recovery on a fresh post-Place03 branch.
-4. Continue deeper Collection/achievement/economy balancing only after current slices are released.
+## Backend
+No Place03 backend migration is required. Poply remains local-first; dedicated Poply Neon stays reserved for the later cloud/account layer.
 
 ## Durable coordination
-GitHub Issue #42 is the mandatory cross-worker work log. Every substantial worker run records exact starting main, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visual findings, merge/deploy state, blockers and the next free task.
+GitHub Issue #42 is the mandatory cross-worker work log. Every substantial worker run records exact starting `main`, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and the next free task.

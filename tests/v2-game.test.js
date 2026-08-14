@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BOARD_SIZE, ITEM_FAMILIES, PLACE_01_UPGRADES, PLACE_02_UPGRADES, createInitialState, createOrder, makeItem, generateFromSlot, moveOrMerge, canMerge, countRequirement, canFulfillOrder, fulfillOrder, buildNextUpgrade, normalizeState, itemDefinition, activePlaceChapter, currentChapterProgress, restorationStatus, syncProgressionContent } from '../src/v2-game.js';
+import { BOARD_SIZE, ITEM_FAMILIES, PLACE_01_UPGRADES, PLACE_02_UPGRADES, PLACE_03_UPGRADES, createInitialState, createOrder, makeItem, generateFromSlot, moveOrMerge, canMerge, countRequirement, canFulfillOrder, fulfillOrder, buildNextUpgrade, normalizeState, itemDefinition, activePlaceChapter, currentChapterProgress, restorationStatus, syncProgressionContent, generatorProductionStatus } from '../src/v2-game.js';
 
 test('initial V2 board has two generators and merge-ready pairs',()=>{const s=createInitialState();assert.equal(s.board.length,BOARD_SIZE);assert.equal(s.board.filter(i=>i?.kind==='generator').length,2);assert.equal(s.board.filter(i=>i?.family==='coffee'&&i.level===1).length,2);assert.equal(s.board.filter(i=>i?.family==='bakery'&&i.level===1).length,2);});
 test('identical items merge into exactly one next-tier item',()=>{const s=createInitialState(),before=s.board.filter(Boolean).length,r=moveOrMerge(s,9,10);assert.equal(r.changed,true);assert.equal(r.type,'merge');assert.equal(r.item.family,'coffee');assert.equal(r.item.level,2);assert.equal(r.state.board[9],null);assert.equal(r.state.board.filter(Boolean).length,before-1);});
@@ -58,4 +58,57 @@ test('first Sonnenkai build spends stars and advances only second-place journey'
   const s=createInitialState();s.placeUpgrades=PLACE_01_UPGRADES.map(u=>u.id);s.stars=20;syncProgressionContent(s);
   const result=buildNextUpgrade(s);assert.equal(result.changed,true);assert.equal(result.upgrade.id,'sunset-lanterns');assert.equal(result.state.stars,12);
   assert.equal(result.state.placeUpgrades.length,7);const progress=currentChapterProgress(result.state);assert.equal(progress.chapter.id,'sunset');assert.equal(progress.completed,1);assert.equal(progress.total,6);
+});
+
+test('finishing Sonnenkai unlocks Dachgarten and exactly one Gewächshaus',()=>{
+  const s=createInitialState();s.placeUpgrades=[...PLACE_01_UPGRADES.map(u=>u.id),...PLACE_02_UPGRADES.slice(0,5).map(u=>u.id)];s.stars=99;syncProgressionContent(s);
+  const result=buildNextUpgrade(s);
+  assert.equal(result.changed,true);assert.equal(result.upgrade.id,'sunset-sign');assert.equal(result.unlockedPlace,'garden');
+  assert.equal(activePlaceChapter(result.state).id,'garden');
+  assert.equal(result.state.board.filter(item=>item?.generator==='garden-gen').length,1);
+  assert.equal(result.state.board.filter(item=>item?.generator==='sunset-gen').length,1);
+  const progress=currentChapterProgress(result.state);assert.equal(progress.completed,0);assert.equal(progress.total,6);
+  assert.equal(restorationStatus(result.state).upgrade.id,PLACE_03_UPGRADES[0].id);
+  syncProgressionContent(result.state);
+  assert.equal(result.state.board.filter(item=>item?.generator==='garden-gen').length,1);
+});
+
+test('legacy completed Sonnenkai save gains Gewächshaus without losing player value',()=>{
+  const legacy=createInitialState();legacy.placeUpgrades=[...PLACE_01_UPGRADES.map(u=>u.id),...PLACE_02_UPGRADES.map(u=>u.id)];legacy.coins=1337;legacy.stars=17;legacy.energy=23;legacy.stats.orders=21;
+  const normalized=normalizeState(legacy);
+  assert.equal(normalized.coins,1337);assert.equal(normalized.stars,17);assert.equal(normalized.energy,23);assert.equal(normalized.stats.orders,21);
+  assert.equal(activePlaceChapter(normalized).id,'garden');
+  assert.equal(normalized.board.filter(item=>item?.generator==='sunset-gen').length,1);
+  assert.equal(normalized.board.filter(item=>item?.generator==='garden-gen').length,1);
+});
+
+test('Gewächshaus has a visible deterministic four-step harvest cycle',()=>{
+  let state=createInitialState();state.placeUpgrades=[...PLACE_01_UPGRADES.map(u=>u.id),...PLACE_02_UPGRADES.map(u=>u.id)];syncProgressionContent(state);
+  const index=state.board.findIndex(item=>item?.generator==='garden-gen');assert.ok(index>=0);
+  assert.deepEqual(generatorProductionStatus(state.board[index]),{progress:0,total:4,nextStep:1,bonusNext:false,bonusLevel:2,label:'Erntebonus'});
+  const levels=[];
+  for(let tap=1;tap<=4;tap+=1){const result=generateFromSlot(state,index);assert.equal(result.changed,true);assert.equal(result.family,'herb');assert.equal(result.state.energy,state.energy-1);levels.push(result.level);assert.equal(result.bonus,tap===4);state=result.state;}
+  assert.deepEqual(levels,[1,1,1,2]);
+  assert.equal(state.board[index].taps,4);
+  assert.deepEqual(generatorProductionStatus(state.board[index]),{progress:0,total:4,nextStep:1,bonusNext:false,bonusLevel:2,label:'Erntebonus'});
+});
+
+test('full board never consumes energy or advances a ready Gewächshaus bonus',()=>{
+  const s=createInitialState();s.placeUpgrades=[...PLACE_01_UPGRADES.map(u=>u.id),...PLACE_02_UPGRADES.map(u=>u.id)];syncProgressionContent(s);
+  const index=s.board.findIndex(item=>item?.generator==='garden-gen');s.board[index]={...s.board[index],taps:3};
+  const filler=makeItem('herb',1,'full-board-herb');s.board=s.board.map((slot,i)=>slot??{...filler,id:`full-${i}`});
+  const beforeEnergy=s.energy,beforeTaps=s.board[index].taps,result=generateFromSlot(s,index);
+  assert.equal(result.changed,false);assert.equal(result.reason,'board-full');assert.equal(result.state.energy,beforeEnergy);assert.equal(result.state.board[index].taps,beforeTaps);assert.equal(generatorProductionStatus(result.state.board[index]).bonusNext,true);
+});
+
+test('first Dachgarten build advances only the third-place journey',()=>{
+  const s=createInitialState();s.placeUpgrades=[...PLACE_01_UPGRADES.map(u=>u.id),...PLACE_02_UPGRADES.map(u=>u.id)];s.stars=30;syncProgressionContent(s);
+  const result=buildNextUpgrade(s);assert.equal(result.changed,true);assert.equal(result.upgrade.id,'garden-glass');assert.equal(result.state.stars,18);
+  const progress=currentChapterProgress(result.state);assert.equal(progress.chapter.id,'garden');assert.equal(progress.completed,1);assert.equal(progress.total,6);
+});
+
+test('completed Dachgarten is terminal without inventing another Place',()=>{
+  const s=createInitialState();s.placeUpgrades=[...PLACE_01_UPGRADES.map(u=>u.id),...PLACE_02_UPGRADES.map(u=>u.id),...PLACE_03_UPGRADES.map(u=>u.id)];syncProgressionContent(s);
+  const status=restorationStatus(s);assert.equal(activePlaceChapter(s).id,'garden');assert.equal(status.complete,true);assert.equal(status.completed,6);
+  const result=buildNextUpgrade(s);assert.equal(result.changed,false);assert.equal(result.reason,'place-complete');
 });

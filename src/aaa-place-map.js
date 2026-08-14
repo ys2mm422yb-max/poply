@@ -1,21 +1,21 @@
-import { PLACE_CHAPTERS, activePlaceChapter, isPlace01Complete } from './v2-game.js';
+import { PLACE_CHAPTERS, activePlaceChapter, isPlace01Complete, isPlace02Complete } from './v2-game.js';
 import { getState } from './aaa-session.js';
 import { placeSceneMarkup } from './aaa-place-art.js';
 import { sunsetPlaceSceneMarkup } from './aaa-sunset-place.js';
+import { gardenPlaceSceneMarkup } from './aaa-garden-place.js';
 
 const completedCount=(state,chapter)=>chapter.upgrades.filter(upgrade=>(state.placeUpgrades||[]).includes(upgrade.id)).length;
+const unlockedPlace=(state,id)=>id==='coast'||id==='sunset'&&isPlace01Complete(state)||id==='garden'&&isPlace02Complete(state);
 
 export function placeMapModel(state){
   const active=activePlaceChapter(state);
-  const coastComplete=isPlace01Complete(state);
   return PLACE_CHAPTERS.map(chapter=>{
-    const completed=completedCount(state,chapter);
-    const unlocked=chapter.id==='coast'||coastComplete;
+    const completed=completedCount(state,chapter),unlocked=unlockedPlace(state,chapter.id);
     return {id:chapter.id,number:chapter.number,label:chapter.label,kicker:chapter.kicker,completed,total:chapter.upgrades.length,ratio:completed/chapter.upgrades.length,unlocked,active:chapter.id===active.id,complete:completed===chapter.upgrades.length};
   });
 }
 
-const scene=entry=>entry.id==='sunset'?sunsetPlaceSceneMarkup(entry.completed):placeSceneMarkup(entry.completed);
+const scene=entry=>entry.id==='garden'?gardenPlaceSceneMarkup(entry.completed):entry.id==='sunset'?sunsetPlaceSceneMarkup(entry.completed):placeSceneMarkup(entry.completed);
 const statusLabel=entry=>entry.complete?'Fertig':entry.active?'Aktueller Place':entry.unlocked?'Besuchen':'Noch gesperrt';
 function mapMarkup(state,selectedId){
   const places=placeMapModel(state);const selected=places.find(entry=>entry.id===selectedId&&entry.unlocked)||places.find(entry=>entry.active)||places[0];

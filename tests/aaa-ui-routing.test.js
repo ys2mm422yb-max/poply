@@ -28,3 +28,16 @@ test('Collection is rendered as a real view and family buttons change its focus'
   const collection=await read('src/aaa-collection-view.js');
   assert.match(collection,/data-view="collection"/);assert.match(collection,/Sammlung/);
 });
+
+test('Place unlock reveal is data-driven for Sonnenkai and Dachgarten',async()=>{
+  const source=await read('src/aaa-ui.js');
+  assert.match(source,/PLACE_UNLOCKS=\{sunset:\{number:'02',label:'Sonnenkai'\},garden:\{number:'03',label:'Dachgarten'\}\}/);
+  assert.match(source,/const unlock=PLACE_UNLOCKS\[unlockedPlace\]/);
+  assert.match(source,/Place \$\{unlock\.number\} freigeschaltet: \$\{unlock\.label\}/);
+  assert.doesNotMatch(source,/unlockedPlace\?`<span>02<\/span><small>NEUER PLACE FREIGESCHALTET<\/small><strong>Sonnenkai<\/strong>`/);
+});
+
+test('Gewächshaus bonus gets explicit player-facing reward feedback',async()=>{
+  const source=await read('src/aaa-ui.js');
+  assert.match(source,/result\.bonus\?'Erntebonus! Kräuterbund'/);
+});

@@ -1,70 +1,72 @@
 # Poply – Next Steps
 
-Updated: 2026-08-14.
+Updated: 2026-08-15.
 
-The original V2 foundation roadmap has largely been completed: Poply now has a persistent merge board, six-tier item families, generators, active orders, two playable Places, visible restoration, game-feel feedback, save/resume, fair energy regeneration and mandatory Browser QA.
+Poply is now past the original vertical-slice phase. The live game structure includes persistent merging, three Places, five six-tier item families, four generators, Place-local orders, XP/Levels, long-term milestones, Collection, Storage, Daily Goals, World Map and authored restoration.
 
-The active feature-growth plan is now:
+The active feature-growth plan is:
 `docs/FEATURE_ROADMAP.md`
 
 The active visual/architecture quality contract remains:
 `docs/AAA_REBUILD_PLAN.md`
 
-## Current priority
-Poply must stop behaving like a strong vertical slice and start behaving like a real long-term game.
+## What just changed
+Milestone I adds **Place 03 · Dachgarten** as a real new gameplay chapter rather than a color swap:
+- rooftop-greenhouse art direction;
+- new herb merge family;
+- new `Gewächshaus` producer;
+- visible deterministic four-step Erntebonus cycle;
+- six restoration beats;
+- garden-specific order bands;
+- Collection and World Map integration;
+- dedicated WebKit release flow.
 
-The next implementation order is:
+The Player Milestone shelf from PR #59 also remains part of the baseline and must never be lost during feature integration.
 
-1. **Milestone E1 — Player XP + Level system**
-   - persistent XP and level;
-   - XP from orders/restoration;
-   - visible level progress;
-   - level-up reward moment;
-   - migration + deterministic tests + Browser QA.
+## Current priority order
+1. **Finish exact-main release verification for Place03.**
+   - CI;
+   - complete normal Mobile WebKit suite;
+   - dedicated Place03 WebKit flow;
+   - canonical Pages deploy;
+   - screenshot self-review.
 
-2. **Milestone E2 — Collection Book + discoveries**
-   - every discovered item tier recorded;
-   - silhouettes for undiscovered tiers;
-   - first-discovery feedback/reward;
-   - generator and Place discoveries.
+2. **Guaranteed Board-full + Storage-full recovery.**
+   - fair player-controlled recovery;
+   - no item deletion/loss;
+   - no random rescue;
+   - no paywall/monetization pressure;
+   - deterministic deadlock-state tests and real mobile flow.
 
-3. **Milestone F1 — Storage + Coin utility**
-   - persistent storage tray;
-   - fair capacity expansion;
-   - first meaningful non-pay-to-win Coin sink;
-   - safe board-full recovery tools.
+3. **Collection / Guest Book / achievements depth.**
+   - mastery/completion;
+   - customer/guest collection;
+   - Place completion badges;
+   - non-grindy milestones derived from canonical progress.
 
-4. **Milestone G — Daily goals / return loop**
-   - three fair daily goals;
-   - daily bonus customer;
-   - useful rewards without punitive streak mechanics.
+4. **Economy and balancing simulation/configuration.**
+   - simulate progression through all three Places;
+   - verify Energy/Coins/Stars/order difficulty/restoration pacing;
+   - move content balancing toward data-driven configuration.
 
-5. **Milestone H — World map / Place selector**
-   - Café am Meer and Sonnenkai as real destinations;
-   - completion/progress per Place;
-   - authored path toward future Places.
-
-6. **Milestone I — Place 03**
-   - only after the above systems exist;
-   - new production theme and gameplay wrinkle, not merely higher numbers.
-
-## Parallel quality work
-Milestone B remains OPEN. New features may not become an excuse for cheap UI, weak art, dead space, broken mobile layout or web-dashboard presentation. Every feature must integrate into the authored mobile game shell.
+5. **Continue visual production quality in parallel.**
+   - only screenshot-driven improvements;
+   - richer dynamic merge/generator/discovery/reward feedback where evidence shows weakness;
+   - more environmental life without clutter;
+   - Reduced Motion and mobile performance remain mandatory.
 
 ## Later systems
-After the immediate sequence:
-- deeper collection/achievements;
-- economy and balancing tools;
-- data-driven content pipeline;
-- cloud save/account layer using Poply's dedicated backend only when the local schema is stable;
-- themed events/live content;
+After local progression/reliability are stable:
+- deeper content pipeline;
+- optional cloud save/account layer through Poply's dedicated backend;
+- fair themed events/live content;
 - native iOS/iPadOS/Android packaging and store readiness.
 
 ## Permanent execution rule
-Fix real gameplay/save/UX defects first. Otherwise take the highest-priority unfinished milestone from `docs/FEATURE_ROADMAP.md`. Do not spend a release only renaming markers, moving margins or adding another visual override.
+Fix real gameplay/save/UX defects first. Otherwise take the highest-priority unfinished milestone from `docs/FEATURE_ROADMAP.md`. Do not spend a release only renaming markers, moving margins or stacking another visual override.
 
-Every non-trivial release must follow:
-`fresh branch from main → implementation → deterministic tests → Mobile WebKit QA → screenshot self-review → PR exact-head green → merge → exact-main CI + Browser QA + Pages deploy`.
+Every non-trivial release follows:
+`fresh branch from main → implementation → deterministic tests → Mobile WebKit QA → feature-specific QA → screenshot self-review → PR exact-head green → merge → exact-main CI + Browser QA + feature-specific QA + Pages deploy`.
 
 Canonical test URL remains:
 `https://ys2mm422yb-max.github.io/poply/`
