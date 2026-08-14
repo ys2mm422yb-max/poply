@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-## Live baseline
+## Live baseline before PR #39 merge
 `main` currently includes:
 - Place 01 · Café am Meer and Place 02 · Sonnenkai;
 - four six-tier item families and three generators;
@@ -30,13 +30,11 @@ Screenshot QA: `docs/SCREENSHOT_QA_2026-08-14_COLLECTION.md`
 
 E2 release passed exact-main CI, full Browser QA and canonical Pages deployment on `99b625efc64fbce68dcfbea59c0b1c55b96364a6`.
 
-## Active implementation branch
-`feature/storage-coin-utility`
-
-### F1 — Storage tray + first meaningful Coin sink — IMPLEMENTED ON BRANCH, QA PENDING
+### F1 — Storage tray + first meaningful Coin sink — ACCEPTED ON PR HEAD
 Contract: `docs/STORAGE_SYSTEM.md`
+Screenshot QA: `docs/SCREENSHOT_QA_2026-08-14_STORAGE.md`
 
-Implemented:
+Accepted F1 behavior:
 - persistent item-only `storage` + `storageCapacity` inside the existing save;
 - existing saves migrate to four empty slots without deleting any player value;
 - exact identity-preserving Board → Storage and Storage → Board transfers;
@@ -44,30 +42,32 @@ Implemented:
 - full Storage / full Board failures preserve every item;
 - stale capacity metadata expands to preserve stored items instead of deleting them;
 - compact in-Board `Lager used/capacity` handle rather than a fifth main tab;
-- temporary storage drawer with current slots and a horizontal Board-item selector;
-- tap Board item in drawer to store; tap stored item to restore to the first free Board slot;
+- temporary Storage drawer with current slots and a horizontal Board-item selector;
 - Storage items are explicitly parked and must return to the Board before they count for customer orders;
 - permanent Coin utility: 4→6 slots costs 200 Coins; 6→8 costs 450; F1 max 8;
 - no Energy cost and no real-money path;
 - deterministic inventory/migration/no-loss/Coin tests;
-- dedicated Mobile WebKit Storage QA for real transfer, reload, restore, Coin upgrade, persistence and 390×844/390×720 fit.
+- dedicated Mobile WebKit Storage QA performs real transfer, reload, restore, Coin upgrade, persistence and 390×844/390×720 fit;
+- self-review accepted the drawer overlay because it is temporary, never covers navigation, remains closable and preserves the full Board layout whenever closed.
 
-Required before merge:
-- exact-head normal CI green;
-- exact-head full Browser QA green including Storage flow;
-- self-review generated Storage screenshots for Board obstruction, tiny targets, nav overlap and cheap drawer presentation;
-- fix any issue found, document screenshot acceptance, rerun exact final head;
-- merge only after exact-head gates are green;
-- exact-main CI + Browser QA + Pages deploy.
+Release gate remaining for F1:
+- rerun exact final documented PR head CI + full Browser QA;
+- merge;
+- exact-main CI + Browser QA + canonical Pages deploy.
 
-## Next milestone after F1
+## Next implementation milestone
 ### G — Daily goals / fair return loop
-- three understandable daily goals;
-- one daily bonus customer/order;
-- fair rewards using existing currencies/utility;
-- no punitive streak loss;
-- deterministic local-day reset and save/reload behavior;
-- real Mobile WebKit QA and screenshot review.
+Goal: give players a useful reason to return without punitive streak mechanics or fake urgency.
+
+Planned first slice:
+- three deterministic daily goals generated from the local calendar day;
+- goals use real core actions such as merge, serve, discover and restore;
+- one clearly marked daily bonus customer/order integrated into the existing service flow;
+- rewards use existing fair currencies/utility rather than introducing another token;
+- missed days simply generate a fresh day: no streak wipe, punishment or debt;
+- deterministic local-day rollover with save/reload safety;
+- compact `Heute` entry/panel that does not become a fifth main navigation tab unless the system later proves large enough;
+- real Mobile WebKit goal progress / claim / rollover QA and screenshot review.
 
 ## Following milestones
 1. H — World map / Place selector.
