@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createInitialState, PLACE_01_UPGRADES, PLACE_02_UPGRADES } from '../src/v2-game.js';
+import { placeMapModel } from '../src/aaa-place-map.js';
+
+test('new game map shows coast active and sunset locked',()=>{
+  const state=createInitialState();
+  const map=placeMapModel(state);
+  assert.equal(map.length,2);
+  assert.equal(map[0].id,'coast');
+  assert.equal(map[0].active,true);
+  assert.equal(map[0].unlocked,true);
+  assert.equal(map[0].completed,0);
+  assert.equal(map[1].id,'sunset');
+  assert.equal(map[1].active,false);
+  assert.equal(map[1].unlocked,false);
+});
+
+test('completed coast becomes revisitable while sunset is current',()=>{
+  const state=createInitialState();
+  state.placeUpgrades=PLACE_01_UPGRADES.map(upgrade=>upgrade.id);
+  const map=placeMapModel(state);
+  assert.equal(map[0].complete,true);
+  assert.equal(map[0].unlocked,true);
+  assert.equal(map[0].active,false);
+  assert.equal(map[1].unlocked,true);
+  assert.equal(map[1].active,true);
+});
+
+test('map progress reflects each place independently without mutating state',()=>{
+  const state=createInitialState();
+  state.placeUpgrades=[...PLACE_01_UPGRADES.map(upgrade=>upgrade.id),PLACE_02_UPGRADES[0].id,PLACE_02_UPGRADES[1].id];
+  const before=structuredClone(state);
+  const map=placeMapModel(state);
+  assert.equal(map[0].completed,6);
+  assert.equal(map[0].ratio,1);
+  assert.equal(map[1].completed,2);
+  assert.equal(map[1].ratio,2/6);
+  assert.deepEqual(state,before);
+});
