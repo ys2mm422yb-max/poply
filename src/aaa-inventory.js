@@ -2,6 +2,7 @@ export const INITIAL_STORAGE_CAPACITY=4;
 export const STORAGE_CAPACITY_STEP=2;
 export const STORAGE_MAX_CAPACITY=8;
 export const STORAGE_UPGRADE_COSTS={4:200,6:450};
+export const RECYCLE_COIN_VALUES={1:1,2:3,3:7,4:15,5:30,6:60};
 
 export function ensureInventoryState(state){
   const current=Array.isArray(state?.storage)?state.storage.filter(item=>item?.kind==='item'):[];
@@ -18,6 +19,11 @@ export function storageUpgradeCost(state){
   return current>=STORAGE_MAX_CAPACITY?null:STORAGE_UPGRADE_COSTS[current]??null;
 }
 
+export function recycleCoinValue(item){
+  if(!item||item.kind!=='item')return 0;
+  return RECYCLE_COIN_VALUES[item.level]??0;
+}
+
 export function storeBoardItem(inputState,boardIndex){
   const ensured=ensureInventoryState(inputState).state;
   if(!Number.isInteger(boardIndex)||boardIndex<0||boardIndex>=ensured.board.length)return {state:inputState,changed:false,reason:'invalid-source'};
@@ -28,6 +34,17 @@ export function storeBoardItem(inputState,boardIndex){
   const state=structuredClone(ensured),stored=state.board[boardIndex];
   state.board[boardIndex]=null;state.storage.push(stored);state.updatedAt=Date.now();
   return {state,changed:true,reason:null,item:stored,boardIndex,storageIndex:state.storage.length-1};
+}
+
+export function recycleBoardItem(inputState,boardIndex){
+  const ensured=ensureInventoryState(inputState).state;
+  if(!Number.isInteger(boardIndex)||boardIndex<0||boardIndex>=ensured.board.length)return {state:inputState,changed:false,reason:'invalid-source'};
+  const item=ensured.board[boardIndex];
+  if(!item)return {state:inputState,changed:false,reason:'empty-source'};
+  if(item.kind!=='item')return {state:inputState,changed:false,reason:'generator-not-recyclable'};
+  const coins=recycleCoinValue(item),state=structuredClone(ensured),recycled=state.board[boardIndex];
+  state.board[boardIndex]=null;state.coins=Math.max(0,Number(state.coins)||0)+coins;state.updatedAt=Date.now();
+  return {state,changed:true,reason:null,item:recycled,boardIndex,coins};
 }
 
 export function restoreStoredItem(inputState,storageIndex,targetIndex=null){
