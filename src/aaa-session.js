@@ -3,7 +3,7 @@ import { generateFromSlot, moveOrMerge, fulfillOrder, buildNextUpgrade } from '.
 import { ensureEnergyClock, regenerateEnergy, recordEnergySpend } from './aaa-energy.js';
 import { ensurePlayerProgress, awardPlayerXp, xpForOrder, xpForRestoration } from './aaa-progression.js';
 import { ensureCollectionState, recordItemDiscovery, recordGeneratorDiscovery, recordPlaceDiscovery } from './aaa-collection.js';
-import { ensureInventoryState, storeBoardItem, restoreStoredItem, upgradeStorage } from './aaa-inventory.js';
+import { ensureInventoryState, storeBoardItem, recycleBoardItem, restoreStoredItem, upgradeStorage } from './aaa-inventory.js';
 import { ensureDailyState, progressDailyEvent, claimDailyGoal, fulfillDailyBonus } from './aaa-daily.js';
 
 const ensureMeta=source=>ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(source).state).state).state).state;
@@ -52,6 +52,7 @@ export function moveOrMergeAt(from,to){
   return result;
 }
 export function storeAt(boardIndex){const result=storeBoardItem(getState(),boardIndex);if(result.changed)keep(result.state);return result;}
+export function recycleAt(boardIndex){const result=recycleBoardItem(getState(),boardIndex);if(result.changed)keep(result.state);return result;}
 export function restoreAt(storageIndex,targetIndex=null){const result=restoreStoredItem(getState(),storageIndex,targetIndex);if(result.changed)keep(result.state);return result;}
 export function expandStorage(){const result=upgradeStorage(getState());if(result.changed)keep(result.state);return result;}
 export function deliverOrder(id){
