@@ -32,15 +32,20 @@ test('successful builds switch to Place and support named Place unlock reveals',
   assert.match(ui,/fx-restoration-reveal/);
 });
 
-test('AAA motion provides anticipation, delivery, reward, restoration and reduced-motion support',async()=>{
-  const [css,entry,sunset]=await Promise.all([read('src/aaa-motion.css'),read('src/aaa.css'),read('src/aaa-sunset.css')]);
+test('AAA motion provides colorful anticipation, delivery, reward, restoration and reduced-motion support',async()=>{
+  const [css,entry,sunset,color,discovery]=await Promise.all([read('src/aaa-motion.css'),read('src/aaa.css'),read('src/aaa-sunset.css'),read('src/aaa-color.css'),read('src/aaa-discovery.css')]);
+  assert.match(entry,/@import '\.\/aaa-color\.css'/);
   assert.match(entry,/@import '\.\/aaa-motion\.css'/);
   assert.match(css,/merge-target-breathe/);
   assert.match(css,/tier-art-reveal/);
   assert.match(css,/generator-dispense/);
+  assert.match(css,/generator-pulse/);
   assert.match(css,/dispensed-item-land/);
   assert.match(css,/delivery-flight/);
   assert.match(css,/reward-arrive/);
+  assert.match(css,/\.board-cell\.family-coffee\{--fx-accent:/);
+  assert.match(css,/\.board-cell\.family-sweet\{--fx-accent:/);
+  assert.match(css,/\.place-coast \.world-hero\.fx-restoration-reveal/);
   assert.match(css,/restoration-scene-reveal/);
   assert.match(css,/restoration-sweep/);
   assert.match(css,/restoration-badge/);
@@ -48,4 +53,10 @@ test('AAA motion provides anticipation, delivery, reward, restoration and reduce
   assert.match(sunset,/\.world-hero\.fx-restoration-reveal/);
   assert.match(sunset,/place-unlock-reveal/);
   assert.match(sunset,/prefers-reduced-motion:reduce/);
+  for(const family of ['coffee','bakery','sweet','fruit'])assert.match(color,new RegExp(`family-${family}`));
+  for(const generator of ['coffee-gen','pantry-gen','sunset-gen'])assert.match(color,new RegExp(`generator-${generator}`));
+  assert.match(discovery,/discovery-rays/);
+  assert.match(discovery,/discovery-sparks/);
+  assert.match(discovery,/:has\(\.art-fruit-1\)/);
+  assert.match(discovery,/prefers-reduced-motion:reduce/);
 });
