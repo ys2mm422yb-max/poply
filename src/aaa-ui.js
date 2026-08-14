@@ -63,17 +63,34 @@ export function createUI(root,toast){
     if(lastFx){const fx=lastFx;lastFx=null;applyFx(fx);}
   };
   root.addEventListener('click',event=>{
-    const focused=event.target.closest('[data-focus-order]');
+    const target=event.target instanceof Element?event.target:event.target?.parentElement;
+    if(!target)return;
+    const focused=target.closest('[data-focus-order]');
     if(focused){selectedOrderId=focused.dataset.focusOrder;view='orders';menuOpen=false;render();return;}
-    const selected=event.target.closest('[data-select-order]');
+    const selected=target.closest('[data-select-order]');
     if(selected){selectedOrderId=selected.dataset.selectOrder;render();return;}
-    const tab=event.target.closest('[data-view]');if(tab){view=tab.dataset.view;menuOpen=false;render();return;}
-    const action=event.target.closest('[data-action]')?.dataset.action;
+    // Only actual navigation buttons may change views. #app also carries data-view as state metadata,
+    // so a generic closest('[data-view]') would swallow every nested action (serve/build/menu).
+    const tab=target.closest('.nav-tab[data-view]');
+    if(tab){view=tab.dataset.view;menuOpen=false;render();return;}
+    const action=target.closest('[data-action]')?.dataset.action;
     if(action==='menu'){menuOpen=!menuOpen;render();return;}
     if(action==='reset'){if(window.confirm('Spielstand wirklich zurücksetzen?')){resetSession();view='board';selectedOrderId=null;menuOpen=false;render();message(COPY.purpose);}return;}
     if(action==='build'){const result=buildUpgrade();if(!result.changed){playFeedback('invalid');message('Für dieses Ziel fehlen noch Sterne.','bad');}else{playFeedback('restoration');view='place';menuOpen=false;render();playRestorationReveal(result.upgrade);message(`Ausbau geschafft: ${result.upgrade.label}`);}return;}
-    const order=event.target.closest('[data-order]');if(order){const card=order.closest('.service-card,.board-job,.mini-order,.focus-order');const orderId=order.dataset.order;const result=deliverOrder(orderId);if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}else{playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);if(selectedOrderId===orderId)selectedOrderId=null;setTimeout(()=>{render();playRewards(result.rewards);},320);}return;}
-    if(event.detail===0){const generator=event.target.closest('.board-cell.generator');if(generator)spawn(Number(generator.dataset.index));}
+    const order=target.closest('[data-order]');
+    if(order){
+      const card=order.closest('.service-card,.board-job,.mini-order,.focus-order');
+      const orderId=order.dataset.order;
+      const result=deliverOrder(orderId);
+      if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}
+      else{
+        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);
+        if(selectedOrderId===orderId)selectedOrderId=null;
+        setTimeout(()=>{render();playRewards(result.rewards);},320);
+      }
+      return;
+    }
+    if(event.detail===0){const generator=target.closest('.board-cell.generator');if(generator)spawn(Number(generator.dataset.index));}
   });
   const spawn=index=>{
     const result=generateAt(index);
