@@ -25,12 +25,13 @@ function sheetMarkup(state){
 }
 
 export function installDailyUI(root,ui){
-  let open=false,lastSignature='';
+  let open=false,lastSignature='',lastSheetSignature='';
   const signature=state=>JSON.stringify({view:root.dataset.view,date:state.daily?.dateKey,goals:state.daily?.goals?.map(g=>[g.progress,g.claimed]),served:state.daily?.bonus?.served,coins:state.coins,stars:state.stars});
+  const closeLayer=()=>{root.querySelector('.daily-layer')?.remove();lastSheetSignature='';};
   const decorate=()=>{
     const state=getState();
     if(root.dataset.view!=='orders'){
-      open=false;root.querySelector('.daily-ribbon')?.remove();root.querySelector('.daily-backdrop')?.remove();root.querySelector('.daily-sheet')?.remove();lastSignature='';return;
+      open=false;root.querySelector('.daily-ribbon')?.remove();closeLayer();lastSignature='';return;
     }
     const queue=root.querySelector('.customer-queue');if(!queue)return;
     const completed=dailyCompletedCount(state),claimed=state.daily.goals.filter(goal=>goal.claimed).length,bonus=state.daily.bonus;
@@ -41,8 +42,10 @@ export function installDailyUI(root,ui){
       ribbon.innerHTML=`<span class="daily-ribbon-icon">${sunIcon}</span><span class="daily-ribbon-copy"><small>HEUTE · ${completed}/3 ZIELE</small><strong>${claimed===3?'Alle Tagesziele eingesammelt':'Tagesziele & Bonusgast'}</strong></span><span class="daily-ribbon-reward">${bonus.served?checkIcon:`${coinIcon}<b>${bonus.rewards.coins}</b>`}</span><span class="daily-ribbon-chevron">›</span>`;
       lastSignature=nextSignature;
     }
-    root.querySelector('.daily-backdrop')?.remove();root.querySelector('.daily-sheet')?.remove();
-    if(open){const wrap=document.createElement('div');wrap.className='daily-layer';wrap.innerHTML=sheetMarkup(state);const nav=root.querySelector('.main-nav');nav?nav.before(wrap):root.append(wrap);}
+    if(!open){closeLayer();return;}
+    const sheetSignature=`${nextSignature}:open`;
+    if(root.querySelector('.daily-layer')&&lastSheetSignature===sheetSignature)return;
+    closeLayer();const wrap=document.createElement('div');wrap.className='daily-layer';wrap.innerHTML=sheetMarkup(state);const nav=root.querySelector('.main-nav');nav?nav.before(wrap):root.append(wrap);lastSheetSignature=sheetSignature;
   };
   root.addEventListener('click',event=>{
     const target=event.target instanceof Element?event.target:event.target?.parentElement;if(!target)return;
