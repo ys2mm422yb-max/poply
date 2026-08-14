@@ -25,7 +25,7 @@ try{
 
   const from=await page.locator('.board-cell[data-index="9"]').boundingBox(),to=await page.locator('.board-cell[data-index="10"]').boundingBox();assert(from&&to,'merge-ready coffee cells missing');
   await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(to.x+to.width/2,to.y+to.height/2,{steps:8});await page.mouse.up();
-  const mergeCell=page.locator('.board-cell.fx-merge');await mergeCell.waitFor({state:'visible'});await page.waitForTimeout(90);
+  const mergeCell=page.locator('.board-cell.fx-merge');await mergeCell.waitFor({state:'visible'});await page.waitForTimeout(170);
   const mergeFx=await mergeCell.evaluate(el=>{const style=getComputedStyle(el),before=getComputedStyle(el,'::before'),after=getComputedStyle(el,'::after');return {animation:style.animationName,beforeAnimation:before.animationName,beforeOpacity:Number(before.opacity),beforeBorder:before.borderTopColor,afterAnimation:after.animationName,afterOpacity:Number(after.opacity),afterBackground:after.backgroundImage};});
   assert(mergeFx.animation.includes('merge-snap'),`merge snap not active ${JSON.stringify(mergeFx)}`);assert(mergeFx.beforeAnimation.includes('tier-ring'),`tier ring not active ${JSON.stringify(mergeFx)}`);assert(mergeFx.afterAnimation.includes('tier-flash'),`tier flash not active ${JSON.stringify(mergeFx)}`);assert(mergeFx.beforeOpacity>.05||mergeFx.afterOpacity>.05,`merge burst is visually absent ${JSON.stringify(mergeFx)}`);await shot('70-dynamic-merge-burst');
 
@@ -35,9 +35,9 @@ try{
 
   await page.waitForTimeout(1300);
   const generator=page.locator('.board-cell.generator-coffee-gen').first();assert(await generator.isVisible(),'coffee generator missing');await generator.evaluate(el=>el.click());
-  const activeGenerator=page.locator('.board-cell.fx-generator-dispense');await activeGenerator.waitFor({state:'visible'});await page.waitForTimeout(70);
-  const generatorFx=await activeGenerator.evaluate(el=>({animation:getComputedStyle(el).animationName,itemAnimation:getComputedStyle(el.querySelector('.item-art')).animationName}));
-  assert(generatorFx.animation.includes('generator-dispense'),`generator pulse not active ${JSON.stringify(generatorFx)}`);await shot('72-dynamic-generator-pulse');
+  const activeGenerator=page.locator('.board-cell.fx-generator-dispense');await activeGenerator.waitFor({state:'visible'});await page.waitForTimeout(145);
+  const generatorFx=await activeGenerator.evaluate(el=>({animation:getComputedStyle(el).animationName,itemAnimation:getComputedStyle(el.querySelector('.item-art')).animationName,boxShadow:getComputedStyle(el).boxShadow,filter:getComputedStyle(el).filter}));
+  assert(generatorFx.animation.includes('generator-dispense'),`generator pulse not active ${JSON.stringify(generatorFx)}`);assert(generatorFx.boxShadow!=='none'||generatorFx.filter!=='none',`generator impact has no visible treatment ${JSON.stringify(generatorFx)}`);await shot('72-dynamic-generator-pulse');
 
   await page.waitForTimeout(500);await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertFits('dynamic FX 390x720');await shot('73-dynamic-board-short-safari');
   report={mergeFx,discoveryFx,generatorFx};if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
