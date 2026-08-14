@@ -11,8 +11,8 @@ export function installDiscoveryUI(root){
     const item=detail?.item;if(item?.kind!=='item')return;
     const def=itemDefinition(item);if(!def)return;
     clearTimers();root.querySelector('.discovery-reveal')?.remove();
-    const node=document.createElement('div');node.className='discovery-reveal';node.setAttribute('role','status');node.setAttribute('aria-live','polite');
-    node.innerHTML=`<div class="discovery-glow"></div><div class="discovery-item">${renderArt(def.art)}</div><div class="discovery-copy"><small>NEU ENTDECKT</small><strong>${def.name}</strong><span>Stufe ${item.level} · +${detail.progression?.gained||0} XP</span></div>`;
+    const node=document.createElement('div');node.className=`discovery-reveal family-${item.family}`;node.setAttribute('role','status');node.setAttribute('aria-live','polite');
+    node.innerHTML=`<div class="discovery-glow"></div><div class="discovery-sparks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="discovery-item">${renderArt(def.art)}</div><div class="discovery-copy"><small>NEU ENTDECKT</small><strong>${def.name}</strong><span>Stufe ${item.level} · +${detail.progression?.gained||0} XP</span></div>`;
     root.append(node);
     requestAnimationFrame(()=>node.classList.add('is-visible'));
     leaveTimer=setTimeout(()=>node.classList.add('is-leaving'),1250);

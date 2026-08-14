@@ -1,0 +1,182 @@
+/* Screenshot-driven production color/FX pass.
+   Keep gameplay hierarchy intact while making Poply feel alive, authored and reward-driven. */
+:root{
+  --poply-coffee:#f09a5b;
+  --poply-bakery:#f3cf62;
+  --poply-sweet:#ef8fbb;
+  --poply-fruit:#8fdc67;
+  --poply-cyan:#66d7d0;
+  --poply-sky:#6bbcf3;
+  --poply-coral:#ff846f;
+  --poply-violet:#9c86f4;
+}
+
+/* Board: break up the petrol mass with quiet ambient pools, then let item families carry color. */
+.qa-board{
+  background:
+    radial-gradient(circle at 12% 20%,rgba(255,181,116,.22),transparent 24%),
+    radial-gradient(circle at 88% 19%,rgba(107,188,243,.21),transparent 24%),
+    radial-gradient(circle at 52% 35%,rgba(126,220,157,.16),transparent 31%),
+    linear-gradient(180deg,#edf3e7 0,#dfece2 29%,#e9eee7 100%)!important;
+}
+.qa-board .board-title strong{color:#123f49;text-shadow:0 1px rgba(255,255,255,.75)}
+.qa-board .board-title small{color:#648487!important}
+.board-surface{
+  background:
+    radial-gradient(circle at 12% 10%,rgba(240,154,91,.2),transparent 27%),
+    radial-gradient(circle at 88% 10%,rgba(107,188,243,.2),transparent 28%),
+    radial-gradient(circle at 52% 98%,rgba(143,220,103,.13),transparent 34%),
+    linear-gradient(160deg,#0b4b57,#073845 48%,#062e3b)!important;
+  border-color:rgba(111,211,204,.34)!important;
+  box-shadow:0 18px 38px rgba(3,40,48,.27),0 0 0 1px rgba(255,255,255,.035),inset 0 1px rgba(255,255,255,.13),inset 0 -10px 24px rgba(0,18,26,.14)!important;
+}
+.board-surface .calm-empty{
+  opacity:.58!important;
+  background:linear-gradient(145deg,rgba(78,151,154,.11),rgba(19,72,82,.18))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.035),inset 0 0 0 1px rgba(148,219,213,.055)!important;
+}
+
+.production-board .board-cell.family-coffee:before{
+  background:radial-gradient(circle at 45% 24%,#fff7e4 0,#f2c793 61%,#ce8557 100%)!important;
+  box-shadow:0 5px 10px rgba(67,37,20,.22),0 0 14px rgba(240,154,91,.19),inset 0 1px rgba(255,255,255,.93)!important;
+}
+.production-board .board-cell.family-bakery:before{
+  background:radial-gradient(circle at 45% 24%,#fffbe1 0,#f3dea0 60%,#d8ad55 100%)!important;
+  box-shadow:0 5px 10px rgba(73,50,17,.2),0 0 14px rgba(243,207,98,.18),inset 0 1px rgba(255,255,255,.93)!important;
+}
+.production-board .board-cell.family-sweet:before{
+  background:radial-gradient(circle at 45% 24%,#fff3f6 0,#f2c0d1 60%,#d489a8 100%)!important;
+  box-shadow:0 5px 10px rgba(75,30,51,.2),0 0 14px rgba(239,143,187,.2),inset 0 1px rgba(255,255,255,.93)!important;
+}
+.production-board .board-cell.family-fruit:before{
+  background:radial-gradient(circle at 45% 24%,#f6ffe5 0,#cfe99c 57%,#86bf66 100%)!important;
+  box-shadow:0 5px 10px rgba(35,73,25,.2),0 0 15px rgba(143,220,103,.22),inset 0 1px rgba(255,255,255,.93)!important;
+}
+.production-board .board-cell.family-coffee .item-art{filter:drop-shadow(0 4px 2px rgba(77,39,23,.2)) drop-shadow(0 0 5px rgba(240,154,91,.2)) saturate(1.14)}
+.production-board .board-cell.family-bakery .item-art{filter:drop-shadow(0 4px 2px rgba(75,53,18,.18)) drop-shadow(0 0 5px rgba(243,207,98,.2)) saturate(1.13)}
+.production-board .board-cell.family-sweet .item-art{filter:drop-shadow(0 4px 2px rgba(76,31,52,.18)) drop-shadow(0 0 5px rgba(239,143,187,.21)) saturate(1.16)}
+.production-board .board-cell.family-fruit .item-art{filter:drop-shadow(0 4px 2px rgba(35,70,24,.18)) drop-shadow(0 0 6px rgba(143,220,103,.22)) saturate(1.18)}
+
+.production-board .board-cell.generator-coffee-gen:before{
+  border-color:#ffbd72!important;
+  background:radial-gradient(circle at 44% 25%,#fff2cf,#efad64 56%,#a95f32)!important;
+  box-shadow:0 5px 10px rgba(0,19,25,.24),0 0 18px rgba(240,154,91,.3),inset 0 1px #fff3d5!important;
+}
+.production-board .board-cell.generator-pantry-gen:before{
+  border-color:#f4db72!important;
+  background:radial-gradient(circle at 44% 25%,#fff9cf,#e6c85b 55%,#9d802e)!important;
+  box-shadow:0 5px 10px rgba(0,19,25,.24),0 0 18px rgba(243,207,98,.28),inset 0 1px #fff7c9!important;
+}
+.production-board .board-cell.generator-sunset-gen:before{
+  border-color:#ff9a7d!important;
+  background:radial-gradient(circle at 44% 25%,#fff0d8,#ff9e6b 52%,#b55768)!important;
+  box-shadow:0 5px 10px rgba(0,19,25,.24),0 0 20px rgba(255,132,111,.32),inset 0 1px #fff1dd!important;
+}
+.production-board .board-cell.merge-ready:before{
+  box-shadow:0 4px 9px rgba(0,19,25,.19),0 0 0 2px rgba(102,215,208,.72),0 0 19px rgba(102,215,208,.42),inset 0 1px rgba(255,255,255,.95)!important;
+}
+.production-board .board-cell.order-needed:before{
+  box-shadow:0 4px 9px rgba(0,19,25,.19),0 0 0 2px rgba(255,205,87,.86),0 0 18px rgba(255,205,87,.34),inset 0 1px rgba(255,255,255,.95)!important;
+}
+
+/* Board jobs: each guest gets a small authored color lane, not three identical dark cards. */
+.board-job:nth-child(1){background:radial-gradient(circle at 0 0,rgba(255,173,104,.22),transparent 48%),linear-gradient(145deg,#155667,#083c49)}
+.board-job:nth-child(2){background:radial-gradient(circle at 0 0,rgba(102,215,208,.2),transparent 48%),linear-gradient(145deg,#105668,#083a48)}
+.board-job:nth-child(3){background:radial-gradient(circle at 0 0,rgba(239,143,187,.2),transparent 48%),linear-gradient(145deg,#165166,#093a49)}
+.board-job{border-color:rgba(155,224,218,.28);box-shadow:0 9px 20px rgba(3,38,47,.17),inset 0 1px rgba(255,255,255,.1)}
+
+/* Orders: retain the service-stage hierarchy, but replace one continuous teal slab with warm/cool layers. */
+.service-orders{
+  background:
+    radial-gradient(circle at 10% 4%,rgba(255,132,111,.17),transparent 30%),
+    radial-gradient(circle at 90% 12%,rgba(107,188,243,.18),transparent 31%),
+    linear-gradient(180deg,#0b3b49,#082e3d 62%,#072835)!important;
+}
+.service-hero{
+  border-color:rgba(126,219,210,.25)!important;
+  background:radial-gradient(circle at 92% 10%,rgba(255,198,91,.14),transparent 37%),linear-gradient(135deg,#17616a,#0b4555 56%,#103b52)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.11),0 12px 26px rgba(0,20,28,.2)!important;
+}
+.customer-choice:nth-child(1){background:linear-gradient(145deg,rgba(61,119,126,.92),rgba(13,62,73,.96))}
+.customer-choice:nth-child(2){background:linear-gradient(145deg,rgba(68,102,139,.9),rgba(16,58,76,.96))}
+.customer-choice:nth-child(3){background:linear-gradient(145deg,rgba(113,78,112,.78),rgba(19,59,73,.96))}
+.customer-choice.selected{
+  border-color:rgba(255,207,95,.76)!important;
+  background:radial-gradient(circle at 18% 12%,rgba(255,207,95,.18),transparent 44%),linear-gradient(145deg,#246a6e,#0d4858)!important;
+  box-shadow:0 0 0 3px rgba(255,207,95,.1),0 10px 22px rgba(0,18,24,.2)!important;
+}
+.service-card{
+  border-color:rgba(134,221,213,.26)!important;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(255,198,91,.18),transparent 25%),
+    radial-gradient(circle at 95% 12%,rgba(107,188,243,.14),transparent 34%),
+    linear-gradient(145deg,#175b64,#0b4050 63%,#0a3547)!important;
+  box-shadow:0 20px 38px rgba(0,18,25,.27),inset 0 1px rgba(255,255,255,.09)!important;
+}
+.service-rewards>span:first-child{
+  border-color:rgba(255,213,103,.22)!important;
+  background:linear-gradient(145deg,rgba(255,210,94,.16),rgba(79,54,8,.08))!important;
+}
+.service-rewards>span:first-child .ui-icon{color:#ffd55d!important;filter:drop-shadow(0 0 5px rgba(255,207,76,.32))}
+.service-rewards>span:nth-child(2){
+  border-color:rgba(242,118,179,.2)!important;
+  background:linear-gradient(145deg,rgba(239,143,187,.15),rgba(72,25,53,.08))!important;
+}
+.service-rewards>span:nth-child(2) .ui-icon{color:#f795c4!important;filter:drop-shadow(0 0 5px rgba(239,143,187,.32))}
+.service-purpose{background:linear-gradient(90deg,rgba(255,202,87,.14),rgba(143,220,103,.07))!important}
+
+/* Place: world stays dominant; meta area gets brighter destination cues. */
+.place-command{
+  border-color:rgba(120,216,205,.23)!important;
+  background:
+    radial-gradient(circle at 12% 0,rgba(102,215,208,.16),transparent 32%),
+    radial-gradient(circle at 92% 15%,rgba(255,194,92,.11),transparent 34%),
+    linear-gradient(155deg,rgba(18,84,91,.97),rgba(9,54,68,.99))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.1),0 15px 30px rgba(0,20,28,.23)!important;
+}
+.journey-line i{background:linear-gradient(90deg,#55d96c,#70d9c9 54%,#ffd35d)!important;box-shadow:0 0 16px rgba(112,217,201,.38)!important}
+.journey-step.done>span{box-shadow:0 0 0 3px rgba(87,219,112,.1),0 6px 14px rgba(37,147,43,.28)!important}
+.journey-step.current>span{box-shadow:0 0 0 5px rgba(255,204,83,.14),0 0 18px rgba(255,204,83,.27),0 8px 16px rgba(0,20,25,.25)!important;animation:poply-current-goal 1.8s ease-in-out infinite alternate}
+.world-hero:before{background:radial-gradient(circle at 76% 15%,rgba(255,234,157,.29),transparent 25%),radial-gradient(circle at 14% 20%,rgba(102,215,208,.1),transparent 28%),linear-gradient(115deg,rgba(255,255,255,.045),transparent 33%)!important}
+
+/* Discovery: family-colored bloom + a short premium spark burst. */
+.discovery-reveal{
+  border-color:rgba(255,226,128,.82)!important;
+  background:radial-gradient(circle at 16% 32%,rgba(255,224,121,.31),transparent 34%),linear-gradient(145deg,#17606a,#0a3649)!important;
+  box-shadow:0 24px 58px rgba(0,10,19,.5),0 0 28px rgba(255,208,90,.12),inset 0 1px rgba(255,255,255,.2)!important;
+}
+.discovery-reveal::before{
+  content:'';position:absolute;inset:-45%;z-index:-2;pointer-events:none;opacity:.65;
+  background:conic-gradient(from 0deg,transparent 0 8%,rgba(255,255,255,.16) 9% 10%,transparent 11% 24%,rgba(255,221,111,.18) 25% 27%,transparent 28% 100%);
+  animation:poply-discovery-rays 1.25s ease-out both;
+}
+.discovery-reveal.family-coffee{--discovery-accent:240,154,91}.discovery-reveal.family-bakery{--discovery-accent:243,207,98}.discovery-reveal.family-sweet{--discovery-accent:239,143,187}.discovery-reveal.family-fruit{--discovery-accent:143,220,103}
+.discovery-reveal .discovery-glow{background:radial-gradient(circle,rgba(var(--discovery-accent,255,222,109),.48),rgba(var(--discovery-accent,255,222,109),.14) 42%,transparent 69%)!important;filter:blur(1px)!important}
+.discovery-reveal .discovery-item .item-art{filter:drop-shadow(0 10px 9px rgba(0,15,20,.25)) drop-shadow(0 0 12px rgba(var(--discovery-accent,255,222,109),.28)) saturate(1.15)!important}
+.discovery-sparks{position:absolute;z-index:3;left:72px;top:52%;width:1px;height:1px;pointer-events:none}
+.discovery-sparks span{position:absolute;width:6px;height:6px;border-radius:50%;background:rgb(var(--discovery-accent,255,222,109));box-shadow:0 0 9px rgba(var(--discovery-accent,255,222,109),.78);animation:poply-discovery-spark .72s ease-out both}
+.discovery-sparks span:nth-child(1){--sx:-52px;--sy:-34px;animation-delay:.05s}.discovery-sparks span:nth-child(2){--sx:-46px;--sy:30px;animation-delay:.08s}.discovery-sparks span:nth-child(3){--sx:5px;--sy:-50px;animation-delay:.02s}.discovery-sparks span:nth-child(4){--sx:28px;--sy:40px;animation-delay:.1s}.discovery-sparks span:nth-child(5){--sx:54px;--sy:-24px;animation-delay:.12s}.discovery-sparks span:nth-child(6){--sx:62px;--sy:17px;animation-delay:.07s}
+
+/* Level-up and reward arrivals should feel like progression, not notifications. */
+.level-up-overlay{isolation:isolate;border-color:rgba(255,226,126,.85)!important;background:radial-gradient(circle at 50% -10%,rgba(255,224,111,.46),transparent 51%),linear-gradient(155deg,#175667,#0a3549)!important;box-shadow:0 22px 54px rgba(0,10,20,.47),0 0 32px rgba(255,207,76,.17),inset 0 1px rgba(255,255,255,.22)!important}
+.level-up-overlay::before,.level-up-overlay::after{content:'';position:absolute;z-index:-1;pointer-events:none;border-radius:50%}
+.level-up-overlay::before{width:210px;height:90px;left:50%;top:50%;transform:translate(-50%,-50%);background:radial-gradient(ellipse,rgba(255,224,111,.24),transparent 68%);animation:poply-level-glow 1.5s ease-out both}
+.level-up-overlay::after{width:7px;height:7px;left:20px;top:17px;background:#ffe071;box-shadow:34px -8px 0 #fff1b3,73px 4px 0 #77ddd0,118px -5px 0 #f19abe,145px 24px 0 #ffe071,19px 47px 0 #77ddd0;animation:poply-level-sparks 1.45s ease-out both}
+.delivery-flight.reward-flight{box-shadow:0 8px 18px rgba(0,18,25,.2),0 0 15px currentColor;filter:saturate(1.14)}
+.delivery-flight.coin-flight{background:linear-gradient(180deg,#ffe989,#ffc93f)!important;color:#65440a!important}
+.delivery-flight.star-flight{background:linear-gradient(180deg,#ffd4eb,#f18cbe)!important;color:#6d2450!important}
+.resource.fx-reward-arrive.coin{box-shadow:0 0 0 4px rgba(255,205,71,.12),0 0 17px rgba(255,205,71,.44)!important}
+.resource.fx-reward-arrive.star{box-shadow:0 0 0 4px rgba(239,143,187,.12),0 0 17px rgba(239,143,187,.44)!important}
+.mission-card.fx-reward-arrive{box-shadow:0 0 0 4px rgba(143,220,103,.11),0 0 22px rgba(143,220,103,.3)!important}
+.restoration-reveal{border-color:rgba(255,226,119,.84)!important;background:radial-gradient(circle at 50% 0,rgba(255,208,91,.22),transparent 53%),linear-gradient(180deg,rgba(16,77,82,.95),rgba(7,40,52,.96))!important;box-shadow:0 20px 48px rgba(0,20,28,.38),0 0 34px rgba(255,203,79,.15),inset 0 1px rgba(255,255,255,.17)!important}
+
+@keyframes poply-current-goal{from{filter:brightness(1);transform:scale(1)}to{filter:brightness(1.08);transform:scale(1.045)}}
+@keyframes poply-discovery-rays{0%{opacity:0;transform:rotate(-12deg) scale(.7)}34%{opacity:.8}100%{opacity:0;transform:rotate(15deg) scale(1.2)}}
+@keyframes poply-discovery-spark{0%{opacity:0;transform:translate(0,0) scale(.35)}20%{opacity:1}100%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(.9)}}
+@keyframes poply-level-glow{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}24%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.28)}}
+@keyframes poply-level-sparks{0%{opacity:0;transform:scale(.4) rotate(-8deg)}22%{opacity:1}100%{opacity:0;transform:scale(1.35) rotate(8deg)}}
+
+@media(prefers-reduced-motion:reduce){
+  .journey-step.current>span,.discovery-reveal::before,.discovery-sparks span,.level-up-overlay::before,.level-up-overlay::after{animation:none!important}
+  .discovery-sparks{display:none!important}
+}
