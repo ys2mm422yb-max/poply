@@ -89,11 +89,13 @@ try{
   await page.locator('.player-level-badge').click();await page.waitForSelector('.player-progress-sheet');
   const sheetText=await page.locator('.player-progress-sheet').textContent();
   assert(sheetText?.includes('5/5 Meilensteine'),'completed milestone summary is wrong');assert(await page.locator('.milestone-row.complete').count()===5,'not all seeded milestones render complete');
+  assert(sheetText?.includes('NÄCHSTES LEVEL')&&sheetText?.includes('360 XP fehlen'),`next level preview is wrong: ${sheetText}`);
+  assert(sheetText?.includes('+100')&&sheetText?.includes('Coins'),`next level reward is missing: ${sheetText}`);
   await assertSheetFits('390x844 milestones');await shot('22-player-milestones-390x844');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertSheetFits('390x720 milestones');await shot('23-player-milestones-short-safari');
   await page.locator('[data-player-progress-close]').click();assert(!(await page.locator('.player-progress-sheet').isVisible().catch(()=>false)),'milestone sheet did not close');
   const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');
-  report.milestones={completed:5,total:5,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges};
+  report.milestones={completed:5,total:5,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,nextLevel:6,remainingXp:360,rewardCoins:100};
 
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('29-progression-failure');}catch{}}
