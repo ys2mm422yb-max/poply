@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, makeItem } from '../src/v2-game.js';
-import { INITIAL_STORAGE_CAPACITY, STORAGE_MAX_CAPACITY, ensureInventoryState, storageUpgradeCost, storeBoardItem, restoreStoredItem, upgradeStorage } from '../src/aaa-inventory.js';
+import { INITIAL_STORAGE_CAPACITY, STORAGE_MAX_CAPACITY, RECYCLE_COIN_VALUES, ensureInventoryState, storageUpgradeCost, recycleCoinValue, storeBoardItem, recycleBoardItem, restoreStoredItem, upgradeStorage } from '../src/aaa-inventory.js';
 
 test('existing saves gain four empty storage slots without losing player value',()=>{
   const state=createInitialState();state.coins=777;delete state.storage;delete state.storageCapacity;
@@ -25,6 +25,33 @@ test('full storage rejects another item without loss',()=>{
   const state=ensureInventoryState(createInitialState()).state;state.storage=Array.from({length:4},(_,i)=>makeItem('coffee',1,`stored-${i}`));
   const boardItem=structuredClone(state.board[9]),result=storeBoardItem(state,9);
   assert.equal(result.changed,false);assert.equal(result.reason,'storage-full');assert.equal(result.state.board[9].id,boardItem.id);assert.equal(result.state.storage.length,4);
+});
+
+test('recycling uses explicit deterministic tier values',()=>{
+  assert.deepEqual(RECYCLE_COIN_VALUES,{1:1,2:3,3:7,4:15,5:30,6:60});
+  for(const [level,coins] of Object.entries(RECYCLE_COIN_VALUES))assert.equal(recycleCoinValue(makeItem('coffee',Number(level),`tier-${level}`)),coins);
+  assert.equal(recycleCoinValue(null),0);assert.equal(recycleCoinValue({kind:'generator'}),0);
+});
+
+test('recycling removes exactly one item and returns the advertised Coins',()=>{
+  const state=ensureInventoryState(createInitialState()).state,id=state.board[9].id,beforeItems=state.board.filter(item=>item?.kind==='item').length,beforeCoins=state.coins;
+  const result=recycleBoardItem(state,9);
+  assert.equal(result.changed,true);assert.equal(result.item.id,id);assert.equal(result.coins,1);assert.equal(result.state.board[9],null);assert.equal(result.state.coins,beforeCoins+1);assert.equal(result.state.board.filter(item=>item?.kind==='item').length,beforeItems-1);
+  assert.equal(state.board[9].id,id,'input state was mutated');assert.equal(state.coins,beforeCoins,'input Coins were mutated');
+});
+
+test('generators can never be recycled',()=>{
+  const state=ensureInventoryState(createInitialState()).state,snapshot=structuredClone(state),result=recycleBoardItem(state,0);
+  assert.equal(result.changed,false);assert.equal(result.reason,'generator-not-recyclable');assert.deepEqual(result.state,snapshot);
+});
+
+test('full board plus full storage remains recoverable by recycling one board item',()=>{
+  const state=ensureInventoryState(createInitialState()).state;state.storage=Array.from({length:4},(_,i)=>makeItem('coffee',1,`stored-${i}`));
+  const filler=makeItem('sweet',1,'fill');state.board=state.board.map((item,index)=>item??{...filler,id:`fill-${index}`});
+  assert.equal(state.board.every(Boolean),true);assert.equal(state.storage.length,state.storageCapacity);
+  const storedIds=state.storage.map(item=>item.id),target=state.board.findIndex(item=>item?.kind==='item'),targetId=state.board[target].id;
+  const result=recycleBoardItem(state,target);
+  assert.equal(result.changed,true);assert.equal(result.item.id,targetId);assert.equal(result.state.board[target],null);assert.deepEqual(result.state.storage.map(item=>item.id),storedIds);assert.equal(result.state.board.filter(Boolean).length,48);
 });
 
 test('restoring a stored item uses a free board slot and preserves identity',()=>{
