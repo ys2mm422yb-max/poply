@@ -13,12 +13,13 @@ Updated: 2026-08-14
 - real Collection Book / Sammlung with persistent item, generator and Place discoveries;
 - first-time item discovery XP and authored discovery reward moments;
 - persistent Storage tray with 4 starting slots and Coin-funded permanent expansion to 6/8 slots;
+- fair Daily Goals + Daily Bonus Guest with no streak punishment;
 - local save/resume + migrations;
 - authored Board / Orders / Place / Sammlung views;
 - sound, haptics, merge/delivery/reward/restoration feedback;
 - CI + Mobile WebKit Browser QA + canonical Pages release gates.
 
-Latest live `main` before Milestone G release: `657ff1f79760a4564cda0ac7f03152a6236ef30a`.
+Latest live `main`: `d81b3f0109c643f03cc467193858ee27d381889c`.
 
 Milestone B visual quality remains OPEN. Current user direction in GitHub Issue #42 is explicit: Poply still feels too dark and restrained and needs more authored color, stronger family identities, richer reward/merge/discovery/restoration effects, glows/light/particles where performance-safe, and less dark-dashboard feeling. Green tests alone do not close this visual work.
 
@@ -44,34 +45,53 @@ Accepted F1 behavior:
 - permanent Coin utility: 4→6 slots costs 200 Coins; 6→8 costs 450;
 - dedicated real Mobile WebKit Storage QA at 390×844 and 390×720.
 
-## Active implementation milestone
-### G — Daily goals / fair return loop — IN PROGRESS
+### G — Daily goals / fair return loop — LIVE
 Contract: `docs/DAILY_GOALS.md`
-Active manual branch: `feature/daily-goals-v2`.
+Merged PR: #43.
+Release main: `d81b3f0109c643f03cc467193858ee27d381889c`.
+
+Accepted G behavior:
+- deterministic local-day Daily state;
+- guaranteed merge + serve goals and contextual third goal;
+- real gameplay events progress Daily;
+- one-time Coin claims;
+- deterministic Bonus Guest with real Board-item consumption and existing Coins + Stars;
+- no streak, no missed-day punishment and no extra token;
+- compact `HEUTE` entry inside Orders;
+- exact-head CI, Browser QA, screenshot acceptance and exact-main release gates all passed.
+
+## Active implementation milestone
+### H — World map / Place selector — IN PROGRESS
+Contract: `docs/WORLD_MAP.md`.
+Active automation branch: `feature/world-map-selector`.
 Cross-worker log: GitHub Issue #42.
 
-Current implemented branch scope:
-- deterministic local-day Daily state;
-- three goals with guaranteed merge + serve and contextual generate/discover/restore third goal;
-- real gameplay events wired into Daily progress;
-- one-time Coin claims;
-- deterministic Daily Bonus Guest using a real item requirement and existing Coins + Stars;
-- no streak, no missed-day punishment and no new token;
-- compact `HEUTE` ribbon in Orders and temporary Daily bottom sheet;
-- dedicated Daily domain tests and a real WebKit flow covering merge, standard order, generator, all three claims, Bonus Guest and reload.
+Current H slice:
+- authored Places map entry inside the Place screen rather than a new primary tab;
+- known Places show current/completed/locked state and independent restoration progress;
+- completed Café am Meer remains revisitable after Sonnenkai unlocks;
+- selected Place renders an authored scene preview at that Place's own restoration stage;
+- map visits do not mutate Board, Orders, currencies or meta progress;
+- dedicated deterministic model tests and real Mobile WebKit QA at 390×844 + 390×720.
 
-Still required before G may be called live:
-- exact PR-head CI + Browser QA;
-- generated Daily screenshots opened and visually reviewed by the worker;
+Still required before H slice may be called live:
+- exact PR-head normal CI + Browser QA;
+- generated map screenshots opened and visually reviewed;
 - fix every functional or visible defect found;
 - exact-head merge;
 - exact-main CI + Browser QA + canonical Pages deploy;
 - final GitHub Issue #42 handoff.
 
+## Parallel work
+- Manual worker owns Board/color/reward FX files on `visual/color-fx-production-1` until terminal handoff.
+- PR #45 owns replacement-order balancing in `src/v2-game.js`.
+- H intentionally avoids those files/scopes.
+
 ## Next implementation milestones
-1. Visual/color/effects production pass from Issue #42 in parallel with feature growth.
-2. H — World map / Place selector.
-3. I — Place 03 with genuinely new gameplay/content.
+1. Finish H first map/revisit slice.
+2. Continue screenshot-driven color/effects production passes in parallel.
+3. Extend H only if explicit active-Place gameplay switching can be added without order/generator progress loss.
+4. I — Place 03 with genuinely new gameplay/content.
 
 ## Autonomous-work rule
 GitHub Issue #42 is the cross-worker durable work log. Manual work plus both Poply automations must record exact heads, PRs, files/systems, test/workflow IDs, screenshots actually opened, visible findings, merge/deploy state and next work there. A substantial autonomous session is not considered complete without its GitHub trace.
