@@ -16,6 +16,18 @@ export function playerProgress(totalXp=0){
   return {level,totalXp:total,current,next:need,ratio:need?current/need:1};
 }
 
+export function nextLevelRewardPreview(totalXp=0){
+  const progress=playerProgress(totalXp);
+  return {
+    level:progress.level+1,
+    remainingXp:Math.max(0,progress.next-progress.current),
+    rewardCoins:LEVEL_REWARD_COINS,
+    currentXp:progress.current,
+    requiredXp:progress.next,
+    ratio:progress.ratio
+  };
+}
+
 export function legacyXpForState(state){
   const orders=Math.max(0,Number(state?.stats?.orders)||0);
   const upgrades=Math.max(0,state?.placeUpgrades?.length||0);
