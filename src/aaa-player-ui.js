@@ -1,5 +1,5 @@
 import { getState } from './aaa-session.js';
-import { playerProgress } from './aaa-progression.js';
+import { playerProgress, nextLevelRewardPreview } from './aaa-progression.js';
 import { playerMilestones, completedMilestoneCount } from './aaa-milestones.js';
 
 const safeRemove=node=>{if(node?.isConnected)node.remove();};
@@ -8,10 +8,11 @@ const checkIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.
 export function installPlayerUI(root){
   let overlayTimer=0,levelDelayTimer=0,milestonesOpen=false,decorating=false;
   const milestoneData=state=>playerMilestones(state);
-  const milestoneSignature=milestones=>milestones.map(entry=>`${entry.id}:${entry.current}:${entry.complete?'1':'0'}`).join('|');
-  const milestoneMarkup=(milestones,signature)=>{
+  const milestoneSignature=(milestones,preview)=>`${milestones.map(entry=>`${entry.id}:${entry.current}:${entry.complete?'1':'0'}`).join('|')}|next:${preview.level}:${preview.remainingXp}`;
+  const nextLevelMarkup=preview=>`<div class="next-level-preview" aria-label="Nächstes Level ${preview.level}, ${preview.remainingXp} XP fehlen, ${preview.rewardCoins} Coins Belohnung"><span class="next-level-orb">LV ${preview.level}</span><div class="next-level-copy"><small>NÄCHSTES LEVEL</small><strong>${preview.remainingXp} XP fehlen</strong><div class="next-level-track"><i style="width:${Math.round(preview.ratio*100)}%"></i></div></div><div class="next-level-reward"><small>BELOHNUNG</small><strong>+${preview.rewardCoins}</strong><span>Coins</span></div></div>`;
+  const milestoneMarkup=(milestones,signature,preview)=>{
     const done=milestones.filter(entry=>entry.complete).length;
-    return `<section class="player-progress-sheet" data-signature="${signature}" aria-label="Spielerfortschritt"><header><div><small>DEIN FORTSCHRITT</small><strong>${done}/${milestones.length} Meilensteine</strong></div><button data-player-progress-close aria-label="Fortschritt schließen">×</button></header><div class="milestone-list">${milestones.map(entry=>`<article class="milestone-row ${entry.complete?'complete':''}"><span class="milestone-mark">${entry.complete?checkIcon:`${entry.current}`}</span><div class="milestone-copy"><strong>${entry.label}</strong><small>${entry.detail}</small><div class="milestone-track"><i style="width:${Math.round(entry.ratio*100)}%"></i></div></div><b>${entry.complete?'Fertig':`${entry.current}/${entry.target}`}</b></article>`).join('')}</div></section>`;
+    return `<section class="player-progress-sheet" data-signature="${signature}" aria-label="Spielerfortschritt"><header><div><small>DEIN FORTSCHRITT</small><strong>${done}/${milestones.length} Meilensteine</strong></div><button data-player-progress-close aria-label="Fortschritt schließen">×</button></header>${nextLevelMarkup(preview)}<div class="milestone-list">${milestones.map(entry=>`<article class="milestone-row ${entry.complete?'complete':''}"><span class="milestone-mark">${entry.complete?checkIcon:`${entry.current}`}</span><div class="milestone-copy"><strong>${entry.label}</strong><small>${entry.detail}</small><div class="milestone-track"><i style="width:${Math.round(entry.ratio*100)}%"></i></div></div><b>${entry.complete?'Fertig':`${entry.current}/${entry.target}`}</b></article>`).join('')}</div></section>`;
   };
   const decorate=()=>{
     if(decorating)return;decorating=true;
@@ -31,9 +32,9 @@ export function installPlayerUI(root){
       track.setAttribute('aria-label',track.title);
       const existing=root.querySelector('.player-progress-sheet');
       if(!milestonesOpen){existing?.remove();return;}
-      const milestones=milestoneData(state),signature=milestoneSignature(milestones);
+      const milestones=milestoneData(state),preview=nextLevelRewardPreview(state.playerXp),signature=milestoneSignature(milestones,preview);
       if(existing?.dataset.signature===signature)return;
-      existing?.remove();topbar.insertAdjacentHTML('afterend',milestoneMarkup(milestones,signature));
+      existing?.remove();topbar.insertAdjacentHTML('afterend',milestoneMarkup(milestones,signature,preview));
     }finally{decorating=false;}
   };
   const revealLevelUp=progression=>{
