@@ -46,7 +46,7 @@ export const PLACE_02_UPGRADES = [
   { id: 'sunset-bar', label: 'Saftbar', cost: 10, copy: 'Die Tropenbar bekommt ihren festen Platz direkt am Deck.' },
   { id: 'sunset-lounge', label: 'Lounge', cost: 12, copy: 'Tiefe Sitzplätze machen aus einem Drink einen langen Abend.' },
   { id: 'sunset-fire', label: 'Feuerstelle', cost: 14, copy: 'Die Feuerstelle wird zum Treffpunkt nach Sonnenuntergang.' },
-  { id: 'sunset-stage', label: 'Abendbühne', cost: 16, copy: 'Musik bringt Leben auf den Kai und neue Gäste an die Bar.' },
+  { id: 'sunset-stage', label: 'Abendbühne', cost: 16, copy: 'Musik bringt Leben auf den Kai und neue Gäste an der Bar.' },
   { id: 'sunset-sign', label: 'Sonnenkai-Schild', cost: 18, copy: 'Das leuchtende Schild vollendet deinen zweiten Poply Place.' },
 ];
 
@@ -77,6 +77,19 @@ const SUNSET_ORDER_TEMPLATES = [
   { title:'Poply Paradise', requirements:[{family:'fruit',level:6,qty:1},{family:'coffee',level:5,qty:1},{family:'bakery',level:4,qty:1}], rewards:{coins:520,stars:10} },
 ];
 
+const ORDER_DIFFICULTY_BANDS = {
+  coast:[
+    {key:'starter',minCompleted:0,maxCompleted:1,indexes:[0,1,2]},
+    {key:'growing',minCompleted:2,maxCompleted:3,indexes:[1,2,3,4,5]},
+    {key:'established',minCompleted:4,maxCompleted:6,indexes:[3,4,5,6,7,8]},
+  ],
+  sunset:[
+    {key:'starter',minCompleted:0,maxCompleted:1,indexes:[0,1]},
+    {key:'growing',minCompleted:2,maxCompleted:3,indexes:[1,2,3]},
+    {key:'established',minCompleted:4,maxCompleted:6,indexes:[2,3,4,5]},
+  ],
+};
+
 const clone = value => structuredClone(value);
 function nextId(state,prefix='item'){ state.nextId += 1; return `${prefix}-${state.nextId}`; }
 const completedUpgradeCount=(state,upgrades)=>upgrades.reduce((count,upgrade)=>count+(state.placeUpgrades.includes(upgrade.id)?1:0),0);
@@ -105,6 +118,21 @@ export function createOrder(sequence,chapterId='coast'){
   const templates=chapterId==='sunset'?SUNSET_ORDER_TEMPLATES:COAST_ORDER_TEMPLATES;
   const template=templates[sequence%templates.length];
   return {id:`order-${sequence}`,sequence,chapter:chapterId,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}};
+}
+
+export function orderDifficultyBand(state,chapterId=activePlaceChapter(state).id){
+  const chapter=PLACE_CHAPTERS.find(entry=>entry.id===chapterId)??PLACE_CHAPTERS[0];
+  const completed=completedUpgradeCount(state,chapter.upgrades);
+  const bands=ORDER_DIFFICULTY_BANDS[chapter.id]??ORDER_DIFFICULTY_BANDS.coast;
+  return bands.find(band=>completed>=band.minCompleted&&completed<=band.maxCompleted)??bands[bands.length-1];
+}
+
+export function createProgressionOrder(state,sequence=state.orderSequence,chapterId=activePlaceChapter(state).id){
+  const templates=chapterId==='sunset'?SUNSET_ORDER_TEMPLATES:COAST_ORDER_TEMPLATES;
+  const band=orderDifficultyBand(state,chapterId);
+  const index=band.indexes[sequence%band.indexes.length];
+  const template=templates[index];
+  return {id:`order-${sequence}`,sequence,chapter:chapterId,difficulty:band.key,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}};
 }
 
 export function createInitialState(){
@@ -167,7 +195,7 @@ export function fulfillOrder(inputState,orderId){
   const state=clone(inputState); const active=state.currentOrders.find(entry=>entry.id===orderId); active.requirements.forEach(req=>consumeRequirement(state,req));
   state.coins+=active.rewards.coins; state.stars+=active.rewards.stars; state.stats.orders+=1; state.currentOrders=state.currentOrders.filter(entry=>entry.id!==orderId);
   syncProgressionContent(state);
-  state.currentOrders.push(createOrder(state.orderSequence,activePlaceChapter(state).id)); state.orderSequence+=1; state.updatedAt=Date.now();
+  state.currentOrders.push(createProgressionOrder(state,state.orderSequence,activePlaceChapter(state).id)); state.orderSequence+=1; state.updatedAt=Date.now();
   return {state,changed:true,reason:null,rewards:active.rewards};
 }
 export function nextPlaceUpgrade(state){ const chapter=activePlaceChapter(state); return chapter.upgrades.find(upgrade=>!state.placeUpgrades.includes(upgrade.id))??null; }
