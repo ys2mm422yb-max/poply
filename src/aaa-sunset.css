@@ -8,13 +8,14 @@
 .place-sunset .journey-step.current>span{background:linear-gradient(145deg,#ffd46d,#ef8b57);color:#573222;box-shadow:0 0 0 7px rgba(240,124,89,.13),0 4px 10px rgba(0,0,0,.22)}
 .chapter-sunset .mission-card{border-color:rgba(240,149,91,.35);background:linear-gradient(145deg,#fff5df,#f2cf91)}
 .chapter-sunset .board-jobs{filter:saturate(1.05)}
-.board-cell.family-fruit{background:radial-gradient(circle at 48% 24%,#fff9e3 0,#f2d894 54%,#db9b64 100%);border-color:rgba(255,232,169,.88);box-shadow:inset 0 1px 0 rgba(255,255,255,.92),0 3px 8px rgba(38,20,27,.24)}
-.board-cell.family-fruit.order-needed{box-shadow:inset 0 0 0 2px rgba(255,196,88,.8),0 0 14px rgba(242,136,83,.24),0 3px 8px rgba(38,20,27,.2)}
-.board-cell.family-fruit.merge-ready{outline-color:rgba(245,144,92,.72);box-shadow:0 0 12px rgba(245,144,92,.2)}
-.board-cell.generator-sunset-gen{background:radial-gradient(circle at 45% 25%,#fff0ba,#ef9e55 55%,#9b4d3c);border-color:#ffc96a;box-shadow:inset 0 1px 0 #fff0b8,0 0 16px rgba(240,119,84,.35),0 4px 9px rgba(27,15,28,.28)}
+.production-board .board-cell.family-fruit:before{background:radial-gradient(circle at 48% 24%,#fff9e3 0,#f2d894 56%,#c88461 100%);box-shadow:0 4px 9px rgba(35,18,28,.24),inset 0 1px rgba(255,255,255,.94),inset 0 -2px rgba(110,48,42,.1)}
+.production-board .board-cell.family-fruit.order-needed:before{box-shadow:0 4px 9px rgba(35,18,28,.24),0 0 0 2px rgba(255,196,88,.8),0 0 15px rgba(242,136,83,.26),inset 0 1px rgba(255,255,255,.94)}
+.production-board .board-cell.family-fruit.merge-ready:before{box-shadow:0 4px 9px rgba(35,18,28,.23),0 0 0 2px rgba(244,145,91,.58),0 0 16px rgba(244,145,91,.28),inset 0 1px rgba(255,255,255,.94)}
+.production-board .board-cell.generator-sunset-gen:before{inset:1%;border:2px solid #ffc96a;background:radial-gradient(circle at 45% 25%,#fff0ba,#ef9e55 55%,#9b4d3c);box-shadow:0 5px 10px rgba(34,17,28,.28),0 0 18px rgba(240,119,84,.34),inset 0 1px #fff0b8}
 .board-cell.generator-sunset-gen .generator-mark{color:#fff1af;filter:drop-shadow(0 1px 2px rgba(55,24,24,.45))}
-.board-cell.family-fruit.tier-5 .tier{background:linear-gradient(#fff2b4,#e99f55);color:#6b3523}.board-cell.family-fruit.tier-6{background:radial-gradient(circle at 45% 25%,#fff7d8,#efb866 55%,#c76b55)}
-.board-cell.family-fruit.tier-6 .tier{background:linear-gradient(#ffe47b,#e5844d);color:#5e2a21}
+.production-board .board-cell.family-fruit.tier-5:before{background:radial-gradient(circle at 45% 25%,#fff5ca,#f0bd71 55%,#c27559)}
+.production-board .board-cell.family-fruit.tier-6:before{background:radial-gradient(circle at 45% 24%,#fff5c9,#f0ae61 52%,#ad574c);box-shadow:0 4px 10px rgba(35,18,28,.25),0 0 13px rgba(240,135,79,.24),inset 0 1px rgba(255,255,255,.95)}
+.board-cell.family-fruit.tier-5 .tier{background:linear-gradient(#fff2b4,#e99f55);color:#6b3523}.board-cell.family-fruit.tier-6 .tier{background:linear-gradient(#ffe47b,#e5844d);color:#5e2a21}
 .sunset-place-svg{filter:saturate(1.04) contrast(1.02)}
 .world-hero.fx-restoration-reveal{animation:restoration-scene-reveal 1.05s cubic-bezier(.16,.9,.2,1) both}
 .world-hero.fx-restoration-reveal::after{content:'';position:absolute;inset:0;z-index:6;pointer-events:none;background:linear-gradient(115deg,transparent 18%,rgba(255,245,190,.72) 48%,transparent 74%);mix-blend-mode:screen;animation:restoration-sweep .9s ease-out both}
