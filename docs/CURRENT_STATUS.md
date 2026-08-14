@@ -18,7 +18,7 @@ Updated: 2026-08-14
 - sound, haptics, merge/delivery/reward/restoration feedback;
 - CI + Mobile WebKit Browser QA + canonical Pages release gates.
 
-Latest live `main` before Milestone G work: `304d36ccdd3de1b7706dbedbf3c898d1d2ca4a27`.
+Latest live `main` before Milestone G release: `657ff1f79760a4564cda0ac7f03152a6236ef30a`.
 
 Milestone B visual quality remains OPEN. Current user direction in GitHub Issue #42 is explicit: Poply still feels too dark and restrained and needs more authored color, stronger family identities, richer reward/merge/discovery/restoration effects, glows/light/particles where performance-safe, and less dark-dashboard feeling. Green tests alone do not close this visual work.
 
