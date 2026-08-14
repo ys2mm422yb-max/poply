@@ -48,6 +48,16 @@ export function energyMsUntilNext(state,now=Date.now()){
   return remainder===0?ENERGY_REGEN_MS:ENERGY_REGEN_MS-remainder;
 }
 
+export function energyPlan(state,now=Date.now()){
+  const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
+  const energy=Math.max(0,Math.min(maxEnergy,Number(state.energy)||0));
+  const missing=Math.max(0,maxEnergy-energy);
+  if(missing===0)return {energy,maxEnergy,missing,actionsAvailable:energy,nextInMs:0,fullInMs:0,nextAt:now,fullAt:now};
+  const nextInMs=energyMsUntilNext({...state,energy,maxEnergy},now);
+  const fullInMs=nextInMs+Math.max(0,missing-1)*ENERGY_REGEN_MS;
+  return {energy,maxEnergy,missing,actionsAvailable:energy,nextInMs,fullInMs,nextAt:now+nextInMs,fullAt:now+fullInMs};
+}
+
 export function energyStatusLabel(state,now=Date.now()){
   const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
   if(Number(state.energy)>=maxEnergy)return `Auto · ${ENERGY_REGEN_MINUTES} Min`;
