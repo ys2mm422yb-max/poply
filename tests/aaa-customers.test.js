@@ -22,3 +22,13 @@ test('active AAA order views no longer import legacy customer webps',async()=>{
   assert.match(view,/customerArtUrl/);
   assert.doesNotMatch(view,/v2-customer-[abc]\.js/);
 });
+
+test('Orders service stage uses interaction-safe authored light and distinct reward colors',async()=>{
+  const css=await read('src/aaa-service.css');
+  assert.match(css,/Orders vibrance pass/);
+  assert.match(css,/\.service-card:after\{[^}]*pointer-events:none[^}]*animation:service-stage-breathe/s);
+  assert.match(css,/\.service-rewards>span:first-child\{/);
+  assert.match(css,/\.service-rewards>span:nth-child\(2\)\{/);
+  assert.match(css,/@keyframes service-stage-breathe/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.service-card:after\{animation:none!important;transform:none!important\}\}/);
+});
