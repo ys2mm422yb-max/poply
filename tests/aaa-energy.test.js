@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { ENERGY_REGEN_MS, ensureEnergyClock, regenerateEnergy, recordEnergySpend, energyMsUntilNext, energyStatusLabel } from '../src/aaa-energy.js';
+import { ENERGY_REGEN_MS, ensureEnergyClock, regenerateEnergy, recordEnergySpend, energyMsUntilNext, energyPlan, energyStatusLabel } from '../src/aaa-energy.js';
 
 const base=()=>({energy:10,maxEnergy:40,updatedAt:0});
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
@@ -38,12 +38,28 @@ test('energy status is understandable at full and while refilling',()=>{
   assert.equal(energyStatusLabel({...base(),energy:20,energyUpdatedAt:now-30_000},now),'+1 in 1:30');
 });
 
+test('energy planner derives next and full timing without mutating state',()=>{
+  const now=4_000_000,state={...base(),energy:37,maxEnergy:40,energyUpdatedAt:now-30_000};
+  const snapshot=structuredClone(state),plan=energyPlan(state,now);
+  assert.deepEqual(state,snapshot);
+  assert.equal(plan.energy,37);assert.equal(plan.actionsAvailable,37);assert.equal(plan.missing,3);
+  assert.equal(plan.nextInMs,90_000);assert.equal(plan.fullInMs,90_000+2*ENERGY_REGEN_MS);
+  assert.equal(plan.nextAt,now+90_000);assert.equal(plan.fullAt,now+90_000+2*ENERGY_REGEN_MS);
+});
+
+test('energy planner reports a full bar as immediately ready',()=>{
+  const now=5_000_000,plan=energyPlan({...base(),energy:40,maxEnergy:40,energyUpdatedAt:now},now);
+  assert.equal(plan.missing,0);assert.equal(plan.actionsAvailable,40);assert.equal(plan.nextInMs,0);assert.equal(plan.fullInMs,0);assert.equal(plan.fullAt,now);
+});
+
 test('live shell installs the energy UI and keeps the player-facing rule documented',async()=>{
   const [main,ui,session,css,docs]=await Promise.all([read('src/aaa-main.js'),read('src/aaa-energy-ui.js'),read('src/aaa-session.js'),read('src/aaa-energy.css'),read('docs/ENERGY_SYSTEM.md')]);
   assert.match(main,/installEnergyUI\(root\)/);
   assert.match(ui,/data\.energyTimer|dataset\.energyTimer/);assert.match(ui,/setInterval\(paint,1000\)/);
+  assert.match(ui,/data-energy-planner|dataset\.energyPlanner/);assert.match(ui,/Generator-Aktionen/);assert.match(ui,/energyPlan\(/);
+  assert.match(ui,/aria-expanded/);assert.match(ui,/Escape/);
   assert.match(session,/regenerateEnergy/);assert.match(session,/recordEnergySpend/);
-  assert.match(css,/\.energy-timer/);assert.match(css,/fx-energy-refill/);
+  assert.match(css,/\.energy-timer/);assert.match(css,/fx-energy-refill/);assert.match(css,/\.energy-planner-sheet/);assert.match(css,/prefers-reduced-motion/);
   assert.match(docs,/1 energy every 2 minutes|1 Energie alle 2 Minuten/i);
   assert.match(docs,/closed|geschlossen/i);
 });
