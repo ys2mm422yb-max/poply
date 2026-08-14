@@ -24,7 +24,7 @@ export function generateAt(index){
   if(result.changed){
     result.state=recordEnergySpend(result.state,beforeEnergy);
     const item=result.state.board[result.spawnedIndex],discovery=recordItemDiscovery(result.state,item);
-    result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.progression=discovery.progression||null;keep(result.state);
+    result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(item):null;result.progression=discovery.progression||null;keep(result.state);
   }
   return result;
 }
@@ -32,7 +32,7 @@ export function moveOrMergeAt(from,to){
   const result=moveOrMerge(state,from,to);
   if(result.changed){
     if(result.type==='merge'){
-      const discovery=recordItemDiscovery(result.state,result.item);result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.progression=discovery.progression||null;
+      const discovery=recordItemDiscovery(result.state,result.item);result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(result.item):null;result.progression=discovery.progression||null;
     }
     keep(result.state);
   }
