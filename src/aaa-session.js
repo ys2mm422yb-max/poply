@@ -1,5 +1,5 @@
 import { loadSavedState, saveGameState, freshState } from './aaa-storage.js';
-import { generateFromSlot, moveOrMerge, fulfillOrder, buildNextUpgrade } from './v2-game.js';
+import { generateFromSlot, moveOrMerge, fulfillOrder, buildNextUpgrade, startNextPlace } from './v2-game.js';
 
 let state=loadSavedState();
 export const getState=()=>state;
@@ -9,4 +9,5 @@ export function generateAt(index){const result=generateFromSlot(state,index);if(
 export function moveOrMergeAt(from,to){const result=moveOrMerge(state,from,to);if(result.changed)keep(result.state);return result;}
 export function deliverOrder(id){const result=fulfillOrder(state,id);if(result.changed)keep(result.state);return result;}
 export function buildUpgrade(){const result=buildNextUpgrade(state);if(result.changed)keep(result.state);return result;}
+export function enterNextPlace(){const result=startNextPlace(state);if(result.changed)keep(result.state);return result;}
 saveGameState(state);
