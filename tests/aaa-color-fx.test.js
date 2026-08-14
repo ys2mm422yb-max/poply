@@ -19,6 +19,14 @@ test('color effects layer gives all item families authored identity and reduced-
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
 
+test('Board atmosphere uses spare phone height without stealing interaction',()=>{
+  const css=read('src/aaa-color-fx.css');
+  assert.match(css,/\.qa-board \.board-area\{[\s\S]*animation:poply-workbench-ambient/);
+  assert.match(css,/\.qa-board \.board-area::after\{[\s\S]*pointer-events:none[\s\S]*poply-workbench-glimmer/);
+  assert.match(css,/\.qa-board \.board-title,\.qa-board \.board-frame\{position:relative;z-index:1\}/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{[\s\S]*\.qa-board \.board-area[\s\S]*animation:none!important/);
+});
+
 test('discovery UI exposes family color hook and authored spark burst',()=>{
   const source=read('src/aaa-discovery-ui.js');
   assert.match(source,/discovery-reveal family-\$\{item\.family\}/);
@@ -40,7 +48,7 @@ test('mobile Board title keeps high contrast after the final color layer',()=>{
 
 test('combined map and color effects release cache key is explicit',()=>{
   const html=read('index.html');
-  assert.match(html,/aaa\.css\?v=20260814-map-colorfx1/);
-  assert.match(html,/aaa-main\.js\?v=20260814-map-colorfx1/);
-  assert.match(html,/data-build="aaa-foundation-20260814-map-colorfx1"/);
+  assert.match(html,/aaa\.css\?v=20260814-map-colorfx2/);
+  assert.match(html,/aaa-main\.js\?v=20260814-map-colorfx2/);
+  assert.match(html,/data-build="aaa-foundation-20260814-map-colorfx2"/);
 });
