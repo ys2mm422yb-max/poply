@@ -1,0 +1,12 @@
+/* Cross-feature integration guards discovered by exact-head screenshot QA. */
+.service-orders.has-daily-ribbon{
+  grid-template-rows:auto auto auto minmax(0,1fr) auto;
+}
+
+@media(max-width:430px){
+  /* Mobile workbench title sits on the dark board-area surface. Keep the light mobile contrast
+     even though the final color layer uses a dark title on the light desktop board background. */
+  .qa-board .board-title strong{color:#f4fbf8!important;text-shadow:none!important}
+  .qa-board .board-title small{color:#9eb9b6!important}
+  .qa-board .board-title>span{color:#9eb9b6!important}
+}
