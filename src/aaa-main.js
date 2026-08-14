@@ -5,6 +5,7 @@ import { installEnergyUI } from './aaa-energy-ui.js';
 import { installPlayerUI } from './aaa-player-ui.js';
 import { installDiscoveryUI } from './aaa-discovery-ui.js';
 import { installStorageUI } from './aaa-storage-ui.js';
+import { installDailyUI } from './aaa-daily-ui.js';
 
 document.documentElement.style.setProperty('--poply-hero',`url(${ASSETS.hero})`);
 document.documentElement.style.setProperty('--poply-atlas',`url(${ASSETS.atlas})`);
@@ -26,3 +27,4 @@ installEnergyUI(root);
 installPlayerUI(root);
 installDiscoveryUI(root);
 installStorageUI(root,ui);
+installDailyUI(root,ui);
