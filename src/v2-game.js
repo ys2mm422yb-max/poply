@@ -19,14 +19,20 @@ export const ITEM_FAMILIES = {
     stages: ['Milch', 'Zucker', 'Creme', 'Muffin', 'Meer-Sundae', 'Poply Festtorte'],
     art: ['sweet-1','sweet-2','sweet-3','sweet-4','sweet-5','sweet-6'],
   },
+  fruit: {
+    key: 'fruit', label: 'Sonnenfrüchte',
+    stages: ['Limette', 'Fruchtmix', 'Smoothie', 'Tropen-Drink', 'Sunset-Bowl', 'Poply Paradise'],
+    art: ['fruit-1','fruit-2','fruit-3','fruit-4','fruit-5','fruit-6'],
+  },
 };
 
 export const GENERATORS = {
   'coffee-gen': { key: 'coffee-gen', label: 'Kaffeemaschine', art: 'generator-coffee', families: ['coffee'], energyCost: 1 },
   'pantry-gen': { key: 'pantry-gen', label: 'Vorratskiste', art: 'generator-pantry', families: ['bakery','sweet'], energyCost: 1 },
+  'sunset-gen': { key: 'sunset-gen', label: 'Tropenbar', art: 'generator-sunset', families: ['fruit'], energyCost: 1 },
 };
 
-export const PLACE_UPGRADES = [
+export const PLACE_01_UPGRADES = [
   { id: 'lights', label: 'Lichter', cost: 4, copy: 'Warme Lichter machen das Café abends sichtbar und einladend.' },
   { id: 'counter', label: 'Neue Theke', cost: 6, copy: 'Die alte Theke wird zum Herzstück des Cafés.' },
   { id: 'menu', label: 'Menüwand', cost: 7, copy: 'Eine neue Menüwand zeigt Gästen, was Poply besonders macht.' },
@@ -35,7 +41,22 @@ export const PLACE_UPGRADES = [
   { id: 'sign', label: 'Poply-Schild', cost: 14, copy: 'Das neue Schild vollendet den ersten Poply Place.' },
 ];
 
-const ORDER_TEMPLATES = [
+export const PLACE_02_UPGRADES = [
+  { id: 'sunset-lanterns', label: 'Lampions', cost: 8, copy: 'Warme Lampions geben dem Sonnenkai seine Abendstimmung.' },
+  { id: 'sunset-bar', label: 'Saftbar', cost: 10, copy: 'Die Tropenbar bekommt ihren festen Platz direkt am Deck.' },
+  { id: 'sunset-lounge', label: 'Lounge', cost: 12, copy: 'Tiefe Sitzplätze machen aus einem Drink einen langen Abend.' },
+  { id: 'sunset-fire', label: 'Feuerstelle', cost: 14, copy: 'Die Feuerstelle wird zum Treffpunkt nach Sonnenuntergang.' },
+  { id: 'sunset-stage', label: 'Abendbühne', cost: 16, copy: 'Musik bringt Leben auf den Kai und neue Gäste an die Bar.' },
+  { id: 'sunset-sign', label: 'Sonnenkai-Schild', cost: 18, copy: 'Das leuchtende Schild vollendet deinen zweiten Poply Place.' },
+];
+
+export const PLACE_CHAPTERS = [
+  { id:'coast', number:1, label:'Café am Meer', kicker:'KÜSTE', upgrades:PLACE_01_UPGRADES },
+  { id:'sunset', number:2, label:'Sonnenkai', kicker:'ABENDKÜSTE', upgrades:PLACE_02_UPGRADES },
+];
+export const PLACE_UPGRADES = [...PLACE_01_UPGRADES, ...PLACE_02_UPGRADES];
+
+const COAST_ORDER_TEMPLATES = [
   { title:'Morgenkaffee', requirements:[{family:'coffee',level:2,qty:1}], rewards:{coins:45,stars:2} },
   { title:'Frisches Gebäck', requirements:[{family:'bakery',level:2,qty:1}], rewards:{coins:50,stars:2} },
   { title:'Kleine Pause', requirements:[{family:'sweet',level:2,qty:1}], rewards:{coins:55,stars:2} },
@@ -47,8 +68,25 @@ const ORDER_TEMPLATES = [
   { title:'Poply Festtafel', requirements:[{family:'bakery',level:6,qty:1},{family:'sweet',level:6,qty:1}], rewards:{coins:420,stars:9} },
 ];
 
-const clone = (value) => structuredClone(value);
+const SUNSET_ORDER_TEMPLATES = [
+  { title:'Limettenpause', requirements:[{family:'fruit',level:2,qty:1}], rewards:{coins:80,stars:3} },
+  { title:'Sunset Smoothie', requirements:[{family:'fruit',level:3,qty:1},{family:'sweet',level:2,qty:1}], rewards:{coins:130,stars:4} },
+  { title:'Deck-Brunch', requirements:[{family:'fruit',level:4,qty:1},{family:'bakery',level:3,qty:1}], rewards:{coins:175,stars:5} },
+  { title:'Tropenabend', requirements:[{family:'fruit',level:4,qty:1},{family:'coffee',level:4,qty:1}], rewards:{coins:220,stars:6} },
+  { title:'Golden Hour', requirements:[{family:'fruit',level:5,qty:1},{family:'sweet',level:4,qty:1}], rewards:{coins:300,stars:7} },
+  { title:'Poply Paradise', requirements:[{family:'fruit',level:6,qty:1},{family:'coffee',level:5,qty:1},{family:'bakery',level:4,qty:1}], rewards:{coins:520,stars:10} },
+];
+
+const clone = value => structuredClone(value);
 function nextId(state,prefix='item'){ state.nextId += 1; return `${prefix}-${state.nextId}`; }
+const completedUpgradeCount=(state,upgrades)=>upgrades.reduce((count,upgrade)=>count+(state.placeUpgrades.includes(upgrade.id)?1:0),0);
+
+export function isPlace01Complete(state){ return PLACE_01_UPGRADES.every(upgrade=>state.placeUpgrades.includes(upgrade.id)); }
+export function activePlaceChapter(state){ return isPlace01Complete(state)?PLACE_CHAPTERS[1]:PLACE_CHAPTERS[0]; }
+export function currentChapterProgress(state){
+  const chapter=activePlaceChapter(state);
+  return {chapter,completed:completedUpgradeCount(state,chapter.upgrades),total:chapter.upgrades.length};
+}
 
 export function makeItem(family,level,id){
   const def=ITEM_FAMILIES[family];
@@ -63,7 +101,11 @@ export function itemDefinition(item){
   const def=ITEM_FAMILIES[item.family];
   return {...def,name:def.stages[item.level-1],art:def.art[item.level-1],maxLevel:def.stages.length};
 }
-export function createOrder(sequence){ const template=ORDER_TEMPLATES[sequence%ORDER_TEMPLATES.length]; return {id:`order-${sequence}`,sequence,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}}; }
+export function createOrder(sequence,chapterId='coast'){
+  const templates=chapterId==='sunset'?SUNSET_ORDER_TEMPLATES:COAST_ORDER_TEMPLATES;
+  const template=templates[sequence%templates.length];
+  return {id:`order-${sequence}`,sequence,chapter:chapterId,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}};
+}
 
 export function createInitialState(){
   const state={version:SAVE_VERSION,nextId:20,board:Array(BOARD_SIZE).fill(null),energy:40,maxEnergy:40,coins:100,stars:0,placeUpgrades:[],currentOrders:[createOrder(0),createOrder(1),createOrder(2)],orderSequence:3,stats:{merges:0,generated:0,orders:0},updatedAt:Date.now()};
@@ -75,6 +117,15 @@ export function createInitialState(){
   return state;
 }
 
+export const firstEmptySlot = state => state.board.findIndex(slot=>slot===null);
+export function syncProgressionContent(state){
+  if(!isPlace01Complete(state))return state;
+  if(state.board.some(item=>item?.kind==='generator'&&item.generator==='sunset-gen'))return state;
+  const empty=firstEmptySlot(state);
+  if(empty>=0)state.board[empty]=makeGenerator('sunset-gen','generator-sunset');
+  return state;
+}
+
 export function normalizeState(input){
   if(!input||input.version!==SAVE_VERSION||!Array.isArray(input.board)||input.board.length!==BOARD_SIZE) return createInitialState();
   const state=clone(input);
@@ -83,10 +134,11 @@ export function normalizeState(input){
   state.placeUpgrades=Array.isArray(state.placeUpgrades)?state.placeUpgrades.filter(id=>PLACE_UPGRADES.some(u=>u.id===id)):[];
   state.currentOrders=Array.isArray(state.currentOrders)&&state.currentOrders.length?state.currentOrders:[createOrder(0),createOrder(1),createOrder(2)];
   state.orderSequence=Number.isInteger(state.orderSequence)?state.orderSequence:3; state.nextId=Number.isInteger(state.nextId)?state.nextId:20;
-  state.stats=state.stats??{merges:0,generated:0,orders:0}; state.updatedAt=Date.now(); return state;
+  state.stats=state.stats??{merges:0,generated:0,orders:0};
+  syncProgressionContent(state);
+  state.updatedAt=Date.now(); return state;
 }
 
-export const firstEmptySlot = state => state.board.findIndex(slot=>slot===null);
 export function generateFromSlot(inputState,index){
   const state=clone(inputState); const generator=state.board[index];
   if(!generator||generator.kind!=='generator') return {state:inputState,changed:false,reason:'not-generator'};
@@ -103,7 +155,7 @@ export function moveOrMerge(inputState,from,to){
   const state=clone(inputState);
   if(!target){ state.board[to]=source; state.board[from]=null; state.updatedAt=Date.now(); return {state,changed:true,reason:null,type:'move'}; }
   if(!canMerge(source,target)) return {state:inputState,changed:false,reason:'not-mergeable'};
-  state.board[from]=null; state.board[to]=makeItem(source.family,source.level+1,nextId(state,source.family)); state.stats.merges+=1; state.updatedAt=Date.now();
+  state.board[from]=null; state.board[to]=makeItem(source.family,source.level+1,nextId(state,source.family)); state.stats.merges+=1; syncProgressionContent(state); state.updatedAt=Date.now();
   return {state,changed:true,reason:null,type:'merge',mergedIndex:to,item:state.board[to]};
 }
 export function countRequirement(state,req){ return state.board.reduce((count,item)=>count+(item?.kind==='item'&&item.family===req.family&&item.level===req.level?1:0),0); }
@@ -113,14 +165,22 @@ export function fulfillOrder(inputState,orderId){
   const order=inputState.currentOrders.find(entry=>entry.id===orderId); if(!order) return {state:inputState,changed:false,reason:'unknown-order'};
   if(!canFulfillOrder(inputState,order)) return {state:inputState,changed:false,reason:'requirements-missing'};
   const state=clone(inputState); const active=state.currentOrders.find(entry=>entry.id===orderId); active.requirements.forEach(req=>consumeRequirement(state,req));
-  state.coins+=active.rewards.coins; state.stars+=active.rewards.stars; state.stats.orders+=1; state.currentOrders=state.currentOrders.filter(entry=>entry.id!==orderId); state.currentOrders.push(createOrder(state.orderSequence)); state.orderSequence+=1; state.updatedAt=Date.now();
+  state.coins+=active.rewards.coins; state.stars+=active.rewards.stars; state.stats.orders+=1; state.currentOrders=state.currentOrders.filter(entry=>entry.id!==orderId);
+  syncProgressionContent(state);
+  state.currentOrders.push(createOrder(state.orderSequence,activePlaceChapter(state).id)); state.orderSequence+=1; state.updatedAt=Date.now();
   return {state,changed:true,reason:null,rewards:active.rewards};
 }
-export function nextPlaceUpgrade(state){ return PLACE_UPGRADES.find(upgrade=>!state.placeUpgrades.includes(upgrade.id))??null; }
+export function nextPlaceUpgrade(state){ const chapter=activePlaceChapter(state); return chapter.upgrades.find(upgrade=>!state.placeUpgrades.includes(upgrade.id))??null; }
 export function restorationStatus(state){
-  const upgrade=nextPlaceUpgrade(state); const total=PLACE_UPGRADES.length; const completed=state.placeUpgrades.length;
-  if(!upgrade) return {complete:true,total,completed,upgrade:null,current:state.stars,cost:0,missing:0,ratio:1};
-  const current=Math.min(state.stars,upgrade.cost); return {complete:false,total,completed,upgrade,current,cost:upgrade.cost,missing:Math.max(0,upgrade.cost-state.stars),ratio:upgrade.cost?current/upgrade.cost:1};
+  const chapter=activePlaceChapter(state),completed=completedUpgradeCount(state,chapter.upgrades),upgrade=nextPlaceUpgrade(state),total=chapter.upgrades.length;
+  if(!upgrade) return {complete:true,total,completed,upgrade:null,current:state.stars,cost:0,missing:0,ratio:1,chapter};
+  const current=Math.min(state.stars,upgrade.cost); return {complete:false,total,completed,upgrade,current,cost:upgrade.cost,missing:Math.max(0,upgrade.cost-state.stars),ratio:upgrade.cost?current/upgrade.cost:1,chapter};
 }
-export function buildNextUpgrade(inputState){ const upgrade=nextPlaceUpgrade(inputState); if(!upgrade) return {state:inputState,changed:false,reason:'place-complete'}; if(inputState.stars<upgrade.cost) return {state:inputState,changed:false,reason:'not-enough-stars',upgrade}; const state=clone(inputState); state.stars-=upgrade.cost; state.placeUpgrades.push(upgrade.id); state.updatedAt=Date.now(); return {state,changed:true,reason:null,upgrade}; }
+export function buildNextUpgrade(inputState){
+  const upgrade=nextPlaceUpgrade(inputState); if(!upgrade) return {state:inputState,changed:false,reason:'place-complete'};
+  if(inputState.stars<upgrade.cost) return {state:inputState,changed:false,reason:'not-enough-stars',upgrade};
+  const state=clone(inputState); state.stars-=upgrade.cost; state.placeUpgrades.push(upgrade.id);
+  const unlockedPlace=upgrade.id==='sign'?'sunset':null; syncProgressionContent(state); state.updatedAt=Date.now();
+  return {state,changed:true,reason:null,upgrade,unlockedPlace};
+}
 export function addEnergy(inputState,amount){ const state=clone(inputState); state.energy=Math.min(state.maxEnergy,state.energy+Math.max(0,amount)); state.updatedAt=Date.now(); return state; }
