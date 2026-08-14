@@ -13,12 +13,24 @@ test('AAA UI wires distinct merge and generator game-feel states',async()=>{
   assert.match(ui,/fx-tier-up/);
 });
 
-test('AAA motion provides anticipation, tier reveal, generator dispense and reduced-motion support',async()=>{
+test('AAA UI turns fulfilled jobs into delivery and reward travel feedback',async()=>{
+  const ui=await read('src/aaa-ui.js');
+  assert.match(ui,/playDelivery\(card\)/);
+  assert.match(ui,/querySelectorAll\('\.need \.item-art'\)/);
+  assert.match(ui,/playRewards\(result\.rewards\)/);
+  assert.match(ui,/\.resource\.coin/);
+  assert.match(ui,/\.mission-card/);
+});
+
+test('AAA motion provides anticipation, delivery, reward collection and reduced-motion support',async()=>{
   const [css,entry]=await Promise.all([read('src/aaa-motion.css'),read('src/aaa.css')]);
   assert.match(entry,/@import '\.\/aaa-motion\.css'/);
   assert.match(css,/merge-target-breathe/);
   assert.match(css,/tier-art-reveal/);
   assert.match(css,/generator-dispense/);
   assert.match(css,/dispensed-item-land/);
+  assert.match(css,/delivery-flight/);
+  assert.match(css,/reward-arrive/);
   assert.match(css,/@media \(prefers-reduced-motion:reduce\)/);
+  assert.match(css,/\.delivery-flight\{display:none!important\}/);
 });

@@ -17,6 +17,33 @@ export function createUI(root,toast){
       }
     });
   };
+  const flyNode=(source,target,className,delay=0)=>{
+    if(!source||!target)return;
+    const from=source.getBoundingClientRect(),to=target.getBoundingClientRect();
+    const node=source.cloneNode(true);
+    node.className=`delivery-flight ${className}`;
+    node.setAttribute('aria-hidden','true');
+    const x=from.left+from.width/2,y=from.top+from.height/2;
+    node.style.left=`${x}px`;node.style.top=`${y}px`;
+    node.style.setProperty('--travel-x',`${to.left+to.width/2-x}px`);
+    node.style.setProperty('--travel-y',`${to.top+to.height/2-y}px`);
+    node.style.animationDelay=`${delay}ms`;
+    document.body.append(node);
+    setTimeout(()=>node.remove(),950+delay);
+  };
+  const playDelivery=orderElement=>{
+    const target=orderElement?.querySelector('.avatar,.focus-avatar')||orderElement;
+    orderElement?.classList.add('fx-order-deliver');
+    orderElement?.querySelectorAll('.need .item-art').forEach((item,index)=>flyNode(item,target,'item-flight',index*55));
+  };
+  const playRewards=rewards=>requestAnimationFrame(()=>{
+    const origin=root.querySelector('.resource.star')||root.querySelector('.mission-card');
+    const starTarget=root.querySelector('.mission-card');
+    const coinTarget=root.querySelector('.resource.coin');
+    if(origin&&coinTarget){const token=document.createElement('span');token.className='reward-token coin-token';token.textContent=`+${rewards.coins} ●`;origin.append(token);flyNode(token,coinTarget,'reward-flight coin-flight',0);token.remove();}
+    if(origin&&starTarget){const token=document.createElement('span');token.className='reward-token star-token';token.textContent=`+${rewards.stars} ★`;origin.append(token);flyNode(token,starTarget,'reward-flight star-flight',90);token.remove();}
+    setTimeout(()=>{coinTarget?.classList.add('fx-reward-arrive');starTarget?.classList.add('fx-reward-arrive');},620);
+  });
   const render=()=>{
     const state=getState();root.dataset.view=view;
     const content=view==='place'?placeView(state):view==='orders'?ordersView(state):boardView(state);
@@ -29,7 +56,7 @@ export function createUI(root,toast){
     if(action==='menu'){menuOpen=!menuOpen;render();return;}
     if(action==='reset'){if(window.confirm('Spielstand wirklich zurücksetzen?')){resetSession();view='board';menuOpen=false;render();message(COPY.purpose);}return;}
     if(action==='build'){const result=buildUpgrade();if(!result.changed)message('Für dieses Ziel fehlen noch Sterne.','bad');else{buzz([16,22,20]);message(`Ausbau geschafft: ${result.upgrade.label}`);render();}return;}
-    const order=event.target.closest('[data-order]');if(order){const result=deliverOrder(order.dataset.order);if(!result.changed)message('Auftrag ist noch nicht fertig.','bad');else{buzz([10,18,14]);message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);render();}return;}
+    const order=event.target.closest('[data-order]');if(order){const card=order.closest('.mini-order,.focus-order');const result=deliverOrder(order.dataset.order);if(!result.changed)message('Auftrag ist noch nicht fertig.','bad');else{playDelivery(card);buzz([10,18,14]);message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);setTimeout(()=>{render();playRewards(result.rewards);},320);}return;}
     if(event.detail===0){const generator=event.target.closest('.board-cell.generator');if(generator)spawn(Number(generator.dataset.index));}
   });
   const spawn=index=>{
