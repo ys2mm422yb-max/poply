@@ -30,7 +30,10 @@ Required traits:
 - no emoji as primary production art;
 - no giant dead zones;
 - no low-resolution scene stretched beyond a controlled crop;
-- motion supports merge, delivery and restoration moments without delaying play.
+- motion supports merge, delivery and restoration moments without delaying play;
+- Place must read as a living game world, not a flat diagram;
+- Orders must read as character jobs with urgency/reward, not form rows;
+- real iPhone screenshots are the visual acceptance gate. A technically complete milestone stays open when the actual screenshot still looks cheap, sterile, card-heavy or unfinished.
 
 ## Core gameplay loop
 1. Tap a generator to create a low-tier item.
@@ -42,7 +45,7 @@ Required traits:
 7. Build the target; stars are spent and the Place visibly advances.
 8. The next restoration target/order difficulty becomes the new purpose.
 
-## Milestone A – Foundation (this branch)
+## Milestone A – Foundation — DONE
 - Replace layered live shell with one app shell + one stylesheet.
 - Consolidate save load/migration/save.
 - Build real Board / Place / Orders view switching.
@@ -51,20 +54,26 @@ Required traits:
 - Add regression tests that fail if old UI layers return to the live index.
 - Add tests for state migration and functional view mapping.
 
-## Milestone B – Production art & restoration
-- Replace temporary/low-resolution Place scene with production-quality Poply scene art.
-- Produce six visible restoration states (lights, counter, menu wall, seating, terrace, sign) rather than only progress text.
-- Produce coherent item families with at least six meaningful tiers where balance supports it.
-- Upgrade generator art and order/customer presentation to one art language.
+## Milestone B – Production art & restoration — OPEN
+Implemented foundations already exist: six restoration stages, six-tier item families, authored item/generator vectors and authored customer portraits. That is not sufficient by itself.
 
-## Milestone C – Game feel
+Remaining acceptance work:
+- Replace the current flat/diagram-like Place presentation with a layered, atmospheric authored coastal café scene that has foreground/midground/background depth, lighting and clear restoration additions.
+- Make all six restoration states visibly desirable and materially different at phone size, not just technically different SVG elements.
+- Replace the sterile 2×3 restoration tile wall with a game-native current-goal journey that emphasizes what changed, what is next and the final payoff.
+- Give Orders stronger character/reward hierarchy and remove form-like visual language.
+- Continue unifying item/generator/customer/Place art so they feel authored for one game.
+- Keep this milestone OPEN until a real iPhone screenshot no longer reads as flat concept art, enterprise cards or prototype UI.
+
+## Milestone C – Game feel — FUNCTIONALLY COMPLETE, POLISH CONTINUES
 - Merge anticipation/snap/tier reveal.
 - Generator dispense animation.
 - Item-to-order delivery flight and reward collection.
 - Restoration reveal/scene transition.
 - Sound/haptic hooks with reduced-motion support.
+- Continue tuning only when it materially improves the authored presentation; do not use motion to disguise unfinished visual composition.
 
-## Milestone D – Depth
+## Milestone D – Depth — BLOCKED BY B VISUAL ACCEPTANCE
 - Balance order progression and generator output.
 - Add fair board-pressure tools (storage/sell) only when needed.
 - Collection system only when it is real and useful.
@@ -79,7 +88,9 @@ A release is not ready unless:
 - no old shell CSS/runtime layer is loaded by index.html;
 - no obvious overlap, ghost menu, clipped navigation or giant empty card/image area exists;
 - a player can state the current purpose in one sentence: "I am making these items for these jobs so I can build this next part of the Place.";
-- the screenshot is materially closer to a polished commercial casual game than the previous release, not just differently styled.
+- the screenshot is materially closer to a polished commercial casual game than the previous release, not just differently styled;
+- an authored world/progression screen must have visible depth, focal hierarchy and payoff; a flat scene plus a grid of status cards does not pass;
+- an Orders screen must feel like playable character requests with clear reward/progress value; generic form-card composition does not pass.
 
 ## Progress rule
 Do not spend a release only renaming build markers, moving margins or adding another override stylesheet. Each milestone must remove debt, add a real system, improve game readability, or visibly advance production quality.

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/v2-game.test.js tests/aaa-shell.test.js tests/aaa-state.test.js tests/aaa-views.test.js tests/aaa-customers.test.js tests/aaa-game-feel.test.js tests/aaa-feedback.test.js && node --check src/v2-game.js && node --check src/aaa-art.js && node --check src/aaa-customers.js && node --check src/aaa-state.js && node --check src/aaa-storage.js && node --check src/aaa-session.js && node --check src/aaa-view.js && node --check src/aaa-feedback.js && node --check src/aaa-ui.js && node --check src/aaa-drag.js && node --check src/aaa-main.js",
+    "test": "node --test tests/v2-game.test.js tests/aaa-shell.test.js tests/aaa-state.test.js tests/aaa-views.test.js tests/aaa-customers.test.js tests/aaa-game-feel.test.js tests/aaa-feedback.test.js && node --check src/v2-game.js && node --check src/aaa-art.js && node --check src/aaa-place-art.js && node --check src/aaa-customers.js && node --check src/aaa-state.js && node --check src/aaa-storage.js && node --check src/aaa-session.js && node --check src/aaa-view.js && node --check src/aaa-feedback.js && node --check src/aaa-ui.js && node --check src/aaa-drag.js && node --check src/aaa-main.js",
     "check": "npm test"
   },
   "engines": { "node": ">=20" }
