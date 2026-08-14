@@ -36,7 +36,7 @@ try{
   const beforeOrder=await readSave();
   const serve=page.locator('button[data-order="order-0"]');
   assert(await serve.isEnabled(),'level-up QA serve button is disabled');
-  await serve.click();await page.waitForTimeout(520);
+  await serve.click();await page.waitForTimeout(1250);
   const afterOrder=await readSave();
   assert(afterOrder.playerXp===170,`order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
   assert(afterOrder.coins===245,`level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
@@ -62,13 +62,14 @@ try{
   await page.reload({waitUntil:'networkidle'});
   await page.locator('.nav-tab[data-view="place"]').click();
   const build=page.locator('[data-action="build"]');assert(await build.isEnabled(),'restoration level-up build is disabled');
-  await build.click();await page.waitForTimeout(520);
+  await build.click();await page.waitForTimeout(2050);
   const afterBuild=await readSave();
   assert(afterBuild.placeUpgrades.includes('lights'),'restoration was not persisted');
   assert(afterBuild.playerXp===310,`restoration XP incorrect: ${afterBuild.playerXp}`);
   assert(afterBuild.coins===200,`restoration level reward missing: ${afterBuild.coins}`);
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 3'),'HUD did not advance to LV 3 after restoration');
   assert(await page.locator('.level-up-overlay').isVisible(),'restoration level-up overlay is not visible');
+  assert(!(await page.locator('.restoration-reveal').isVisible().catch(()=>false)),'restoration and level-up reveals overlap instead of sequencing');
   await shot('21-player-level-up-restoration');
   report.restoration={xp:afterBuild.playerXp,coins:afterBuild.coins,upgrades:afterBuild.placeUpgrades};
 
