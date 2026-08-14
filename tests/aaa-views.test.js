@@ -6,7 +6,7 @@ const root=new URL('../',import.meta.url),read=p=>readFile(new URL(p,root),'utf8
 test('primary navigation owns three real views',async()=>{
   const source=await read('src/aaa-view.js');
   for(const key of ["['place'","['orders'","['board'"])assert.ok(source.includes(key),key);
-  for(const surface of ['merge-board','restore-track','focus-orders'])assert.ok(source.includes(surface),surface);
+  for(const surface of ['merge-board','world-hero','journey-steps','quest-list'])assert.ok(source.includes(surface),surface);
 });
 
 test('AAA entry owns visible Safari viewport sizing',async()=>{
@@ -15,12 +15,25 @@ test('AAA entry owns visible Safari viewport sizing',async()=>{
   assert.match(source,/--app-height/);
 });
 
-test('Place restoration has six visible authored scene steps',async()=>{
-  const css=await read('src/aaa-views.css');
-  assert.match(css,/data:image\/svg\+xml;base64/);
-  assert.doesNotMatch(css,/var\(--poply-hero\)/);
-  for(let stage=1;stage<=6;stage+=1)assert.ok(css.includes(`.scene-card.stage-${stage}`),`missing restoration stage ${stage}`);
-  for(const position of ['16.6667%','33.3333%','50%','66.6667%','83.3333%','100%'])assert.ok(css.includes(position),position);
+test('Place uses layered authored scene art and six visible restoration additions',async()=>{
+  const [view,art,world]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-place-art.js'),read('src/aaa-world.css')]);
+  assert.match(view,/aaa-place-art\.js/);
+  assert.match(view,/placeSceneMarkup\(stage\)/);
+  assert.match(view,/world-hero/);
+  assert.match(view,/journey-steps/);
+  assert.doesNotMatch(view,/scene-card/);
+  assert.doesNotMatch(view,/restore-track/);
+  for(let stage=1;stage<=6;stage+=1)assert.ok(art.includes(`show(safeStage,${stage}`),`missing authored scene stage ${stage}`);
+  for(const layer of ['lights','counter','menu','seating','terrace','sign'])assert.ok(art.includes(`scene-upgrade ${layer}`),layer);
+  for(const selector of ['.world-hero','.place-current-goal','.journey-line','.journey-step.current'])assert.ok(world.includes(selector),selector);
+});
+
+test('Orders use quest presentation rather than legacy focus cards',async()=>{
+  const [view,world]=await Promise.all([read('src/aaa-view.js'),read('src/aaa-world.css')]);
+  for(const marker of ['quest-card','quest-list','quest-reward','orders-hero','job-ticket'])assert.ok(view.includes(marker),marker);
+  assert.doesNotMatch(view,/focus-order/);
+  assert.doesNotMatch(view,/mini-order/);
+  for(const selector of ['.quest-card','.quest-avatar-ring','.quest-reward','.job-ticket'])assert.ok(world.includes(selector),selector);
 });
 
 test('active AAA item rendering uses authored vectors instead of the legacy atlas',async()=>{
