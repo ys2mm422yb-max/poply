@@ -1,10 +1,8 @@
-import { CUSTOMER_A } from './v2-customer-a.js';
-import { CUSTOMER_B } from './v2-customer-b.js';
-import { CUSTOMER_C } from './v2-customer-c.js';
+import { CUSTOMER_ART, customerArtUrl } from './aaa-customers.js';
 import { artMarkup } from './aaa-art.js';
 import { PLACE_UPGRADES, itemDefinition, canFulfillOrder, countRequirement, restorationStatus } from './v2-game.js';
 
-export const ASSETS={customers:[CUSTOMER_A,CUSTOMER_B,CUSTOMER_C]};
+export const ASSETS={customers:CUSTOMER_ART};
 
 export const COPY={
   place:'Place',orders:'Aufträge',board:'Board',placeName:'Café am Meer',next:'NÄCHSTES ZIEL',build:'Bauen',complete:'Café fertig',
@@ -19,7 +17,7 @@ export function itemMarkup(item,compact=false){
   const markup=artMarkup(def.art);
   return compact?markup.replace('class="item-art ','class="item-art compact '):markup;
 }
-const customer=order=>ASSETS.customers[order.sequence%ASSETS.customers.length];
+const customer=order=>customerArtUrl(order.sequence);
 const neededByOrders=(state,item)=>item?.kind==='item'&&state.currentOrders.some(order=>order.requirements.some(req=>req.family===item.family&&req.level===item.level));
 function mergeReadyIndexes(state){
   const groups=new Map();
