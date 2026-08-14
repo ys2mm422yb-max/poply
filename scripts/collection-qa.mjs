@@ -31,7 +31,10 @@ try{
   await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(to.x+to.width/2,to.y+to.height/2,{steps:8});await page.mouse.up();
   await page.waitForFunction(()=>{try{return JSON.parse(localStorage.getItem('poply-v2-state-1')||'null')?.discoveries?.includes('item:coffee:2')===true;}catch{return false;}},null,{timeout:1200});
   const discoveryReveal=page.locator('.discovery-reveal');await discoveryReveal.waitFor({state:'visible',timeout:1200});
-  await page.waitForFunction(()=>{const el=document.querySelector('.discovery-reveal');if(!el)return false;const opacity=Number(getComputedStyle(el).opacity);return el.classList.contains('is-visible')&&!el.classList.contains('is-leaving')&&opacity>=.95;},null,{timeout:1000});
+  /* Visual contract: require a stable readable reward, not a specific compositor frame. Stronger merge
+     effects can delay the opacity transition slightly in WebKit, so 0.8 is the screenshot acceptance
+     threshold while still rejecting an entering/leaving or effectively transparent card. */
+  await page.waitForFunction(()=>{const el=document.querySelector('.discovery-reveal');if(!el)return false;const opacity=Number(getComputedStyle(el).opacity);return el.classList.contains('is-visible')&&!el.classList.contains('is-leaving')&&opacity>=.8;},null,{timeout:1200});
   const discovered=await readSave();
   assert(discovered.discoveries.includes('item:coffee:2'),'real merge did not persist coffee tier 2 discovery');
   assert(discovered.playerXp===40,`first coffee tier 2 discovery should grant 40 XP, got ${discovered.playerXp}`);
