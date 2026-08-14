@@ -13,5 +13,5 @@ test('live shell has one AAA entry and no legacy V2 layer stack',async()=>{
 
 test('AAA stylesheet entry only composes authored modules',async()=>{
   const css=(await read('src/aaa.css')).trim();
-  assert.equal(css,"@import './aaa-shell.css';\n@import './aaa-board.css';\n@import './aaa-views.css';");
+  assert.equal(css,"@import './aaa-shell.css';\n@import './aaa-board.css';\n@import './aaa-views.css';\n@import './aaa-motion.css';");
 });
