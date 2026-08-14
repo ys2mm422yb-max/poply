@@ -36,7 +36,7 @@ try{
   const beforeOrder=await readSave();
   const serve=page.locator('button[data-order="order-0"]');
   assert(await serve.isEnabled(),'level-up QA serve button is disabled');
-  await serve.click();await page.waitForTimeout(1250);
+  await serve.click();await page.waitForTimeout(1500);
   const afterOrder=await readSave();
   assert(afterOrder.playerXp===170,`order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
   assert(afterOrder.coins===245,`level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
