@@ -13,6 +13,10 @@ page.on('pageerror',error=>problems.push(`pageerror: ${error.message}`));
 const assert=(value,message)=>{if(!value)throw new Error(message);};
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
 const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
+const assertSheetFits=async label=>{
+  const metrics=await page.evaluate(()=>{const s=document.querySelector('.player-progress-sheet'),n=document.querySelector('.main-nav');if(!s||!n)return null;const a=s.getBoundingClientRect(),b=n.getBoundingClientRect();return {sheet:{top:a.top,bottom:a.bottom,left:a.left,right:a.right},nav:{top:b.top,bottom:b.bottom},height:window.visualViewport?.height||innerHeight,scrollHeight:document.documentElement.scrollHeight,innerHeight};});
+  assert(metrics,`${label}: milestone sheet missing`);assert(metrics.sheet.left>=0&&metrics.sheet.right<=390,`${label}: milestone sheet clips horizontally ${JSON.stringify(metrics)}`);assert(metrics.sheet.bottom<=metrics.nav.top+1,`${label}: milestone sheet overlaps bottom navigation ${JSON.stringify(metrics)}`);assert(metrics.nav.bottom<=metrics.height+1,`${label}: navigation clips ${JSON.stringify(metrics)}`);assert(metrics.scrollHeight<=metrics.innerHeight+1,`${label}: document scrolls ${JSON.stringify(metrics)}`);return metrics;
+};
 let report={},failure=null;
 
 try{
@@ -73,6 +77,24 @@ try{
   await shot('21-player-level-up-restoration');
   report.restoration={xp:afterBuild.playerXp,coins:afterBuild.coins,upgrades:afterBuild.placeUpgrades};
 
+  // Milestone shelf is derived from existing progress: no duplicate save currency/state.
+  await page.evaluate(async()=>{
+    const game=await import('./src/v2-game.js');
+    const state=game.createInitialState();state.playerXp=840;state.stats.orders=4;state.stats.merges=31;state.placeUpgrades=['lights','counter','menu','seating','terrace','sign'];
+    state.discoveries=['item:coffee:1','item:coffee:2','item:coffee:3','item:coffee:4','item:coffee:5','item:coffee:6','item:bakery:1','item:bakery:2','item:bakery:3','item:bakery:4','item:bakery:5','item:bakery:6'];
+    localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
+  });
+  await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
+  assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'seeded milestone player is not LV 5');
+  await page.locator('.player-level-badge').click();await page.waitForSelector('.player-progress-sheet');
+  const sheetText=await page.locator('.player-progress-sheet').textContent();
+  assert(sheetText?.includes('5/5 Meilensteine'),'completed milestone summary is wrong');assert(await page.locator('.milestone-row.complete').count()===5,'not all seeded milestones render complete');
+  await assertSheetFits('390x844 milestones');await shot('22-player-milestones-390x844');
+  await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertSheetFits('390x720 milestones');await shot('23-player-milestones-short-safari');
+  await page.locator('[data-player-progress-close]').click();assert(!(await page.locator('.player-progress-sheet').isVisible().catch(()=>false)),'milestone sheet did not close');
+  const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');
+  report.milestones={completed:5,total:5,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges};
+
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('29-progression-failure');}catch{}}
 finally{
@@ -80,4 +102,4 @@ finally{
   await browser.close();
 }
 if(failure)throw failure;
-console.log('Player progression WebKit QA passed.');
+console.log('Player progression + milestones WebKit QA passed.');
