@@ -3,7 +3,7 @@ import { getState, resetSession, generateAt, deliverOrder, buildUpgrade } from '
 import { playFeedback } from './aaa-feedback.js';
 
 export function createUI(root,toast){
-  let view='board',menuOpen=false,lastFx=null,toastTimer=0;
+  let view='board',menuOpen=false,lastFx=null,toastTimer=0,selectedOrderId=null;
   const message=(text,tone='good')=>{clearTimeout(toastTimer);toast.textContent=text;toast.dataset.tone=tone;toast.classList.add('show');toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);};
   const applyFx=fx=>{
     if(view!=='board'||!fx)return;
@@ -32,21 +32,21 @@ export function createUI(root,toast){
     setTimeout(()=>node.remove(),950+delay);
   };
   const playDelivery=orderElement=>{
-    const target=orderElement?.querySelector('.avatar,.focus-avatar')||orderElement;
+    const target=orderElement?.querySelector('.service-avatar,.board-job-avatar,.avatar,.focus-avatar')||orderElement;
     orderElement?.classList.add('fx-order-deliver');
     orderElement?.querySelectorAll('.need .item-art').forEach((item,index)=>flyNode(item,target,'item-flight',index*55));
   };
   const playRewards=rewards=>requestAnimationFrame(()=>{
     playFeedback('reward');
     const origin=root.querySelector('.resource.star')||root.querySelector('.mission-card');
-    const starTarget=root.querySelector('.mission-card');
+    const starTarget=root.querySelector('.mission-card,.service-goal');
     const coinTarget=root.querySelector('.resource.coin');
     if(origin&&coinTarget){const token=document.createElement('span');token.className='reward-token coin-token';token.textContent=`+${rewards.coins} ●`;origin.append(token);flyNode(token,coinTarget,'reward-flight coin-flight',0);token.remove();}
     if(origin&&starTarget){const token=document.createElement('span');token.className='reward-token star-token';token.textContent=`+${rewards.stars} ★`;origin.append(token);flyNode(token,starTarget,'reward-flight star-flight',90);token.remove();}
     setTimeout(()=>{coinTarget?.classList.add('fx-reward-arrive');starTarget?.classList.add('fx-reward-arrive');},620);
   });
   const playRestorationReveal=upgrade=>requestAnimationFrame(()=>{
-    const scene=root.querySelector('.scene-card');
+    const scene=root.querySelector('.world-hero,.scene-card');
     if(!scene)return;
     scene.classList.add('fx-restoration-reveal');
     const reveal=document.createElement('div');
@@ -58,17 +58,21 @@ export function createUI(root,toast){
   });
   const render=()=>{
     const state=getState();root.dataset.view=view;
-    const content=view==='place'?placeView(state):view==='orders'?ordersView(state):boardView(state);
+    const content=view==='place'?placeView(state):view==='orders'?ordersView(state,selectedOrderId):boardView(state);
     root.innerHTML=`${headerMarkup(state,menuOpen)}${content}${navMarkup(view)}`;
     if(lastFx){const fx=lastFx;lastFx=null;applyFx(fx);}
   };
   root.addEventListener('click',event=>{
+    const focused=event.target.closest('[data-focus-order]');
+    if(focused){selectedOrderId=focused.dataset.focusOrder;view='orders';menuOpen=false;render();return;}
+    const selected=event.target.closest('[data-select-order]');
+    if(selected){selectedOrderId=selected.dataset.selectOrder;render();return;}
     const tab=event.target.closest('[data-view]');if(tab){view=tab.dataset.view;menuOpen=false;render();return;}
     const action=event.target.closest('[data-action]')?.dataset.action;
     if(action==='menu'){menuOpen=!menuOpen;render();return;}
-    if(action==='reset'){if(window.confirm('Spielstand wirklich zurücksetzen?')){resetSession();view='board';menuOpen=false;render();message(COPY.purpose);}return;}
+    if(action==='reset'){if(window.confirm('Spielstand wirklich zurücksetzen?')){resetSession();view='board';selectedOrderId=null;menuOpen=false;render();message(COPY.purpose);}return;}
     if(action==='build'){const result=buildUpgrade();if(!result.changed){playFeedback('invalid');message('Für dieses Ziel fehlen noch Sterne.','bad');}else{playFeedback('restoration');view='place';menuOpen=false;render();playRestorationReveal(result.upgrade);message(`Ausbau geschafft: ${result.upgrade.label}`);}return;}
-    const order=event.target.closest('[data-order]');if(order){const card=order.closest('.mini-order,.focus-order');const result=deliverOrder(order.dataset.order);if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}else{playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);setTimeout(()=>{render();playRewards(result.rewards);},320);}return;}
+    const order=event.target.closest('[data-order]');if(order){const card=order.closest('.service-card,.board-job,.mini-order,.focus-order');const orderId=order.dataset.order;const result=deliverOrder(orderId);if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}else{playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★`);if(selectedOrderId===orderId)selectedOrderId=null;setTimeout(()=>{render();playRewards(result.rewards);},320);}return;}
     if(event.detail===0){const generator=event.target.closest('.board-cell.generator');if(generator)spawn(Number(generator.dataset.index));}
   });
   const spawn=index=>{
@@ -77,5 +81,5 @@ export function createUI(root,toast){
     lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};
     playFeedback('spawn');message('Neues Item');render();
   };
-  return {render,message,spawn,getView:()=>view,feedback:playFeedback,setFx:fx=>{lastFx=fx;}};
+  return {render,message,spawn,getView:()=>view,getSelectedOrder:()=>selectedOrderId,feedback:playFeedback,setFx:fx=>{lastFx=fx;}};
 }
