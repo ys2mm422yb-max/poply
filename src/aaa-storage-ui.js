@@ -17,7 +17,7 @@ export function installStorageUI(root,ui){
     const slots=Array.from({length:capacity},(_,index)=>storageSlot(storage[index]||null,index)).join('');
     const choices=boardItems.length?boardItems.map(({item,index})=>boardChoice(item,index)).join(''):'<span class="storage-empty-copy">Keine Items auf der Werkbank.</span>';
     const upgrade=cost===null?`<span class="storage-max">MAX ${STORAGE_MAX_CAPACITY}</span>`:`<button class="storage-upgrade" data-storage-upgrade ${state.coins<cost?'disabled':''}><b>+2 Plätze</b><span><i class="storage-coin-icon">${coinIcon}</i>${cost}</span></button>`;
-    return `<section class="storage-drawer" aria-label="Lager"><header><div><small>WERKBANK-LAGER</small><strong>${storage.length}/${capacity} belegt</strong></div>${upgrade}<button class="storage-close" data-storage-close aria-label="Lager schließen">×</button></header><div class="storage-slots">${slots}</div><div class="storage-source"><div><strong>Von der Werkbank</strong><small>Item tippen = einlagern · ↻ = sicher recyceln</small></div><div class="storage-board-items">${choices}</div></div></section>`;
+    return `<section class="storage-drawer" aria-label="Lager"><header><div><small>WERKBANK-LAGER</small><strong>${storage.length}/${capacity} belegt</strong></div>${upgrade}<button class="storage-close" data-storage-close aria-label="Lager schließen">×</button></header><div class="storage-slots">${slots}</div><div class="storage-source"><div><strong>Von der Werkbank</strong><small>Einlagern · für Aufträge zurück aufs Board · ↻ recyceln</small></div><div class="storage-board-items">${choices}</div></div></section>`;
   };
   const decorate=()=>{
     if(decorating)return;decorating=true;
