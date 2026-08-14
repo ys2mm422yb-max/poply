@@ -2,7 +2,7 @@
 
 Updated: 2026-08-14
 
-## Live baseline before PR #39 merge
+## Live baseline
 `main` currently includes:
 - Place 01 · Café am Meer and Place 02 · Sonnenkai;
 - four six-tier item families and three generators;
@@ -12,12 +12,15 @@ Updated: 2026-08-14
 - persistent Player XP + Level system;
 - real Collection Book / Sammlung with persistent item, generator and Place discoveries;
 - first-time item discovery XP and authored discovery reward moments;
+- persistent Storage tray with 4 starting slots and Coin-funded permanent expansion to 6/8 slots;
 - local save/resume + migrations;
 - authored Board / Orders / Place / Sammlung views;
 - sound, haptics, merge/delivery/reward/restoration feedback;
 - CI + Mobile WebKit Browser QA + canonical Pages release gates.
 
-Milestone B visual quality remains OPEN: Poply is materially larger and more coherent, but final AAA-casual presentation quality is not being claimed yet.
+Latest live `main` before Milestone G release: `657ff1f79760a4564cda0ac7f03152a6236ef30a`.
+
+Milestone B visual quality remains OPEN. Current user direction in GitHub Issue #42 is explicit: Poply still feels too dark and restrained and needs more authored color, stronger family identities, richer reward/merge/discovery/restoration effects, glows/light/particles where performance-safe, and less dark-dashboard feeling. Green tests alone do not close this visual work.
 
 ## Completed feature milestones
 ### E1 — Player XP + Level system — LIVE
@@ -28,50 +31,50 @@ Screenshot QA: `docs/SCREENSHOT_QA_2026-08-14_PLAYER_PROGRESSION.md`
 Contract: `docs/COLLECTION_BOOK.md`
 Screenshot QA: `docs/SCREENSHOT_QA_2026-08-14_COLLECTION.md`
 
-E2 release passed exact-main CI, full Browser QA and canonical Pages deployment on `99b625efc64fbce68dcfbea59c0b1c55b96364a6`.
-
-### F1 — Storage tray + first meaningful Coin sink — ACCEPTED ON PR HEAD
+### F1 — Storage tray + first meaningful Coin sink — LIVE
 Contract: `docs/STORAGE_SYSTEM.md`
 Screenshot QA: `docs/SCREENSHOT_QA_2026-08-14_STORAGE.md`
 
 Accepted F1 behavior:
-- persistent item-only `storage` + `storageCapacity` inside the existing save;
-- existing saves migrate to four empty slots without deleting any player value;
-- exact identity-preserving Board → Storage and Storage → Board transfers;
-- generators are never storable;
-- full Storage / full Board failures preserve every item;
-- stale capacity metadata expands to preserve stored items instead of deleting them;
-- compact in-Board `Lager used/capacity` handle rather than a fifth main tab;
-- temporary Storage drawer with current slots and a horizontal Board-item selector;
-- Storage items are explicitly parked and must return to the Board before they count for customer orders;
-- permanent Coin utility: 4→6 slots costs 200 Coins; 6→8 costs 450; F1 max 8;
-- no Energy cost and no real-money path;
-- deterministic inventory/migration/no-loss/Coin tests;
-- dedicated Mobile WebKit Storage QA performs real transfer, reload, restore, Coin upgrade, persistence and 390×844/390×720 fit;
-- self-review accepted the drawer overlay because it is temporary, never covers navigation, remains closable and preserves the full Board layout whenever closed.
+- persistent item-only storage inside the existing save;
+- exact identity-preserving Board ↔ Storage transfers;
+- generators cannot be stored;
+- full Storage / Board failures preserve all items;
+- compact in-Board storage handle rather than a fifth main tab;
+- permanent Coin utility: 4→6 slots costs 200 Coins; 6→8 costs 450;
+- dedicated real Mobile WebKit Storage QA at 390×844 and 390×720.
 
-Release gate remaining for F1:
-- rerun exact final documented PR head CI + full Browser QA;
-- merge;
-- exact-main CI + Browser QA + canonical Pages deploy.
+## Active implementation milestone
+### G — Daily goals / fair return loop — IN PROGRESS
+Contract: `docs/DAILY_GOALS.md`
+Active manual branch: `feature/daily-goals-v2`.
+Cross-worker log: GitHub Issue #42.
 
-## Next implementation milestone
-### G — Daily goals / fair return loop
-Goal: give players a useful reason to return without punitive streak mechanics or fake urgency.
+Current implemented branch scope:
+- deterministic local-day Daily state;
+- three goals with guaranteed merge + serve and contextual generate/discover/restore third goal;
+- real gameplay events wired into Daily progress;
+- one-time Coin claims;
+- deterministic Daily Bonus Guest using a real item requirement and existing Coins + Stars;
+- no streak, no missed-day punishment and no new token;
+- compact `HEUTE` ribbon in Orders and temporary Daily bottom sheet;
+- dedicated Daily domain tests and a real WebKit flow covering merge, standard order, generator, all three claims, Bonus Guest and reload.
 
-Planned first slice:
-- three deterministic daily goals generated from the local calendar day;
-- goals use real core actions such as merge, serve, discover and restore;
-- one clearly marked daily bonus customer/order integrated into the existing service flow;
-- rewards use existing fair currencies/utility rather than introducing another token;
-- missed days simply generate a fresh day: no streak wipe, punishment or debt;
-- deterministic local-day rollover with save/reload safety;
-- compact `Heute` entry/panel that does not become a fifth main navigation tab unless the system later proves large enough;
-- real Mobile WebKit goal progress / claim / rollover QA and screenshot review.
+Still required before G may be called live:
+- exact PR-head CI + Browser QA;
+- generated Daily screenshots opened and visually reviewed by the worker;
+- fix every functional or visible defect found;
+- exact-head merge;
+- exact-main CI + Browser QA + canonical Pages deploy;
+- final GitHub Issue #42 handoff.
 
-## Following milestones
-1. H — World map / Place selector.
-2. I — Place 03 with genuinely new gameplay/content.
+## Next implementation milestones
+1. Visual/color/effects production pass from Issue #42 in parallel with feature growth.
+2. H — World map / Place selector.
+3. I — Place 03 with genuinely new gameplay/content.
+
+## Autonomous-work rule
+GitHub Issue #42 is the cross-worker durable work log. Manual work plus both Poply automations must record exact heads, PRs, files/systems, test/workflow IDs, screenshots actually opened, visible findings, merge/deploy state and next work there. A substantial autonomous session is not considered complete without its GitHub trace.
 
 ## Execution rule
 Real gameplay/save/UX bugs take priority. Otherwise implement the highest-priority unfinished item in `docs/FEATURE_ROADMAP.md`. Every non-trivial release uses a fresh branch, deterministic tests, Mobile WebKit QA, screenshot self-review, exact-head PR checks and exact-main CI/Browser-QA/Pages deployment.
