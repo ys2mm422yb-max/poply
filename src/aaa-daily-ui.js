@@ -15,8 +15,8 @@ function goalMarkup(goal){
 }
 
 function bonusMarkup(state){
-  const bonus=state.daily.bonus,req=bonus.requirements[0],have=countRequirement(state,req),ready=canServeDailyBonus(state);
-  if(bonus.served)return `<section class="daily-bonus served"><div class="daily-bonus-art">${checkIcon}</div><div><small>TAGESGAST</small><strong>Heute bedient</strong><p>Morgen wartet ein neuer Bonusgast.</p></div><span class="daily-bonus-done">${checkIcon}</span></section>`;
+  const bonus=state.daily.bonus,req=bonus.requirements[0],rawHave=countRequirement(state,req),have=Math.min(rawHave,req.qty),ready=canServeDailyBonus(state);
+  if(bonus.served)return `<section class="daily-bonus served"><div class="daily-bonus-art">${checkIcon}</div><div class="daily-bonus-copy"><small>TAGESGAST</small><strong>Heute bedient</strong><p>Morgen wartet ein neuer Bonusgast.</p></div><span class="daily-bonus-done">${checkIcon}</span></section>`;
   return `<section class="daily-bonus ${ready?'ready':''}"><div class="daily-bonus-art">${itemMarkup({kind:'item',family:req.family,level:req.level},true)}</div><div class="daily-bonus-copy"><small>TAGESGAST</small><strong>${bonus.title.replace('Tagesgast · ','')}</strong><p>${have}/${req.qty} vorbereitet</p><div class="daily-bonus-reward"><span>${coinIcon}<b>${bonus.rewards.coins}</b></span><span>${starIcon}<b>${bonus.rewards.stars}</b></span></div></div><button data-daily-serve ${ready?'':'disabled'}>${ready?'Servieren':'Vorbereiten'}</button></section>`;
 }
 
@@ -39,7 +39,7 @@ export function installDailyUI(root,ui){
     if(!ribbon){ribbon=document.createElement('button');ribbon.className='daily-ribbon';ribbon.dataset.dailyToggle='';queue.before(ribbon);}
     const nextSignature=signature(state);
     if(nextSignature!==lastSignature){
-      ribbon.innerHTML=`<span class="daily-ribbon-icon">${sunIcon}</span><span class="daily-ribbon-copy"><small>HEUTE · ${completed}/3 ZIELE</small><strong>${claimed===3?'Alle Tagesziele eingesammelt':'Tagesziele & Bonusgast'}</strong></span><span class="daily-ribbon-reward">${bonus.served?checkIcon:`${coinIcon}<b>${bonus.rewards.coins}</b>`}</span><span class="daily-ribbon-chevron">›</span>`;
+      ribbon.innerHTML=`<span class="daily-ribbon-icon">${sunIcon}</span><span class="daily-ribbon-copy"><small>HEUTE · ${completed}/3 ZIELE</small><strong>${claimed===3?'Ziele eingesammelt':'Tagesziele & Gast'}</strong></span><span class="daily-ribbon-reward">${bonus.served?checkIcon:`${coinIcon}<b>${bonus.rewards.coins}</b>`}</span><span class="daily-ribbon-chevron">›</span>`;
       lastSignature=nextSignature;
     }
     if(!open){closeLayer();return;}
