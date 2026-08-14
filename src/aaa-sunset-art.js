@@ -1,0 +1,17 @@
+const frame=(kind,body)=>`<span class="item-art art-${kind}" aria-hidden="true"><svg viewBox="0 0 96 96" focusable="false">${body}</svg></span>`;
+const shadow='<ellipse cx="48" cy="80" rx="25" ry="7" fill="rgba(4,31,37,.18)"/>';
+const shine='<path d="M29 22c9-7 21-9 31-5" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="5" stroke-linecap="round"/>';
+
+const ART={
+  'fruit-1':()=>frame('fruit-1',`${shadow}<circle cx="48" cy="50" r="27" fill="#75bf4b"/><circle cx="48" cy="50" r="19" fill="#d6ef79"/><path d="M48 31v38M29 50h38M35 37l26 26M61 37 35 63" stroke="#8ecb4b" stroke-width="3"/><circle cx="48" cy="50" r="5" fill="#fff0a6"/>${shine}`),
+  'fruit-2':()=>frame('fruit-2',`${shadow}<path d="M22 52h52c-2 19-11 29-26 29S24 71 22 52Z" fill="#35a89c"/><path d="M28 51c2-12 10-19 20-19 12 0 19 8 21 19Z" fill="#fff0ca"/><circle cx="37" cy="43" r="9" fill="#f39a53"/><circle cx="51" cy="40" r="8" fill="#efcc50"/><circle cx="61" cy="45" r="8" fill="#79c455"/><path d="M25 53h46" stroke="#d8fff4" stroke-width="4"/>${shine}`),
+  'fruit-3':()=>frame('fruit-3',`${shadow}<path d="M31 26h34l-4 52H35Z" fill="#d8f0ee" stroke="#fff" stroke-width="3"/><path d="M34 43h28l-3 32H37Z" fill="#f18a63"/><path d="M37 54h23" stroke="#ffd96a" stroke-width="8"/><path d="M55 23 67 10" stroke="#2d8d87" stroke-width="4" stroke-linecap="round"/><circle cx="43" cy="35" r="6" fill="#f9b56d"/><circle cx="56" cy="34" r="5" fill="#9ad765"/>${shine}`),
+  'fruit-4':()=>frame('fruit-4',`${shadow}<path d="M28 30h39l-5 48H34Z" fill="#f2d3a7"/><path d="M33 44h30l-4 31H37Z" fill="#ef6f62"/><path d="M36 48c7 3 16 3 24 0" fill="none" stroke="#ffd95f" stroke-width="6" stroke-linecap="round"/><path d="M54 27 68 12" stroke="#317e7a" stroke-width="4"/><path d="M25 34c8-8 16-10 22-5-7 8-13 11-22 5Z" fill="#6fbd4a"/>${shine}`),
+  'fruit-5':()=>frame('fruit-5',`${shadow}<path d="M20 51h57c-3 21-13 31-29 31S23 72 20 51Z" fill="#e89458"/><path d="M25 50c4-14 12-21 23-21 12 0 21 8 24 21Z" fill="#ffe6ad"/><circle cx="35" cy="44" r="9" fill="#f06f62"/><circle cx="48" cy="39" r="9" fill="#f4c951"/><circle cx="61" cy="44" r="9" fill="#75be50"/><path d="M48 29c1-8 5-13 9-17" stroke="#2f8873" stroke-width="4" stroke-linecap="round"/>${shine}`),
+  'fruit-6':()=>frame('fruit-6',`${shadow}<path d="M25 57h46l-4 23H29Z" fill="#b66d42"/><path d="M31 54c2-19 9-29 18-29 11 0 18 10 20 29Z" fill="#f7d47d"/><path d="M35 48c8-12 22-12 29 0" fill="none" stroke="#fff3ce" stroke-width="8" stroke-linecap="round"/><circle cx="43" cy="38" r="6" fill="#ef725d"/><circle cx="56" cy="35" r="6" fill="#7cc354"/><path d="M49 25V14" stroke="#2d817a" stroke-width="4"/><path d="M23 59h50" stroke="#fff1c8" stroke-width="4"/>${shine}`),
+  'generator-sunset':()=>frame('generator-sunset',`${shadow}<rect x="20" y="29" width="56" height="47" rx="11" fill="#164d59"/><path d="M24 39h48" stroke="#f0b650" stroke-width="6"/><rect x="27" y="45" width="42" height="22" rx="7" fill="#f3c978"/><path d="M36 48h24l-3 16H39Z" fill="#d8f1ec"/><path d="M40 54h17" stroke="#ef7760" stroke-width="7"/><circle cx="49" cy="24" r="12" fill="#67bd54"/><path d="M49 12v24M37 24h24" stroke="#d9ef75" stroke-width="3"/><path d="M29 75h40" stroke="#0a3440" stroke-width="5" stroke-linecap="round"/>${shine}`),
+};
+
+export const canRenderSunsetArt=key=>Object.hasOwn(ART,key);
+export function sunsetArtMarkup(key){const render=ART[key];return render?render():'';}
+export const SUNSET_ART_KEYS=Object.freeze(Object.keys(ART));
