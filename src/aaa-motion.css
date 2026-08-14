@@ -13,46 +13,25 @@
   pointer-events:none;
   animation:merge-target-ring .62s ease-in-out infinite alternate;
 }
-.board-cell.fx-merge{
-  z-index:4;
-  animation:merge-snap .5s cubic-bezier(.16,.9,.2,1);
-}
-.board-cell.fx-merge::before,.board-cell.fx-merge::after{
-  content:'';
-  position:absolute;
-  inset:4%;
-  z-index:3;
-  border-radius:50%;
-  pointer-events:none;
-}
-.board-cell.fx-merge::before{
-  border:2px solid rgba(255,233,142,.95);
-  animation:tier-ring .52s ease-out both;
-}
-.board-cell.fx-merge::after{
-  background:radial-gradient(circle,rgba(255,250,218,.82) 0,rgba(255,215,95,.28) 34%,transparent 68%);
-  animation:tier-flash .48s ease-out both;
-}
-.board-cell.fx-tier-up .item-art{
-  animation:tier-art-reveal .5s cubic-bezier(.16,.9,.2,1) both;
-}
-.board-cell.fx-tier-up .tier{
-  animation:tier-badge-pop .55s cubic-bezier(.16,.9,.2,1) both;
-}
-.board-cell.fx-generator-dispense{
-  z-index:3;
-  animation:generator-dispense .42s cubic-bezier(.2,.8,.2,1);
-}
-.board-cell.fx-generator-dispense .item-art{
-  animation:generator-art-kick .42s cubic-bezier(.2,.8,.2,1);
-}
-.board-cell.fx-dispensed-item{
-  z-index:3;
-  animation:dispensed-cell-land .48s cubic-bezier(.16,.9,.2,1);
-}
-.board-cell.fx-dispensed-item .item-art{
-  animation:dispensed-item-land .48s cubic-bezier(.16,.9,.2,1);
-}
+.board-cell.fx-merge{z-index:4;animation:merge-snap .5s cubic-bezier(.16,.9,.2,1)}
+.board-cell.fx-merge::before,.board-cell.fx-merge::after{content:'';position:absolute;inset:4%;z-index:3;border-radius:50%;pointer-events:none}
+.board-cell.fx-merge::before{border:2px solid rgba(255,233,142,.95);animation:tier-ring .52s ease-out both}
+.board-cell.fx-merge::after{background:radial-gradient(circle,rgba(255,250,218,.82) 0,rgba(255,215,95,.28) 34%,transparent 68%);animation:tier-flash .48s ease-out both}
+.board-cell.fx-tier-up .item-art{animation:tier-art-reveal .5s cubic-bezier(.16,.9,.2,1) both}
+.board-cell.fx-tier-up .tier{animation:tier-badge-pop .55s cubic-bezier(.16,.9,.2,1) both}
+.board-cell.fx-generator-dispense{z-index:3;animation:generator-dispense .42s cubic-bezier(.2,.8,.2,1)}
+.board-cell.fx-generator-dispense .item-art{animation:generator-art-kick .42s cubic-bezier(.2,.8,.2,1)}
+.board-cell.fx-dispensed-item{z-index:3;animation:dispensed-cell-land .48s cubic-bezier(.16,.9,.2,1)}
+.board-cell.fx-dispensed-item .item-art{animation:dispensed-item-land .48s cubic-bezier(.16,.9,.2,1)}
+
+.fx-order-deliver{position:relative;z-index:4;animation:order-accept .34s cubic-bezier(.2,.8,.2,1) both}
+.delivery-flight{position:fixed!important;z-index:9999!important;width:34px!important;height:34px!important;margin:-17px 0 0 -17px!important;pointer-events:none!important;transform-origin:center;animation:delivery-flight .72s cubic-bezier(.2,.72,.16,1) both;filter:drop-shadow(0 5px 8px rgba(0,20,28,.32))}
+.delivery-flight.item-flight{border-radius:50%;background:rgba(255,248,218,.92);padding:4px}
+.delivery-flight.reward-flight{width:auto!important;height:auto!important;min-width:42px!important;margin:-12px 0 0 -21px!important;padding:4px 8px;border-radius:999px;font-weight:900;font-size:13px;white-space:nowrap}
+.delivery-flight.coin-flight{background:#ffe17a;color:#5b4210}
+.delivery-flight.star-flight{background:#fff1bb;color:#6a4810}
+.resource.fx-reward-arrive,.mission-card.fx-reward-arrive{animation:reward-arrive .5s cubic-bezier(.16,.9,.2,1)}
+.reward-token{position:absolute;opacity:0;pointer-events:none}
 
 @keyframes merge-target-breathe{from{filter:brightness(1);transform:scale(1.055)}to{filter:brightness(1.12);transform:scale(1.095)}}
 @keyframes merge-target-ring{from{opacity:.28;transform:scale(.82)}to{opacity:.88;transform:scale(1)}}
@@ -65,8 +44,12 @@
 @keyframes generator-art-kick{0%{transform:scale(.92) translateY(0)}38%{transform:scale(.82) translateY(5%)}72%{transform:scale(1.02) translateY(-5%)}100%{transform:scale(.92) translateY(0)}}
 @keyframes dispensed-cell-land{0%{transform:scale(.58);opacity:.2}52%{transform:scale(1.13);opacity:1}76%{transform:scale(.95)}100%{transform:scale(1);opacity:1}}
 @keyframes dispensed-item-land{0%{transform:scale(.42) translateY(-18%);filter:brightness(1.45)}58%{transform:scale(1.08) translateY(0);filter:brightness(1.12)}100%{transform:scale(.96);filter:drop-shadow(0 3px 2px rgba(0,20,25,.18)) saturate(1.04)}}
+@keyframes order-accept{0%{transform:scale(1)}45%{transform:scale(.97);filter:brightness(1.16)}100%{transform:scale(1.015);filter:brightness(1.06)}}
+@keyframes delivery-flight{0%{opacity:1;transform:translate(0,0) scale(1)}72%{opacity:1;transform:translate(calc(var(--travel-x)*.82),calc(var(--travel-y)*.82 - 10px)) scale(.78)}100%{opacity:0;transform:translate(var(--travel-x),var(--travel-y)) scale(.32)}}
+@keyframes reward-arrive{0%{transform:scale(1)}42%{transform:scale(1.13);filter:brightness(1.28)}100%{transform:scale(1);filter:none}}
 
 @media (prefers-reduced-motion:reduce){
-  .board-cell.drop-merge,.board-cell.drop-merge::before,.board-cell.fx-merge,.board-cell.fx-merge::before,.board-cell.fx-merge::after,.board-cell.fx-tier-up .item-art,.board-cell.fx-tier-up .tier,.board-cell.fx-generator-dispense,.board-cell.fx-generator-dispense .item-art,.board-cell.fx-dispensed-item,.board-cell.fx-dispensed-item .item-art{animation:none!important;transition:none!important}
+  .board-cell.drop-merge,.board-cell.drop-merge::before,.board-cell.fx-merge,.board-cell.fx-merge::before,.board-cell.fx-merge::after,.board-cell.fx-tier-up .item-art,.board-cell.fx-tier-up .tier,.board-cell.fx-generator-dispense,.board-cell.fx-generator-dispense .item-art,.board-cell.fx-dispensed-item,.board-cell.fx-dispensed-item .item-art,.fx-order-deliver,.delivery-flight,.resource.fx-reward-arrive,.mission-card.fx-reward-arrive{animation:none!important;transition:none!important}
   .board-cell.drop-merge{transform:scale(1.035)}
+  .delivery-flight{display:none!important}
 }
