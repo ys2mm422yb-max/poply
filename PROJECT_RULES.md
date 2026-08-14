@@ -53,6 +53,7 @@ The target is an original Poply product in the same broad genre, not a direct co
 - Compare releases against `docs/END_GOAL.md`, `docs/GAME_DIRECTION_V2.md` and `docs/VISUAL_DIRECTION.md`.
 - The quality gate is not merely "works". The game should feel cohesive, tactile, understandable and rewarding.
 - Board, orders and visible meta-progression must read as one game, not separate web panels.
+- The owner is not the routine QA system. When browser/render tooling is available, autonomously generate and inspect representative mobile screenshots and exercise meaningful interactions before asking for device feedback.
 
 ## 7. Core merge rules
 - The board persists between sessions.
@@ -103,6 +104,9 @@ Testing is risk-based.
 - Deployment changes: verify the canonical test URL.
 - Bug fixes: add regression coverage when practical.
 - Responsive changes: check representative phone/tablet sizes when tooling permits.
+- Meaningful user-visible or interactive changes must run the mobile Browser QA described in `docs/BROWSER_QA_POLICY.md` when the workflow is available.
+- Browser QA must exercise real rendered interactions rather than only checking source/markup; important flows such as navigation and order delivery must fail CI when the visible control does not actually work.
+- Browser QA must retain screenshot artifacts for representative mobile views, including a short Safari-like visible viewport; for meaningful visual releases the autonomous worker should inspect those generated screenshots before merge when tooling permits.
 
 A compile/build pass alone is never sufficient for meaningful gameplay work.
 
@@ -120,6 +124,8 @@ A compile/build pass alone is never sufficient for meaningful gameplay work.
 - `main` is the stable integration branch.
 - Non-trivial work should normally use a branch and merge after appropriate checks.
 - CI should run automatically for code changes.
+- For meaningful user-visible/interactive releases, exact-head Browser QA is part of the merge gate when available, alongside normal CI.
+- After merge, exact-main normal CI, Browser QA and canonical Pages deployment must succeed before calling the release live.
 - Do not knowingly publish a failing build.
 - Keep commit messages descriptive.
 - When product direction changes permanently, update all standing project documents and automation prompts in the same change set.
@@ -131,6 +137,7 @@ A compile/build pass alone is never sufficient for meaningful gameplay work.
 - `docs/PRODUCT_VISION.md` = player promise/product loop.
 - `docs/NEXT_STEPS.md` = execution priority.
 - `docs/VISUAL_DIRECTION.md` = visual/UI quality target.
+- `docs/BROWSER_QA_POLICY.md` = mandatory self-run mobile interaction/screenshot QA contract.
 
 ## 15. Data and privacy
 - Use synthetic test data only.
