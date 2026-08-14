@@ -1,10 +1,11 @@
 import { normalizeState } from './v2-game.js';
+import { ensurePlayerProgress } from './aaa-progression.js';
 
 const FAMILIES=['coffee','bakery','sweet'];
 const noProgress=state=>Number(state.stats?.generated||0)===0&&Number(state.stats?.orders||0)===0&&(state.placeUpgrades?.length||0)===0;
 
 export function migrateState(input){
-  const state=structuredClone(normalizeState(input));
+  let state=structuredClone(normalizeState(input));
   if(noProgress(state)&&Number(state.stats?.merges||0)===0){
     for(let i=0;i<state.board.length;i+=1){
       if(String(state.board[i]?.id||'').startsWith('starter-plus-'))state.board[i]=null;
@@ -25,6 +26,7 @@ export function migrateState(input){
       }
     }
   }
+  state=ensurePlayerProgress(state).state;
   state.updatedAt=Date.now();
   return state;
 }
