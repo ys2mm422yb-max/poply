@@ -14,7 +14,10 @@ export function installDiscoveryUI(root){
     const node=document.createElement('div');node.className='discovery-reveal';node.setAttribute('role','status');node.setAttribute('aria-live','polite');
     node.innerHTML=`<div class="discovery-glow"></div><div class="discovery-item">${renderArt(def.art)}</div><div class="discovery-copy"><small>NEU ENTDECKT</small><strong>${def.name}</strong><span>Stufe ${item.level} · +${detail.progression?.gained||0} XP</span></div>`;
     root.append(node);
-    requestAnimationFrame(()=>node.classList.add('is-visible'));
+    /* Commit the hidden start state before the visible state. This preserves the authored transition
+       without making a reward's visibility depend on one requestAnimationFrame being scheduled. */
+    node.getBoundingClientRect();
+    node.classList.add('is-visible');
     leaveTimer=setTimeout(()=>node.classList.add('is-leaving'),1250);
     removeTimer=setTimeout(()=>node.remove(),1580);
   };
