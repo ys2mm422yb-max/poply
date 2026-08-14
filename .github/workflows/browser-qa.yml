@@ -33,30 +33,23 @@ jobs:
           cat /tmp/poply-http.log
           exit 1
       - name: Run mobile WebKit QA
-        env:
-          QA_BASE_URL: http://127.0.0.1:4173
-          QA_OUT_DIR: qa-artifacts
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/browser-qa.mjs
       - name: Run player progression WebKit QA
-        env:
-          QA_BASE_URL: http://127.0.0.1:4173
-          QA_OUT_DIR: qa-artifacts
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/progression-qa.mjs
       - name: Run Collection Book WebKit QA
-        env:
-          QA_BASE_URL: http://127.0.0.1:4173
-          QA_OUT_DIR: qa-artifacts
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/collection-qa.mjs
       - name: Run Storage WebKit QA
-        env:
-          QA_BASE_URL: http://127.0.0.1:4173
-          QA_OUT_DIR: qa-artifacts
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/storage-qa.mjs
       - name: Run Daily Goals WebKit QA
-        env:
-          QA_BASE_URL: http://127.0.0.1:4173
-          QA_OUT_DIR: qa-artifacts
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/daily-qa.mjs
+      - name: Run Place Map WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/place-map-qa.mjs
       - name: Upload mobile QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
