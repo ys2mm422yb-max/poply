@@ -8,8 +8,8 @@ const checkIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.
 export function installPlayerUI(root){
   let overlayTimer=0,levelDelayTimer=0,milestonesOpen=false,decorating=false;
   const milestoneData=state=>playerMilestones(state);
-  const milestoneSignature=(milestones,preview,title,badges)=>`${milestones.map(entry=>`${entry.id}:${entry.current}:${entry.complete?'1':'0'}`).join('|')}|next:${preview.level}:${preview.remainingXp}:${preview.rewardEnergy}|title:${title.current.rank}|places:${badges.map(entry=>`${entry.id}:${entry.completedSteps}:${entry.complete?'1':'0'}`).join(',')}`;
-  const nextLevelMarkup=preview=>`<div class="next-level-preview" aria-label="Nächstes Level ${preview.level}, ${preview.remainingXp} XP fehlen, ${preview.rewardCoins} Coins und volle Energie als Belohnung"><span class="next-level-orb">LV ${preview.level}</span><div class="next-level-copy"><small>NÄCHSTES LEVEL</small><strong>${preview.remainingXp} XP fehlen</strong><div class="next-level-track"><i style="width:${Math.round(preview.ratio*100)}%"></i></div></div><div class="next-level-reward"><small>BELOHNUNG</small><strong>+${preview.rewardCoins}</strong><span>Coins · Energie voll</span></div></div>`;
+  const milestoneSignature=(milestones,preview,title,badges)=>`${milestones.map(entry=>`${entry.id}:${entry.current}:${entry.complete?'1':'0'}`).join('|')}|next:${preview.level}:${preview.remainingXp}:${preview.rewardEnergy}:${preview.rewardMaxEnergyGain}|title:${title.current.rank}|places:${badges.map(entry=>`${entry.id}:${entry.completedSteps}:${entry.complete?'1':'0'}`).join(',')}`;
+  const nextLevelMarkup=preview=>`<div class="next-level-preview" aria-label="Nächstes Level ${preview.level}, ${preview.remainingXp} XP fehlen, ${preview.rewardCoins} Coins und volle Energie als Belohnung${preview.rewardMaxEnergyGain?`, plus ${preview.rewardMaxEnergyGain} Max-Energie`:''}"><span class="next-level-orb">LV ${preview.level}</span><div class="next-level-copy"><small>NÄCHSTES LEVEL</small><strong>${preview.remainingXp} XP fehlen</strong><div class="next-level-track"><i style="width:${Math.round(preview.ratio*100)}%"></i></div></div><div class="next-level-reward"><small>${preview.rewardMaxEnergyGain?`BELOHNUNG · MAX +${preview.rewardMaxEnergyGain}`:'BELOHNUNG'}</small><strong>+${preview.rewardCoins}</strong><span>Coins · Energie voll</span></div></div>`;
   const titleMarkup=title=>`<div class="player-title-line" aria-label="Spielertitel ${title.current.label}"><span>DEIN TITEL</span><strong>${title.current.label}</strong>${title.next?`<small>Nächster: ${title.next.label}</small>`:'<small>Höchster Titel erreicht</small>'}</div>`;
   const placeBadgesMarkup=badges=>{
     const completed=badges.filter(entry=>entry.complete).length;
@@ -37,7 +37,7 @@ export function installPlayerUI(root){
       track.setAttribute('aria-label',track.title);
       const existing=root.querySelector('.player-progress-sheet');
       if(!milestonesOpen){existing?.remove();return;}
-      const milestones=milestoneData(state),preview=nextLevelRewardPreview(state.playerXp),badges=placeCompletionBadges(state),signature=milestoneSignature(milestones,preview,title,badges);
+      const milestones=milestoneData(state),preview=nextLevelRewardPreview(state.playerXp,state.maxEnergy),badges=placeCompletionBadges(state),signature=milestoneSignature(milestones,preview,title,badges);
       if(existing?.dataset.signature===signature)return;
       existing?.remove();topbar.insertAdjacentHTML('afterend',milestoneMarkup(milestones,signature,preview,title,badges));
     }finally{decorating=false;}
@@ -45,7 +45,7 @@ export function installPlayerUI(root){
   const revealLevelUp=progression=>{
     clearTimeout(overlayTimer);root.querySelector('.level-up-overlay')?.remove();
     const overlay=document.createElement('div');overlay.className='level-up-overlay';overlay.setAttribute('role','status');overlay.setAttribute('aria-live','polite');
-    overlay.innerHTML=`<span>LEVEL UP</span><strong>Level ${progression.after.level}</strong><small>+${progression.bonusCoins} Coins · Energie voll</small>`;
+    overlay.innerHTML=`<span>LEVEL UP</span><strong>Level ${progression.after.level}</strong><small>+${progression.bonusCoins} Coins · Energie voll${progression.capacityGain?` · Max-Energie +${progression.capacityGain}`:''}</small>`;
     root.append(overlay);overlayTimer=setTimeout(()=>safeRemove(overlay),1800);
   };
   const showProgression=progression=>{
