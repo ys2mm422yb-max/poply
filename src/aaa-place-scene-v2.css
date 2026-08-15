@@ -67,6 +67,21 @@
 .production-place.place-coast .world-hero[data-stage="1"].fx-restoration-reveal .scene-upgrade.lights{filter:drop-shadow(0 0 18px rgba(255,210,103,.42))}
 .production-place.place-coast .world-hero[data-stage="6"] .scene-upgrade.sign{filter:drop-shadow(0 10px 9px rgba(0,24,29,.26)) drop-shadow(0 0 12px rgba(255,215,117,.18))}
 
+/* The final coast teaser is product-critical: show the whole next-Place promise instead of an ellipsis. */
+.production-place.place-coast .purpose-place-after{align-items:flex-start}
+.production-place.place-coast .purpose-place-after>strong{
+  flex:1 1 auto;
+  min-width:0;
+  overflow:visible;
+  text-overflow:clip;
+  white-space:normal;
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  line-height:1.15;
+}
+
 @keyframes scene-window-shimmer{from{opacity:.045;transform:translateX(-4px)}to{opacity:.13;transform:translateX(7px)}}
 @keyframes scene-plant-sway{from{transform:rotate(-.7deg)}to{transform:rotate(.8deg)}}
 @keyframes scene-plant-sway-right{from{transform:rotate(.65deg)}to{transform:rotate(-.75deg)}}
@@ -80,6 +95,7 @@
 @media(max-height:760px) and (max-width:520px){
   .production-place.place-coast .world-hero{border-radius:23px}
   .production-place.place-coast .world-art{transform-origin:50% 58%}
+  .production-place.place-coast .purpose-place-after>strong{font-size:8px;line-height:1.12}
 }
 @media(prefers-reduced-motion:reduce){
   .production-place.place-coast .world-art,
