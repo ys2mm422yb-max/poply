@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createInitialState, makeItem } from '../src/v2-game.js';
 import { createDailyState, ensureDailyState, progressDailyEvent, claimDailyGoal, canServeDailyBonus, fulfillDailyBonus } from '../src/aaa-daily.js';
 
@@ -38,4 +39,16 @@ test('daily bonus guest consumes exact requirement and pays once',()=>{
   assert.equal(canServeDailyBonus(state,'2026-08-14'),true);
   const served=fulfillDailyBonus(state,'2026-08-14');assert.equal(served.changed,true);assert.equal(served.state.board.some(item=>item?.id==='daily-ready-item'),false);assert.equal(served.state.coins,beforeCoins+bonus.rewards.coins);assert.equal(served.state.stars,beforeStars+bonus.rewards.stars);assert.equal(served.state.stats.orders,beforeOrders+1);assert.equal(served.state.daily.bonus.served,true);
   const repeat=fulfillDailyBonus(served.state,'2026-08-14');assert.equal(repeat.changed,false);assert.equal(repeat.reason,'already-served');assert.equal(repeat.state.coins,served.state.coins);assert.equal(repeat.state.stars,served.state.stars);
+});
+
+test('daily visual contract gives each goal a distinct authored reward identity',()=>{
+  const css=readFileSync(new URL('../src/aaa-daily.css',import.meta.url),'utf8');
+  for(const index of [1,2,3]){
+    assert.match(css,new RegExp(`\\.daily-goal:nth-child\\(${index}\\)`));
+  }
+  assert.match(css,/\.daily-goal:nth-child\(1\)[\s\S]*#ffd45f/);
+  assert.match(css,/\.daily-goal:nth-child\(2\)[\s\S]*#ff9ab2/);
+  assert.match(css,/\.daily-goal:nth-child\(3\)[\s\S]*#77ece2/);
+  assert.match(css,/\.daily-goal\.claimed[\s\S]*rgba\(112,226,146/);
+  assert.match(css,/\.daily-bonus\{[\s\S]*radial-gradient/);
 });
