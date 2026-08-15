@@ -75,6 +75,41 @@
 .nav-tab.active[data-view="collection"]:before{background:#b7afff;box-shadow:0 0 9px rgba(183,175,255,.42)}
 .nav-tab.active .nav-icon{color:#fff;filter:drop-shadow(0 0 7px currentColor)}
 
+/* Board guest intent: the three compact jobs should read as game targets, not repeated dark cards.
+   Keep geometry unchanged; use color lanes, avatar halos and brighter requested-item wells. */
+.qa-board .board-job{
+  isolation:isolate;
+  border-color:rgba(255,255,255,.18);
+  box-shadow:0 9px 20px rgba(3,38,47,.2),inset 0 1px rgba(255,255,255,.13);
+}
+.qa-board .board-job:nth-child(1){
+  background:radial-gradient(circle at 18% 18%,rgba(255,186,104,.34),transparent 43%),linear-gradient(145deg,#176170,#083d4b 72%);
+  border-color:rgba(255,197,109,.42);
+}
+.qa-board .board-job:nth-child(2){
+  background:radial-gradient(circle at 18% 18%,rgba(103,205,244,.27),transparent 43%),linear-gradient(145deg,#175b73,#093b4d 72%);
+  border-color:rgba(119,204,240,.34);
+}
+.qa-board .board-job:nth-child(3){
+  background:radial-gradient(circle at 18% 18%,rgba(240,139,190,.29),transparent 43%),linear-gradient(145deg,#62506b,#123f52 72%);
+  border-color:rgba(242,151,196,.34);
+}
+.qa-board .board-job-person{z-index:1}
+.qa-board .board-job-avatar{
+  box-shadow:0 4px 9px rgba(0,20,26,.3),0 0 0 3px rgba(255,255,255,.07);
+}
+.qa-board .board-job:nth-child(1) .board-job-avatar{box-shadow:0 4px 9px rgba(0,20,26,.3),0 0 0 3px rgba(255,193,98,.18),0 0 14px rgba(255,179,88,.2)}
+.qa-board .board-job:nth-child(2) .board-job-avatar{box-shadow:0 4px 9px rgba(0,20,26,.3),0 0 0 3px rgba(110,205,240,.16),0 0 14px rgba(92,191,230,.18)}
+.qa-board .board-job:nth-child(3) .board-job-avatar{box-shadow:0 4px 9px rgba(0,20,26,.3),0 0 0 3px rgba(240,142,188,.16),0 0 14px rgba(235,125,179,.18)}
+.qa-board .board-job .need{
+  border:1px solid rgba(255,255,255,.64);
+  background:linear-gradient(145deg,#fffaf0,#f0dfbd);
+  box-shadow:inset 0 1px #fff,0 3px 8px rgba(0,20,26,.2),0 0 10px rgba(255,211,116,.08);
+}
+.qa-board .board-job-reward{filter:drop-shadow(0 0 5px rgba(255,205,87,.18))}
+.qa-board .board-job-status{background:rgba(255,255,255,.1);color:#b8d6d3}
+.qa-board .board-job.ready{border-color:rgba(112,232,102,.72);box-shadow:0 0 0 2px rgba(112,232,102,.08),0 9px 20px rgba(3,38,47,.2),0 0 16px rgba(101,223,90,.12)}
+
 @media(max-width:430px){
   /* Mobile workbench title sits on the dark board-area surface. Keep the light mobile contrast
      even though the final color layer uses a dark title on the light desktop board background. */
