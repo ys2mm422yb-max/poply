@@ -53,6 +53,9 @@ jobs:
       - name: Run visible purpose-loop WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/purpose-qa.mjs
+      - name: Run first-session rebuild WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/first-session-qa.mjs
       - name: Run actionable milestone-focus WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/milestone-focus-qa.mjs
