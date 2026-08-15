@@ -2,59 +2,57 @@
 
 Updated: 2026-08-15
 
-## Live baseline
-Current production `main` is a persistent merge-and-build game with:
+## Current production baseline
+Current production `main` is `19a43e897c54c8b21d447c107162dcaa8c80c73b` and contains:
 - persistent 7×7 merge Board / Werkbank;
 - Place 01 · Café am Meer, Place 02 · Sonnenkai and Place 03 · Dachgarten with visible restoration progression;
 - five six-tier item families and four generators, including Dachgarten's deterministic four-step harvest bonus;
+- authored First Session: an immediate first serve/build payoff, real opening combo orders, anti-repeat replacement selection and Place-stage order pools;
 - three simultaneous customer orders with deterministic Place-local difficulty bands;
 - Coins, restoration Stars, fair regenerating Energy and Player XP/Levels;
-- Collection/Discovery + family mastery, persistent Storage + Coin expansion + explicit full/full recycling recovery;
-- Daily Goals + Bonus Guest;
+- visible purpose loop across Board, Orders and Place, including next-build blueprint and actionable next-step CTA;
+- Collection/Discovery with family mastery and one-time final-tier mastery rewards;
+- persistent Storage + Coin expansion + explicit full/full recycling recovery;
+- contextual Daily Goals + Bonus Guest without two permanently fixed daily tasks;
 - Places world-map/revisit flow;
+- materially richer Café am Meer restoration stages with authored workers/guests/steam/light/terrace life and Reduced Motion support;
+- Place 01 upgrades that unlock broader gameplay/order content as well as visible scene changes;
 - Player milestones, titles, Place badges, next-Level reward/XP and Energy-capacity previews;
-- automatic installed-PWA update path and iOS standalone safe-area protection;
+- automatic installed-PWA update path, absolute same-origin service-worker registration and iOS standalone safe-area protection;
 - previous-valid LocalStorage backup / corrupt-save recovery;
 - local save/resume and migration safety;
-- mandatory CI + Mobile WebKit + screenshot review + canonical Pages release gates.
+- mandatory CI + Mobile WebKit + screenshot review + Place03/PWA QA + canonical Pages release gates.
 
-Milestone B visual quality remains open globally and continues independently through screenshot-first visual PRs. GitHub Issue #42 is the durable cross-worker work log.
+The First Session rebuild is complete: Issue #109 is closed; PR #110 shipped the seven-block rebuild and PR #113 closed the final post-merge ready-order copy defect from #111.
 
-## Current manual product slice — visible purpose loop
-Issue: #107 `Product: give Poply a clear purpose loop and visible next goal`.
-PR: #108 `Purpose: make the next meaningful goal visible`.
-Start `main`: `0be50bdb8c18f17b93ff406a65dcfc16f1ecd620`.
-Branch: `feature/purpose-loop-visible-goal`.
+Latest exact-main verification for `19a43e897c54c8b21d447c107162dcaa8c80c73b`:
+- CI `31898264006` — success;
+- Browser QA `31898264009` — success;
+- Place 03 QA `31898264011` — success;
+- PWA Update QA `31898263997` — success;
+- canonical deploy `31898264018` — success.
 
-Player problem:
-Poply already contains the right systems, but their causal relationship is under-communicated. The player can merge, serve, collect Stars/Coins/XP and build Places without continuously seeing what those actions are building toward or what will visibly change next.
+GitHub Issue #42 remains the durable cross-worker work log.
 
-Implementation contract:
-- one deterministic purpose model derives the current meaningful goal from existing Place restoration state;
-- no new currency, quest tab, claim loop or backend state;
-- Board shows the current restoration target, distance and `Danach`, and routes the player to the Place instead of silently building from the Board;
-- Orders show how the selected Star reward contributes to the current restoration goal;
-- Place renders the exact authored next SVG restoration group as a pre-build blueprint for all three Places / 18 steps;
-- after a real build, the exact newly built group is highlighted and the next authored group becomes the preview;
-- Place goal story text is not truncated;
-- reward/progression feedback reconnects to the same current-goal vocabulary;
-- deterministic tests plus dedicated real WebKit purpose QA cover 390×844 and 390×720.
+## Open product ownership
+Issue #115 `Guests: rebuild loyalty progression on current main` is the next defined product slice.
 
-Reference screenshots supplied by the user are treated as motivation-architecture inspiration only. Poply does not copy their art, characters, layout or monetization.
+Historical PR #99 is **closed without merge**. Its product idea was retained, but its stale branch was rejected after audit:
+- old head: `a1e0d1c4b392f11d62e9b30139079646f6e36927`;
+- merge base: `cabfb7797b5e8647d24499e5eb9c02f1a846dfa4`;
+- at audit it had diverged from `main` by 8 commits behind / 11 commits ahead;
+- its stale diff touched `aaa-session.js`, Collection, Browser QA, `sw.js` and PWA update tests and could overwrite newer First-Session/PWA behavior.
 
-## Coordination
-Open PR #99 (`Guests: add persistent loyalty collection progression`) owns guest/session/Collection loyalty state. Purpose-loop work deliberately avoids that domain.
+#115 preserves only the useful Guest Loyalty contract and requires a fresh current-main implementation with current mobile screenshot review. No code from #99 may be merged wholesale.
 
-Issue #103 (`Product: make Place upgrades worth chasing before and after build`) is the focused Place anticipation/payoff subset of #107 and should close with the purpose implementation once exact-head QA and visual acceptance pass.
-
-Neon/backend is not required for this slice.
-
-## Next product priorities
-1. Finish #108 exact-head CI + Browser QA and open the generated purpose screenshots at 390×844 and 390×720.
-2. Reject/fix any layout, hierarchy or payoff weakness before merge; a green browser assertion alone is not visual acceptance.
-3. Merge #108 only after exact-head gates pass, then verify exact-main CI + Browser QA + Place03 QA + PWA Update QA + canonical Pages deploy.
-4. Re-read PR #99 ownership and Issue #42 before taking the next product task.
-5. Continue economy/pacing and visual quality only where they strengthen the core merge → serve → build → world-change loop.
+## Current product priorities
+1. Implement #115 from fresh current `main`: lightweight durable Mika/Nora/Sam loyalty only if it still strengthens the core Orders → relationship → Collection/world loop.
+2. Continue Milestone B visual production quality: stronger authored game-world presence, color/material identity, motion and reward payoff while reducing dashboard-like UI.
+3. Continue K economy/pacing/configuration: centralized tuning data, progression simulations and clear currency purpose across all three Places.
+4. Only then broaden Collection/world completion where it strengthens the merge → serve → build → world-change loop.
+5. Cloud/accounts, live events and native packaging remain later phases, not current blockers.
 
 ## Durable coordination rule
 Every substantial worker run records in Issue #42: exact starting main, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and next free task.
+
+A green assertion is not visual acceptance. Any visual change must still be reviewed from generated 390×844 and 390×720 GitHub Actions screenshots before merge.
