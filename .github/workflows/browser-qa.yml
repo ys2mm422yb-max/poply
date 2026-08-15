@@ -35,6 +35,9 @@ jobs:
       - name: Run mobile WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/browser-qa.mjs
+      - name: Run family-color and living-Place WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/visual-vibrance-qa.mjs
       - name: Run player progression WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/progression-qa.mjs
