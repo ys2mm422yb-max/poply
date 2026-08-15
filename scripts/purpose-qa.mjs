@@ -23,33 +23,41 @@ try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
   await page.evaluate(async()=>{const game=await import('./src/v2-game.js');const state=game.createInitialState();state.stars=2;localStorage.setItem('poply-v2-state-1',JSON.stringify(state));});
   await page.reload({waitUntil:'networkidle'});
-  await page.waitForSelector('.purpose-card [data-purpose-go-place]');
+  await page.waitForSelector('.purpose-card [data-purpose-go-orders]');
   const boardGoal=(await page.locator('.purpose-card').textContent())||'';
   assert(boardGoal.includes('NÄCHSTES ZIEL · 1/6'),`board goal step missing: ${boardGoal}`);
   assert(boardGoal.includes('Lichter'),`board goal name missing: ${boardGoal}`);
   assert(boardGoal.includes('noch 2'),`board distance missing: ${boardGoal}`);
-  assert((await page.locator('.purpose-card [data-purpose-go-place]').textContent())?.includes('Zum Place'),'board must route to Place instead of building invisibly');
+  assert((await page.locator('.purpose-card [data-purpose-go-orders]').textContent())?.includes('2 ★ holen'),'not-ready board must route to playable work');
   assert(await page.locator('.purpose-board-after').isVisible(),'390x844 board should show the next-after teaser');
   await assertContained(page.locator('.purpose-board-after'),page.locator('.purpose-card'),'390x844 board Danach');
   await assertNoScroll('390x844 board purpose');
   await shot('70-purpose-board-390x844');
 
-  await page.locator('.purpose-card [data-purpose-go-place]').click();
+  await page.locator('.purpose-card [data-purpose-go-orders]').click();
+  await page.waitForSelector('.view-orders .purpose-service-goal');
+  assert((await page.locator('.service-hero h2').textContent())?.includes('Wähle'),'not-ready purpose CTA did not land on actionable orders');
+  await page.locator('.purpose-service-goal').click();
   await page.waitForSelector('.view-place .purpose-blueprint-tag');
   assert(await page.locator('.scene-upgrade-preview.lights').count()===1,'next authored Lichter group is not previewed');
   assert((await page.locator('.purpose-blueprint-tag').textContent())?.includes('Lichter'),'world preview tag missing Lichter');
   assert((await page.locator('.purpose-place-after').textContent())?.includes('Neue Theke'),'Danach teaser missing next upgrade');
+  assert((await page.locator('.purpose-place-unlock').textContent())?.includes('Kombi-Aufträge'),'current upgrade does not explain its gameplay unlock');
   const story=await page.locator('.purpose-place-goal .goal-copy>p').evaluate(node=>({text:node.textContent,scroll:node.scrollHeight,client:node.clientHeight}));
   assert(story.text?.includes('Abends sichtbar'),'goal story copy missing');
   assert(story.scroll<=story.client+1,`goal story is visually clipped ${JSON.stringify(story)}`);
   await assertContained(page.locator('.purpose-place-after'),page.locator('.place-current-goal'),'390x844 Place Danach');
+  await assertContained(page.locator('.purpose-place-unlock'),page.locator('.place-current-goal'),'390x844 Place unlock');
   await assertNoOverlap(page.locator('.purpose-blueprint-tag'),page.locator('.world-copy'),'390x844 blueprint vs world title');
   await assertNoScroll('390x844 Place preview');
   await shot('71-purpose-place-preview-390x844');
 
   await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('poply-v2-state-1'));state.stars=4;localStorage.setItem('poply-v2-state-1',JSON.stringify(state));});
   await page.reload({waitUntil:'networkidle'});
-  await page.locator('.nav-tab[data-view="place"]').click();
+  await page.locator('.nav-tab[data-view="board"]').click();
+  await page.waitForSelector('.purpose-card [data-purpose-go-place]');
+  assert((await page.locator('.purpose-card [data-purpose-go-place]').textContent())?.includes('Jetzt bauen'),'ready board must expose build action');
+  await page.locator('.purpose-card [data-purpose-go-place]').click();
   await page.waitForSelector('.scene-upgrade-preview.lights');
   assert(await page.locator('.place-current-goal [data-action="build"]').isEnabled(),'Lichter should be buildable with 4 stars');
   await page.locator('.place-current-goal [data-action="build"]').click();
@@ -57,6 +65,7 @@ try{
   await page.waitForSelector('.scene-upgrade.lights.fx-purpose-built');
   assert(await page.locator('.scene-upgrade-preview.counter').count()===1,'after build, exact next authored counter group should become preview');
   assert((await page.locator('.purpose-place-after').textContent())?.includes('Menüwand'),'post-build Danach teaser did not advance');
+  assert((await page.locator('.purpose-place-unlock').textContent())?.includes('Tier-3'),'post-build goal did not expose the next gameplay unlock');
   await assertContained(page.locator('.purpose-place-after'),page.locator('.place-current-goal'),'390x844 post-build Danach');
   await assertNoOverlap(page.locator('.purpose-blueprint-tag'),page.locator('.world-copy'),'390x844 post-build blueprint vs world title');
   await shot('72-purpose-place-built-390x844');
@@ -68,6 +77,7 @@ try{
   assert(ordersGoal.includes('Menüwand'),'Orders Danach teaser missing');
   const servicePurpose=(await page.locator('.service-purpose').textContent())||'';
   assert(servicePurpose.includes('Neue Theke'),'selected order is not connected to the current Place goal');
+  assert(await page.locator('.service-strategy').isVisible(),'order strategy badge missing');
   await assertNoScroll('390x844 Orders purpose');
   await shot('73-purpose-orders-390x844');
 
@@ -77,15 +87,17 @@ try{
   assert(!(await page.locator('.purpose-board-after').isVisible()),'390x720 board should hide the secondary Danach teaser');
   await assertNoScroll('390x720 board purpose');
   await shot('74-purpose-board-390x720');
-  await page.locator('.purpose-card [data-purpose-go-place]').click();
+  const shortCta=page.locator('.purpose-card [data-purpose-go-orders],.purpose-card [data-purpose-go-place]');assert(await shortCta.count()===1,'short board lost actionable CTA');await shortCta.click();
+  if(await page.locator('.view-orders').count())await page.locator('.purpose-service-goal').click();
   await page.waitForSelector('.purpose-blueprint-tag');
   await assertContained(page.locator('.purpose-place-after'),page.locator('.place-current-goal'),'390x720 Place Danach');
+  await assertContained(page.locator('.purpose-place-unlock'),page.locator('.place-current-goal'),'390x720 Place unlock');
   await assertNoOverlap(page.locator('.purpose-blueprint-tag'),page.locator('.world-copy'),'390x720 blueprint vs world title');
   await assertNoScroll('390x720 Place purpose');
   await shot('75-purpose-place-preview-390x720');
 
   const saved=await readSave();
-  report={boardGoal:'Lichter',built:saved.placeUpgrades.includes('lights'),nextGoal:'Neue Theke',shortViewportNoScroll:true,hierarchyContained:true};
+  report={boardGoal:'Lichter',built:saved.placeUpgrades.includes('lights'),nextGoal:'Neue Theke',shortViewportNoScroll:true,hierarchyContained:true,actionableRouting:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){
   failure=error;try{await shot('79-purpose-failure');}catch{}
