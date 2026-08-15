@@ -6,7 +6,7 @@ Durable coordination: GitHub Issue #42.
 Poply grows on two parallel tracks: real product/gameplay depth and screenshot-driven production quality. Neither track may overwrite active work from the other.
 
 ## Live product baseline
-Already live before the current Collection mastery slice:
+Already live before the current Guest loyalty slice:
 - persistent 7×7 merge Board / Werkbank;
 - five established six-tier item families across Café am Meer, Sonnenkai and Dachgarten;
 - four generators, including Dachgarten's deterministic 4-step harvest bonus;
@@ -14,7 +14,7 @@ Already live before the current Collection mastery slice:
 - exact delivery consumption + Coins + restoration Stars;
 - three visible restoration arcs;
 - fair regenerating Energy plus persistent Player XP/Levels and permanent Energy-capacity milestones;
-- Collection / Discovery;
+- Collection / Discovery with family mastery and one-time final-tier mastery rewards;
 - persistent Storage with permanent Coin expansion and explicit full-Board/full-Storage recovery;
 - Daily Goals + fair Bonus Guest;
 - Places world map/revisit flow;
@@ -27,7 +27,7 @@ Already live before the current Collection mastery slice:
 Persistent XP, deterministic level curve, XP from core progression actions, level rewards and visible deterministic reward/Energy-capacity previews.
 
 ### E2 — Collection Book + discovery — LIVE / deepening
-Persistent discoveries, silhouettes, one-time discovery XP and family-specific presentation across five families.
+Persistent discoveries, silhouettes, one-time discovery XP, family-specific presentation and complete-family mastery across five families.
 
 ### F1/F2 — Storage + fair Board recovery — LIVE
 Persistent Storage, permanent Coin-funded capacity expansion and explicit deterministic Recycling so Board 49/49 + Storage 4/4 cannot become a hard deadlock.
@@ -42,27 +42,28 @@ Café, Sonnenkai and Dachgarten map presentation with safe revisit/travel behavi
 Distinct herb family, Gewächshaus generator with visible deterministic 4-step harvest bonus, own six-step restoration arc, Place-local orders, Collection/Map integration and dedicated WebKit QA.
 
 ### J — Player progression depth — LIVE / continuing
-Long-term milestones, cosmetic titles, Place badges, next-Level reward/XP preview and related non-grindy progression cues are integrated into existing game surfaces rather than a disconnected profile dashboard.
+Long-term milestones, cosmetic titles, Place badges, next-Level reward/XP preview, Collection family mastery and related non-grindy progression cues are integrated into existing game surfaces rather than a disconnected profile dashboard.
 
 ### K1 — Replacement-order difficulty bands — LIVE
 Replacement orders scale from visible restoration progress within the active Place rather than opaque hidden adjustment.
 
-## Active product slice — J2 Collection family mastery
-Branch: `feature/collection-family-mastery`.
-Start main: `ce44d34edc5146e9cebcacaa0068acc8282657cc`.
+## Active product slice — J3 Guest loyalty collection
+Branch: `feature/guest-loyalty-collection`.
+Start main: `c33135fc3b0bc41fbc3a3b247a3749a12a1255b3`.
 
 Player problem:
-Discovering individual tiers is satisfying, but finishing a complete six-tier chain needs a clear long-term payoff.
+Orders pay immediate resources, but recurring guests currently do not leave durable relationship progress.
 
 Contract:
-- family mastery is derived from existing discovery keys, not another save counter;
-- ranks: `Unentdeckt`, `Entdecker`, `Kenner`, `Profi`, `Meister`;
-- first runtime transition from 5/6 to 6/6 grants exactly 250 Coins once;
-- repeat discovery/reload cannot duplicate the reward;
-- migrated/backfilled complete families display mastery without minting retroactive Coins;
-- mastery status stays in the existing Collection family focus;
-- final-tier Discovery reveal carries the mastery payoff without a second modal/dashboard;
-- deterministic tests plus real pointer-merge WebKit QA at 390×844 and 390×720.
+- the three existing original portraits become persistent Mika, Nora and Sam identities;
+- deterministic order sequence continues to choose the matching portrait/guest;
+- only successful normal-order or Daily Bonus Guest service increments the matching visit count;
+- legacy saves do not invent retroactive guest history;
+- ranks: `Neu`, `Bekannt` at 1, `Stammgast` at 5, `Lieblingsgast` at 12 visits;
+- exact milestone transitions grant +25 / +100 / +250 Coins once;
+- no new currency, claim button, streak or fifth main tab;
+- compact loyalty progress lives inside Collection;
+- deterministic tests plus real service/reload WebKit QA at 390×844 and 390×720.
 
 ## Milestone B — visual production quality — OPEN in parallel
 Continue stronger color/material identity, authored Board/Orders/Place atmosphere, tactile merge/discovery/delivery/restoration feedback and less dashboard-like presentation. Generated phone screenshots remain acceptance evidence.
@@ -71,7 +72,6 @@ Visual workers must choose files that do not overlap an active product branch.
 
 ## J — Collection depth & achievements — continuing
 Potential later slices:
-- guest/customer collection tied to real served guests;
 - broader world/Place completion records;
 - non-grindy achievements that arise from normal play;
 - cosmetic-only recognition when it adds visible player value;
@@ -82,7 +82,7 @@ Next high-value systems work:
 - move content/reward/generator/Place costs toward more centralized data-driven configuration;
 - automated progression simulations across all five families / three Places;
 - pacing targets for Energy, merges, orders, Stars, Coins and restoration;
-- check that Storage expansion, family mastery, level rewards and restoration together create useful but not inflationary Coins;
+- check that Storage expansion, family mastery, guest loyalty, level rewards and restoration together create useful but not inflationary Coins;
 - every currency must keep a clear player purpose;
 - no hidden rigging or dynamic difficulty that falsifies outcomes.
 
@@ -96,7 +96,7 @@ Only after base progression has enough depth. No punitive urgency, forced ads or
 Shared codebase, reliable installed-web-app updates, later native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance/battery/accessibility audits.
 
 # Immediate build order
-1. Finish Collection family mastery through exact-head deterministic + Mobile WebKit QA and screenshot review.
+1. Finish Guest loyalty through exact-head deterministic + Mobile WebKit QA and screenshot review.
 2. Verify exact merged `main` with normal CI, Browser QA, Place03 QA and canonical Pages.
 3. Re-read current main/open ownership and choose the next non-overlapping K/J product slice.
 4. Continue screenshot-first visual/effects work independently.
@@ -113,7 +113,7 @@ Before adding a feature, answer:
 If those answers are weak, do not build it yet.
 
 # Autonomous coordination rule
-Every worker reads current `main`, all open PRs and Issue #42 before writes. Active changed-file overlap means choose another task. Every substantive run writes a final Issue #42 handoff with start main, branch/PR/exact head, files/systems, tests/run IDs, screenshots actually opened, visual findings, merge/deploy state, blockers and next free work.
+Every worker reads current `main`, all open PRs and Issue #42 before writes. Active changed-file overlap means choose another task. Every substantive run writes a final Issue #42 handoff with start main, branch/PR/head, files/systems, tests/run IDs, screenshots actually opened, visual findings, merge/deploy state, blockers and next free work.
 
 # Release rule
 `fresh branch from current main → implementation → deterministic tests → Mobile WebKit QA → screenshot self-review → exact-head green → merge → exact-main CI + Browser QA + Place03 QA + Pages deploy`.
