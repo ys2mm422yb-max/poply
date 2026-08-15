@@ -18,3 +18,15 @@ test('Storage UI exposes a permanent Coin upgrade and explains parked order beha
   const source=await read('src/aaa-storage-ui.js');
   assert.match(source,/data-storage-upgrade/);assert.match(source,/für Aufträge zurück aufs Board/);assert.match(source,/\+2 Plätze/);
 });
+
+test('Storage presentation keeps authored warm/cool material differentiation and short-phone sizing',async()=>{
+  const css=await read('src/aaa-storage-tray.css');
+  assert.match(css,/--storage-gold:#ffd968/);
+  assert.match(css,/--storage-aqua:#79e1d7/);
+  assert.match(css,/--storage-coral:#ff9d78/);
+  assert.match(css,/\.storage-drawer::before/);
+  assert.match(css,/\.storage-slot\.occupied/);
+  assert.match(css,/\.storage-board-choice:nth-child\(3n\+1\)/);
+  assert.match(css,/@media\(max-height:740px\)/);
+  assert.match(css,/min-height:158px/);
+});
