@@ -1,0 +1,88 @@
+/* Café am Meer Scene V2 — depth, authored motion and build staging. */
+.production-place.place-coast .world-hero{
+  isolation:isolate;
+  perspective:900px;
+  background:linear-gradient(180deg,#7fdbe0 0,#d8eee1 52%,#a06d47 100%);
+  box-shadow:0 22px 48px rgba(0,20,28,.42),inset 0 1px rgba(255,255,255,.24),inset 0 -18px 38px rgba(2,25,31,.16);
+}
+.production-place.place-coast .world-art{
+  transform-origin:50% 62%;
+  will-change:transform,filter;
+  filter:saturate(1.08) contrast(1.025);
+}
+.production-place.place-coast .place-scene-v2{overflow:visible}
+.production-place.place-coast .place-scene-v2 .scene-depth-back{filter:saturate(.94) brightness(1.04)}
+.production-place.place-coast .place-scene-v2 .scene-depth-ground{filter:saturate(.98)}
+.production-place.place-coast .place-scene-v2 .scene-depth-mid{filter:drop-shadow(0 14px 14px rgba(0,31,39,.18))}
+.production-place.place-coast .place-scene-v2 .scene-depth-front{filter:drop-shadow(0 10px 7px rgba(0,29,33,.18))}
+.production-place.place-coast .place-scene-v2 .scene-upgrade{
+  transform-box:fill-box;
+  transform-origin:50% 100%;
+  filter:drop-shadow(0 8px 8px rgba(0,24,29,.18));
+}
+.production-place.place-coast .place-scene-v2 .counter,
+.production-place.place-coast .place-scene-v2 .seating,
+.production-place.place-coast .place-scene-v2 .terrace{filter:drop-shadow(0 12px 10px rgba(0,22,28,.24))}
+.production-place.place-coast .world-hero::before{
+  content:"";position:absolute;z-index:3;inset:0;pointer-events:none;
+  background:linear-gradient(112deg,rgba(255,255,255,.12),transparent 21% 72%,rgba(255,210,126,.08)),radial-gradient(circle at 50% 74%,transparent 0 42%,rgba(3,31,38,.15) 83%,rgba(2,23,31,.24));
+  mix-blend-mode:soft-light;
+}
+.production-place.place-coast .world-hero::after{
+  content:"";position:absolute;z-index:2;left:7%;right:7%;bottom:4%;height:18%;pointer-events:none;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,212,135,.12),rgba(4,30,35,.09) 58%,transparent 73%);filter:blur(8px);
+}
+
+/* Ambient life belongs to authored objects, not floating UI decoration. */
+.production-place.place-coast .place-scene-v2 .window-reflection{animation:scene-window-shimmer 5.8s ease-in-out infinite alternate}
+.production-place.place-coast .place-scene-v2 .plant-left{transform-box:fill-box;transform-origin:70% 100%;animation:scene-plant-sway 6.6s ease-in-out infinite alternate}
+.production-place.place-coast .place-scene-v2 .plant-right{transform-box:fill-box;transform-origin:30% 100%;animation:scene-plant-sway-right 7.3s ease-in-out infinite alternate}
+.production-place.place-coast .place-scene-v2 .cafe-steam path{animation:scene-steam 2.3s ease-in-out infinite}
+.production-place.place-coast .place-scene-v2 .cafe-steam path:nth-child(2){animation-delay:-.75s}
+.production-place.place-coast .place-scene-v2 .cafe-steam path:nth-child(3){animation-delay:-1.5s}
+.production-place.place-coast .place-scene-v2 .cafe-guest{transform-box:fill-box;transform-origin:50% 100%;animation:scene-guest-idle 3.6s ease-in-out infinite alternate}
+.production-place.place-coast .place-scene-v2 .guest-b{animation-delay:-1.6s}
+.production-place.place-coast .place-scene-v2 .terrace-planters path{transform-box:fill-box;transform-origin:50% 100%;animation:scene-leaf-breathe 5.1s ease-in-out infinite alternate}
+.production-place.place-coast .place-scene-v2 .terrace-service-cart{animation:scene-cart-glint 4.8s ease-in-out infinite alternate}
+.production-place.place-coast .place-scene-v2 .cafe-canopy-top{filter:drop-shadow(0 8px 5px rgba(72,44,27,.22))}
+.production-place.place-coast .place-scene-v2 .terrace-plane{filter:drop-shadow(0 -5px 12px rgba(255,205,137,.08))}
+
+/* Stage progression increases authored depth and occupation. */
+.production-place.place-coast .world-hero[data-stage="0"] .world-art{transform:scale(1.015)}
+.production-place.place-coast .world-hero[data-stage="1"] .world-art{transform:scale(1.02)}
+.production-place.place-coast .world-hero[data-stage="2"] .world-art{transform:scale(1.025)}
+.production-place.place-coast .world-hero[data-stage="3"] .world-art{transform:scale(1.03)}
+.production-place.place-coast .world-hero[data-stage="4"] .world-art{transform:scale(1.035)}
+.production-place.place-coast .world-hero[data-stage="5"] .world-art,
+.production-place.place-coast .world-hero[data-stage="6"] .world-art{transform:scale(1.04) translateY(-1px)}
+
+/* Build payoff: slight camera push plus the exact newly authored group lifting into depth. */
+.production-place.place-coast .world-hero.fx-restoration-reveal .world-art{animation:scene-camera-push 1.05s cubic-bezier(.16,.9,.2,1) both}
+.production-place.place-coast .world-hero[data-stage="1"].fx-restoration-reveal .scene-upgrade.lights,
+.production-place.place-coast .world-hero[data-stage="2"].fx-restoration-reveal .scene-upgrade.counter,
+.production-place.place-coast .world-hero[data-stage="3"].fx-restoration-reveal .scene-upgrade.menu,
+.production-place.place-coast .world-hero[data-stage="4"].fx-restoration-reveal .scene-upgrade.seating,
+.production-place.place-coast .world-hero[data-stage="5"].fx-restoration-reveal .scene-upgrade.terrace,
+.production-place.place-coast .world-hero[data-stage="6"].fx-restoration-reveal .scene-upgrade.sign{animation:scene-build-rise .92s cubic-bezier(.16,.9,.2,1) both}
+.production-place.place-coast .world-hero[data-stage="1"].fx-restoration-reveal .scene-upgrade.lights{filter:drop-shadow(0 0 18px rgba(255,210,103,.42))}
+.production-place.place-coast .world-hero[data-stage="6"] .scene-upgrade.sign{filter:drop-shadow(0 10px 9px rgba(0,24,29,.26)) drop-shadow(0 0 12px rgba(255,215,117,.18))}
+
+@keyframes scene-window-shimmer{from{opacity:.045;transform:translateX(-4px)}to{opacity:.13;transform:translateX(7px)}}
+@keyframes scene-plant-sway{from{transform:rotate(-.7deg)}to{transform:rotate(.8deg)}}
+@keyframes scene-plant-sway-right{from{transform:rotate(.65deg)}to{transform:rotate(-.75deg)}}
+@keyframes scene-steam{0%{opacity:0;transform:translateY(3px)}34%{opacity:.9}100%{opacity:0;transform:translateY(-11px)}}
+@keyframes scene-guest-idle{from{transform:translateY(0)}to{transform:translateY(-2px)}}
+@keyframes scene-leaf-breathe{from{transform:rotate(-.5deg)}to{transform:rotate(.65deg)}}
+@keyframes scene-cart-glint{from{filter:brightness(.98)}to{filter:brightness(1.08)}}
+@keyframes scene-camera-push{0%{transform:scale(1.015);filter:saturate(1.04) brightness(.98)}45%{transform:scale(1.075) translateY(2px);filter:saturate(1.16) brightness(1.08)}100%{transform:scale(1.04);filter:saturate(1.08) brightness(1)}}
+@keyframes scene-build-rise{0%{opacity:.12;transform:translateY(24px) scale(.92);filter:brightness(1.45) blur(1px)}58%{opacity:1;transform:translateY(-4px) scale(1.035);filter:brightness(1.16)}100%{opacity:1;transform:none;filter:none}}
+
+@media(max-height:760px) and (max-width:520px){
+  .production-place.place-coast .world-hero{border-radius:23px}
+  .production-place.place-coast .world-art{transform-origin:50% 58%}
+}
+@media(prefers-reduced-motion:reduce){
+  .production-place.place-coast .world-art,
+  .production-place.place-coast .place-scene-v2 *,
+  .production-place.place-coast .world-hero.fx-restoration-reveal .world-art{animation:none!important;transition:none!important}
+}
