@@ -1,5 +1,11 @@
 export const LEVEL_REWARD_COINS=100;
 export const LEVEL_REWARD_ENERGY='full';
+export const BASE_MAX_ENERGY=40;
+export const ENERGY_CAPACITY_MILESTONES=Object.freeze([
+  Object.freeze({level:5,bonus:5}),
+  Object.freeze({level:10,bonus:5}),
+  Object.freeze({level:15,bonus:5})
+]);
 export const ORDER_XP_BASE=40;
 export const RESTORATION_XP=140;
 export const PLACE_UNLOCK_BONUS_XP=100;
@@ -17,13 +23,29 @@ export function playerProgress(totalXp=0){
   return {level,totalXp:total,current,next:need,ratio:need?current/need:1};
 }
 
-export function nextLevelRewardPreview(totalXp=0){
-  const progress=playerProgress(totalXp);
+export function maxEnergyForLevel(level=1){
+  const safeLevel=Math.max(1,Math.floor(Number(level)||1));
+  return ENERGY_CAPACITY_MILESTONES.reduce((max,milestone)=>safeLevel>=milestone.level?max+milestone.bonus:max,BASE_MAX_ENERGY);
+}
+
+export function nextEnergyCapacityUpgrade(totalXp=0,currentMaxEnergy=BASE_MAX_ENERGY){
+  const progress=playerProgress(totalXp),nextLevel=progress.level+1;
+  const safeCurrent=Math.max(BASE_MAX_ENERGY,Number(currentMaxEnergy)||BASE_MAX_ENERGY,maxEnergyForLevel(progress.level));
+  const target=Math.max(safeCurrent,maxEnergyForLevel(nextLevel));
+  const gain=Math.max(0,target-safeCurrent);
+  const nextMilestone=ENERGY_CAPACITY_MILESTONES.find(entry=>entry.level>progress.level)||null;
+  return {level:nextLevel,gain,maxEnergy:target,nextMilestoneLevel:nextMilestone?.level||null};
+}
+
+export function nextLevelRewardPreview(totalXp=0,currentMaxEnergy=BASE_MAX_ENERGY){
+  const progress=playerProgress(totalXp),capacity=nextEnergyCapacityUpgrade(totalXp,currentMaxEnergy);
   return {
     level:progress.level+1,
     remainingXp:Math.max(0,progress.next-progress.current),
     rewardCoins:LEVEL_REWARD_COINS,
     rewardEnergy:LEVEL_REWARD_ENERGY,
+    rewardMaxEnergyGain:capacity.gain,
+    rewardMaxEnergy:capacity.maxEnergy,
     currentXp:progress.current,
     requiredXp:progress.next,
     ratio:progress.ratio
@@ -37,9 +59,17 @@ export function legacyXpForState(state){
 }
 
 export function ensurePlayerProgress(state){
-  if(Number.isFinite(Number(state?.playerXp))&&Number(state.playerXp)>=0)return {state,changed:false};
+  const hasXp=Number.isFinite(Number(state?.playerXp))&&Number(state.playerXp)>=0;
+  const playerXp=hasXp?Number(state.playerXp):legacyXpForState(state);
+  const progress=playerProgress(playerXp);
+  const rawMaxEnergy=Number(state?.maxEnergy);
+  const existingMax=Number.isFinite(rawMaxEnergy)&&rawMaxEnergy>0?rawMaxEnergy:BASE_MAX_ENERGY;
+  const requiredMax=Math.max(BASE_MAX_ENERGY,existingMax,maxEnergyForLevel(progress.level));
+  const needsMaxSync=rawMaxEnergy!==requiredMax;
+  if(hasXp&&!needsMaxSync)return {state,changed:false};
   const next=structuredClone(state);
-  next.playerXp=legacyXpForState(next);
+  if(!hasXp)next.playerXp=playerXp;
+  if(needsMaxSync)next.maxEnergy=requiredMax;
   return {state:next,changed:true};
 }
 
@@ -62,9 +92,12 @@ export function awardPlayerXp(state,amount,now=Date.now()){
   const levelsGained=Math.max(0,after.level-before.level);
   const bonusCoins=levelsGained*LEVEL_REWARD_COINS;
   if(bonusCoins)next.coins=Math.max(0,Number(next.coins)||0)+bonusCoins;
-  const maxEnergy=Math.max(1,Number(next.maxEnergy)||40);
-  const beforeEnergy=Math.max(0,Math.min(maxEnergy,Number(next.energy)||0));
+  const beforeMaxEnergy=Math.max(BASE_MAX_ENERGY,Number(next.maxEnergy)||BASE_MAX_ENERGY,maxEnergyForLevel(before.level));
+  const maxEnergy=Math.max(beforeMaxEnergy,maxEnergyForLevel(after.level));
+  const capacityGain=Math.max(0,maxEnergy-beforeMaxEnergy);
+  next.maxEnergy=maxEnergy;
+  const beforeEnergy=Math.max(0,Math.min(beforeMaxEnergy,Number(next.energy)||0));
   const bonusEnergy=levelsGained?Math.max(0,maxEnergy-beforeEnergy):0;
   if(levelsGained){next.energy=maxEnergy;next.energyUpdatedAt=now;}
-  return {state:next,gained,before,after,levelsGained,bonusCoins,bonusEnergy};
+  return {state:next,gained,before,after,levelsGained,bonusCoins,bonusEnergy,capacityGain};
 }
