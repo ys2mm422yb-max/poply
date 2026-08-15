@@ -16,6 +16,7 @@ const assertWithin=async(locator,label)=>{const box=await locator.boundingBox(),
 const clearSave=()=>page.evaluate(()=>{localStorage.removeItem('poply-v2-state-1');localStorage.removeItem('poply-v2-state-1-backup');});
 const reload=async()=>{await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.game-view');};
 const view=async name=>{await page.locator(`.nav-tab[data-view="${name}"]`).tap();await page.waitForSelector(`.view-${name}`);};
+const waitForPrep=()=>page.waitForFunction(()=>document.querySelectorAll('.prep-generator-badge').length===2&&document.querySelector('.place-prep-hud'));
 const seed=async mode=>{
   await page.evaluate(async mode=>{
     const game=await import('./src/v2-game.js'),specials=await import('./src/aaa-specials.js');
@@ -65,7 +66,7 @@ try{
   assert(((await page.locator('.flow-hud').textContent())||'').includes('1/3'),'Abendservice did not visibly charge Flow');await assertNoScroll('Abendservice effect 390x844');await shot('102-place-power-abendservice-flow-390x844');
 
   await seed('counter');await view('orders');await page.locator('.service-deliver').tap();
-  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').placePowerState?.prepReady===true);await view('board');
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').placePowerState?.prepReady===true);await view('board');await waitForPrep();
   assert(await page.locator('.prep-generator-badge').count()===2,'Vorbereitung did not mark both opening generator choices');
   assert(((await page.locator('.place-prep-hud').textContent())||'').includes('THEKE'),'Vorbereitung HUD missing');
   await assertNoScroll('Vorbereitung ready 390x844');await shot('103-place-power-preparation-ready-390x844');
@@ -85,7 +86,7 @@ try{
 
   await page.setViewportSize({width:390,height:720});
   await seed('preview');await view('place');assert(((await page.locator('.purpose-place-unlock').textContent())||'').includes('Abendservice'),'390x720 lost Place power preview');await assertNoScroll('Lichter preview 390x720');await shot('107-place-power-preview-lights-390x720');
-  await seed('counter');await view('orders');await page.locator('.service-deliver').tap();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').placePowerState?.prepReady===true);await view('board');assert(await page.locator('.prep-generator-badge').count()===2,'390x720 lost Preparation choices');await assertNoScroll('Vorbereitung 390x720');await shot('108-place-power-preparation-ready-390x720');
+  await seed('counter');await view('orders');await page.locator('.service-deliver').tap();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').placePowerState?.prepReady===true);await view('board');await waitForPrep();assert(await page.locator('.prep-generator-badge').count()===2,'390x720 lost Preparation choices');await assertNoScroll('Vorbereitung 390x720');await shot('108-place-power-preparation-ready-390x720');
   await seed('menu');await view('orders');assert(await page.locator('.place-power-reroll').isVisible(),'390x720 lost Gastwahl action');await assertWithin(page.locator('.place-power-reroll'),'Gastwahl button 390x720');await assertNoScroll('Gastwahl 390x720');await shot('109-place-power-gastwahl-ready-390x720');
 
   report={lights:{flowCharge:1},counter:{preparedDropLevel:preparedDrop.level},menu:{rerollsUsed:afterMenu.placePowerState.rerollsUsed},shortViewportNoScroll:true};
