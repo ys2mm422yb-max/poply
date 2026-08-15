@@ -21,6 +21,10 @@ const assertEnergyPlanFits=async label=>{
   const metrics=await page.evaluate(()=>{const p=document.querySelector('[data-energy-plan]'),n=document.querySelector('.main-nav');if(!p||!n)return null;const a=p.getBoundingClientRect(),b=n.getBoundingClientRect();return {plan:{top:a.top,bottom:a.bottom,left:a.left,right:a.right},nav:{top:b.top,bottom:b.bottom},height:window.visualViewport?.height||innerHeight,scrollHeight:document.documentElement.scrollHeight,innerHeight};});
   assert(metrics,`${label}: energy plan missing`);assert(metrics.plan.left>=0&&metrics.plan.right<=390,`${label}: energy plan clips horizontally ${JSON.stringify(metrics)}`);assert(metrics.plan.top>=0&&metrics.plan.bottom<=metrics.nav.top+1,`${label}: energy plan overlaps navigation ${JSON.stringify(metrics)}`);assert(metrics.scrollHeight<=metrics.innerHeight+1,`${label}: energy plan introduces document scroll ${JSON.stringify(metrics)}`);return metrics;
 };
+const assertLevelUpFits=async label=>{
+  const metrics=await page.evaluate(()=>{const o=document.querySelector('.level-up-overlay'),n=document.querySelector('.main-nav');if(!o||!n)return null;const a=o.getBoundingClientRect(),b=n.getBoundingClientRect();return {overlay:{top:a.top,bottom:a.bottom,left:a.left,right:a.right},nav:{top:b.top,bottom:b.bottom},height:window.visualViewport?.height||innerHeight,scrollHeight:document.documentElement.scrollHeight,innerHeight};});
+  assert(metrics,`${label}: level-up overlay missing`);assert(metrics.overlay.left>=0&&metrics.overlay.right<=390,`${label}: level-up overlay clips horizontally ${JSON.stringify(metrics)}`);assert(metrics.overlay.top>=0&&metrics.overlay.bottom<=metrics.nav.top+1,`${label}: level-up overlay overlaps navigation ${JSON.stringify(metrics)}`);assert(metrics.scrollHeight<=metrics.innerHeight+1,`${label}: level-up introduces document scroll ${JSON.stringify(metrics)}`);return metrics;
+};
 let report={},failure=null;
 
 try{
@@ -53,36 +57,43 @@ try{
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
-    state.playerXp=110;state.energy=6;state.maxEnergy=40;state.energyUpdatedAt=Date.now()-30_000;
+    state.playerXp=800;state.energy=6;state.maxEnergy=40;state.energyUpdatedAt=Date.now()-30_000;
     state.board[9]=game.makeItem('coffee',2,'qa-level-ready-coffee');state.board[10]=null;
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
   });
   await page.reload({waitUntil:'networkidle'});
+  const capacitySeed=await readSave();assert(capacitySeed.playerXp===800&&capacitySeed.maxEnergy===40,`capacity seed migrated incorrectly: ${capacitySeed.playerXp} / ${capacitySeed.maxEnergy}`);
+  await page.locator('.player-level-badge').click();await page.waitForSelector('.player-progress-sheet');
+  const capacityPreview=await page.locator('.next-level-preview').textContent();
+  assert(capacityPreview?.includes('LV 5')&&capacityPreview?.includes('MAX +5'),`Level 5 Max-Energy preview missing: ${capacityPreview}`);
+  await page.locator('[data-player-progress-close]').click();
   await page.locator('.nav-tab[data-view="orders"]').click();
   await page.locator('[data-select-order="order-0"]').click();
   const beforeOrder=await readSave();
-  assert(beforeOrder.energy<beforeOrder.maxEnergy,`order level-up seed is not low-energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy}`);
+  assert(beforeOrder.energy<beforeOrder.maxEnergy,`capacity level-up seed is not low-energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy}`);
   const serve=page.locator('button[data-order="order-0"]');
-  assert(await serve.isEnabled(),'level-up QA serve button is disabled');
+  assert(await serve.isEnabled(),'capacity level-up QA serve button is disabled');
   await serve.click();await page.waitForTimeout(1500);
   const afterOrder=await readSave();
-  assert(afterOrder.playerXp===170,`order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
-  assert(afterOrder.coins===245,`level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
-  assert(afterOrder.energy===afterOrder.maxEnergy&&afterOrder.energy===40,`order level-up did not refill energy: ${beforeOrder.energy} -> ${afterOrder.energy}/${afterOrder.maxEnergy}`);
-  assert((await page.locator('.resource.energy').textContent())?.includes('40/40'),'HUD energy did not show full refill after order level-up');
-  assert((await page.locator('.player-level-badge').textContent())?.includes('LV 2'),'HUD did not advance to LV 2');
+  assert(afterOrder.playerXp===860,`capacity order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
+  assert(afterOrder.coins===245,`capacity level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
+  assert(afterOrder.maxEnergy===45&&afterOrder.energy===45,`Level 5 did not expand/refill Energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy} -> ${afterOrder.energy}/${afterOrder.maxEnergy}`);
+  assert((await page.locator('.resource.energy').textContent())?.includes('45/45'),'HUD energy did not show 45/45 after capacity level-up');
+  assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'HUD did not advance to LV 5');
   const overlay=page.locator('.level-up-overlay');
-  assert(await overlay.isVisible(),'level-up overlay is not visible');
+  assert(await overlay.isVisible(),'capacity level-up overlay is not visible');
   const overlayText=await overlay.textContent();
-  assert(overlayText?.includes('Level 2')&&overlayText?.includes('+100 Coins')&&overlayText?.includes('Energie voll'),`level-up reward copy missing: ${overlayText}`);
-  await shot('20-player-level-up-order');
-  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy};
+  assert(overlayText?.includes('Level 5')&&overlayText?.includes('+100 Coins')&&overlayText?.includes('Energie voll')&&overlayText?.includes('Max-Energie +5'),`capacity level-up reward copy missing: ${overlayText}`);
+  await assertLevelUpFits('390x844 capacity level-up');await shot('20-player-level-up-order');
+  await page.setViewportSize({width:390,height:720});await page.waitForTimeout(80);await assertLevelUpFits('390x720 capacity level-up');await shot('26-energy-capacity-level-up-short-safari');
+  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(80);
+  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy,capacityGain:5};
 
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
   const reloadedOrder=await readSave();
-  assert(reloadedOrder.playerXp===170,'player XP was lost after reload');
-  assert(reloadedOrder.energy===reloadedOrder.maxEnergy,'level-up energy refill was lost after reload');
-  assert((await page.locator('.player-level-badge').textContent())?.includes('LV 2'),'reloaded HUD lost player level');
+  assert(reloadedOrder.playerXp===860,'player XP was lost after capacity reload');
+  assert(reloadedOrder.energy===45&&reloadedOrder.maxEnergy===45,'Level 5 capacity/refill was lost after reload');
+  assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'reloaded HUD lost player level');
 
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
@@ -116,6 +127,7 @@ try{
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
   });
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
+  const levelFiveSave=await readSave();assert(levelFiveSave.maxEnergy===45&&levelFiveSave.energy===40,`legacy Level 5 capacity sync should expand cap without retroactive refill: ${levelFiveSave.energy}/${levelFiveSave.maxEnergy}`);
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'seeded milestone player is not LV 5');
   const levelLabel=await page.locator('.player-level-badge').getAttribute('aria-label');
   assert(levelLabel?.includes('Poply-Profi'),'completed milestone title is not exposed from the level badge');
@@ -132,8 +144,8 @@ try{
   await assertSheetFits('390x844 milestones');await shot('22-player-milestones-390x844');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertSheetFits('390x720 milestones');await shot('23-player-milestones-short-safari');
   await page.locator('[data-player-progress-close]').click();assert(!(await page.locator('.player-progress-sheet').isVisible().catch(()=>false)),'milestone sheet did not close');
-  const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');assert(!('placeBadges' in milestoneSave),'Place badge UI persisted duplicate badge state');
-  report.milestones={completed:5,total:5,title:'Poply-Profi',placeBadges:2,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,nextLevel:6,remainingXp:360,rewardCoins:100,rewardEnergy:'full',stateNeutral:true};
+  const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');assert(milestoneSave.maxEnergy===45&&milestoneSave.energy===40,'opening milestones mutated synced Energy capacity');assert(!('placeBadges' in milestoneSave),'Place badge UI persisted duplicate badge state');
+  report.milestones={completed:5,total:5,title:'Poply-Profi',placeBadges:2,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,maxEnergy:milestoneSave.maxEnergy,nextLevel:6,remainingXp:360,rewardCoins:100,rewardEnergy:'full',stateNeutral:true};
 
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('29-progression-failure');}catch{}}
