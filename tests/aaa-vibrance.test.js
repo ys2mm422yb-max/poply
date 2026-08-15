@@ -4,9 +4,9 @@ import { readFileSync } from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 
-test('final stylesheet keeps global vibrance immediately before the targeted purpose layer',()=>{
+test('final stylesheet keeps global vibrance before targeted purpose and first-session layers',()=>{
   const css=read('src/aaa.css');
-  assert.match(css,/@import '\.\/aaa-integration\.css';\s*@import '\.\/aaa-vibrance\.css';\s*@import '\.\/aaa-purpose\.css';\s*$/);
+  assert.match(css,/@import '\.\/aaa-integration\.css';\s*@import '\.\/aaa-vibrance\.css';\s*@import '\.\/aaa-purpose\.css';\s*@import '\.\/aaa-first-session\.css';\s*$/);
 });
 
 test('Board families own both persistent cell color and merge-effect color',()=>{
