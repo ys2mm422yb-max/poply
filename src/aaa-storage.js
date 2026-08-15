@@ -15,7 +15,8 @@ function restorePrimary(storage,state){
 }
 
 export function loadSavedState(){
-  const storage=store();
+  let storage;
+  try{storage=store();}catch{return createInitialState();}
   try{
     const raw=storage.getItem(KEY),state=decode(raw);
     if(state){
