@@ -17,6 +17,10 @@ const assertSheetFits=async label=>{
   const metrics=await page.evaluate(()=>{const s=document.querySelector('.player-progress-sheet'),n=document.querySelector('.main-nav');if(!s||!n)return null;const a=s.getBoundingClientRect(),b=n.getBoundingClientRect();return {sheet:{top:a.top,bottom:a.bottom,left:a.left,right:a.right},nav:{top:b.top,bottom:b.bottom},height:window.visualViewport?.height||innerHeight,scrollHeight:document.documentElement.scrollHeight,innerHeight};});
   assert(metrics,`${label}: milestone sheet missing`);assert(metrics.sheet.left>=0&&metrics.sheet.right<=390,`${label}: milestone sheet clips horizontally ${JSON.stringify(metrics)}`);assert(metrics.sheet.bottom<=metrics.nav.top+1,`${label}: milestone sheet overlaps bottom navigation ${JSON.stringify(metrics)}`);assert(metrics.nav.bottom<=metrics.height+1,`${label}: navigation clips ${JSON.stringify(metrics)}`);assert(metrics.scrollHeight<=metrics.innerHeight+1,`${label}: document scrolls ${JSON.stringify(metrics)}`);return metrics;
 };
+const assertEnergyPlanFits=async label=>{
+  const metrics=await page.evaluate(()=>{const p=document.querySelector('[data-energy-plan]'),n=document.querySelector('.main-nav');if(!p||!n)return null;const a=p.getBoundingClientRect(),b=n.getBoundingClientRect();return {plan:{top:a.top,bottom:a.bottom,left:a.left,right:a.right},nav:{top:b.top,bottom:b.bottom},height:window.visualViewport?.height||innerHeight,scrollHeight:document.documentElement.scrollHeight,innerHeight};});
+  assert(metrics,`${label}: energy plan missing`);assert(metrics.plan.left>=0&&metrics.plan.right<=390,`${label}: energy plan clips horizontally ${JSON.stringify(metrics)}`);assert(metrics.plan.top>=0&&metrics.plan.bottom<=metrics.nav.top+1,`${label}: energy plan overlaps navigation ${JSON.stringify(metrics)}`);assert(metrics.scrollHeight<=metrics.innerHeight+1,`${label}: energy plan introduces document scroll ${JSON.stringify(metrics)}`);return metrics;
+};
 let report={},failure=null;
 
 try{
@@ -26,6 +30,26 @@ try{
   assert((await page.locator('.player-level-badge').getAttribute('aria-label'))?.includes('Neu dabei'),'fresh player title is not exposed from the level badge');
   const badge=await page.locator('.player-level-badge').boundingBox(),resources=await page.locator('.resources').boundingBox();
   assert(badge&&resources&&badge.x+badge.width<=resources.x+1,`player level badge overlaps resources ${JSON.stringify({badge,resources})}`);
+
+  // Energy planning is interactive, deterministic and state-neutral.
+  await page.evaluate(async()=>{
+    const game=await import('./src/v2-game.js');
+    const state=game.createInitialState();state.energy=35;state.maxEnergy=40;state.energyUpdatedAt=Date.now()-30_000;
+    localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
+  });
+  await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.resource.energy');
+  const energyBefore=await readSave();
+  await page.locator('.resource.energy').click();await page.waitForSelector('[data-energy-plan]');
+  const energyText=await page.locator('[data-energy-plan]').textContent();
+  assert(/\+1 in 1:\d{2}/.test(energyText||''),`energy next-point countdown missing: ${energyText}`);
+  assert((energyText||'').includes('Voll in ca. 10 Min'),`energy full-recharge plan missing: ${energyText}`);
+  assert((energyText||'').includes('offline'),`energy offline rule missing: ${energyText}`);
+  await assertEnergyPlanFits('390x844 energy plan');await shot('24-energy-plan-390x844');
+  await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertEnergyPlanFits('390x720 energy plan');await shot('25-energy-plan-short-safari');
+  await page.locator('.resource.energy').click();assert(!(await page.locator('[data-energy-plan]').isVisible().catch(()=>false)),'energy plan did not close on second tap');
+  const energyAfter=await readSave();assert(energyAfter.energy===energyBefore.energy&&energyAfter.maxEnergy===energyBefore.maxEnergy,'opening energy plan mutated energy state');
+  report.energy={energy:energyAfter.energy,maxEnergy:energyAfter.maxEnergy,next:'live countdown',full:'Voll in ca. 10 Min',stateNeutral:true};
+  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(120);
 
   // Real order delivery crosses Level 1 -> 2 and must persist the reward.
   await page.evaluate(async()=>{
