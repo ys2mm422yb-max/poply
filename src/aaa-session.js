@@ -7,10 +7,16 @@ import { ensureInventoryState, storeBoardItem, restoreStoredItem, recycleStoredI
 import { ensureDailyState, progressDailyEvent, claimDailyGoal, fulfillDailyBonus } from './aaa-daily.js';
 import { ensureGuestState, recordGuestService } from './aaa-guests.js';
 import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flow.js';
+import { ensureServiceSpecials, progressServiceSpecials, awardServiceSpecialBonus } from './aaa-specials.js';
 
-const ensureMeta=source=>ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureFlowState(source).state).state).state).state).state).state;
+const ensureMeta=source=>ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state;
 let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
+const collectSpecialProgress=(result,event)=>{
+  const progress=progressServiceSpecials(result.state,event);result.state=progress.state;
+  if(progress.updates.length)result.specialUpdates=[...(result.specialUpdates||[]),...progress.updates];
+  return progress;
+};
 const syncEnergy=(now=Date.now())=>{
   const result=regenerateEnergy(state,now);
   if(result.changed)keep(result.state);
@@ -40,6 +46,8 @@ export function generateAt(index){
     result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(item):null;result.progression=discovery.progression||null;result.mastery=discovery.mastery||null;
     const generated=progressDailyEvent(result.state,'generate');result.state=generated.state;
     if(discovery.changed){const discovered=progressDailyEvent(result.state,'discover');result.state=discovered.state;}
+    collectSpecialProgress(result,{type:'item-created',family:item.family});
+    if(boost.boosted)collectSpecialProgress(result,{type:'flow-boost',family:item.family});
     keep(result.state);
   }
   return result;
@@ -52,6 +60,8 @@ export function moveOrMergeAt(from,to){
       const discovery=recordItemDiscovery(result.state,result.item);result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(result.item):null;result.progression=discovery.progression||null;result.mastery=discovery.mastery||null;
       const merged=progressDailyEvent(result.state,'merge');result.state=merged.state;
       if(discovery.changed){const discovered=progressDailyEvent(result.state,'discover');result.state=discovered.state;}
+      collectSpecialProgress(result,{type:'merge'});
+      collectSpecialProgress(result,{type:'item-created',family:result.item.family});
     }
     keep(result.state);
   }
@@ -65,6 +75,10 @@ export function deliverOrder(id){
   const current=getState(),order=current.currentOrders.find(entry=>entry.id===id);
   const result=fulfillOrder(current,id);
   if(!result.changed)return result;
+  const baseRewards={...result.rewards},special=awardServiceSpecialBonus(result.state,order);
+  result.state=special.state;result.specialBonus=special.changed?{coins:special.bonusCoins,special:special.special}:null;
+  result.rewards={...baseRewards,coins:baseRewards.coins+special.bonusCoins};
+  result.state=ensureServiceSpecials(result.state).state;
   const progression=awardPlayerXp(result.state,xpForOrder(order));
   result.state=progression.state;result.progression=progression;
   result.state=progressDailyEvent(result.state,'serve').state;
