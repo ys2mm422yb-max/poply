@@ -2,6 +2,7 @@ import { normalizeState, createOpeningOrder } from './v2-game.js';
 import { ensurePlayerProgress } from './aaa-progression.js';
 import { ensureCollectionState } from './aaa-collection.js';
 import { ensureInventoryState } from './aaa-inventory.js';
+import { ensureFlowState } from './aaa-flow.js';
 
 const FAMILIES=['coffee','bakery','sweet'];
 const LEGACY_STARTER_TITLES=['Morgenkaffee','Frisches Gebäck','Kleine Pause'].sort();
@@ -41,6 +42,7 @@ export function migrateState(input){
       }
     }
   }
+  state=ensureFlowState(state).state;
   state=ensurePlayerProgress(state).state;
   state=ensureCollectionState(state).state;
   state=ensureInventoryState(state).state;
