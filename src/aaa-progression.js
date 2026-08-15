@@ -1,4 +1,5 @@
 export const LEVEL_REWARD_COINS=100;
+export const LEVEL_REWARD_ENERGY='full';
 export const ORDER_XP_BASE=40;
 export const RESTORATION_XP=140;
 export const PLACE_UNLOCK_BONUS_XP=100;
@@ -22,6 +23,7 @@ export function nextLevelRewardPreview(totalXp=0){
     level:progress.level+1,
     remainingXp:Math.max(0,progress.next-progress.current),
     rewardCoins:LEVEL_REWARD_COINS,
+    rewardEnergy:LEVEL_REWARD_ENERGY,
     currentXp:progress.current,
     requiredXp:progress.next,
     ratio:progress.ratio
@@ -50,7 +52,7 @@ export function xpForRestoration(result){
   return RESTORATION_XP+(result?.unlockedPlace?PLACE_UNLOCK_BONUS_XP:0);
 }
 
-export function awardPlayerXp(state,amount){
+export function awardPlayerXp(state,amount,now=Date.now()){
   const ensured=ensurePlayerProgress(state).state;
   const before=playerProgress(ensured.playerXp);
   const next=structuredClone(ensured);
@@ -60,5 +62,9 @@ export function awardPlayerXp(state,amount){
   const levelsGained=Math.max(0,after.level-before.level);
   const bonusCoins=levelsGained*LEVEL_REWARD_COINS;
   if(bonusCoins)next.coins=Math.max(0,Number(next.coins)||0)+bonusCoins;
-  return {state:next,gained,before,after,levelsGained,bonusCoins};
+  const maxEnergy=Math.max(1,Number(next.maxEnergy)||40);
+  const beforeEnergy=Math.max(0,Math.min(maxEnergy,Number(next.energy)||0));
+  const bonusEnergy=levelsGained?Math.max(0,maxEnergy-beforeEnergy):0;
+  if(levelsGained){next.energy=maxEnergy;next.energyUpdatedAt=now;}
+  return {state:next,gained,before,after,levelsGained,bonusCoins,bonusEnergy};
 }
