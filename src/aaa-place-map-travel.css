@@ -1,0 +1,73 @@
+/* Place map travel surface — turns the modal from a dark utility list into an authored travel journal.
+   Presentation only: selection, progress, save behavior and viewport geometry stay unchanged. */
+.place-map-sheet{
+  isolation:isolate;
+  border-top:1px solid rgba(145,236,233,.24);
+  background:
+    radial-gradient(circle at 10% 7%,rgba(78,220,215,.28),transparent 27%),
+    radial-gradient(circle at 92% 18%,rgba(255,190,92,.22),transparent 30%),
+    radial-gradient(circle at 78% 74%,rgba(232,102,155,.14),transparent 35%),
+    linear-gradient(168deg,#165b68 0%,#104451 35%,#0a3241 72%,#082a38 100%)!important;
+  box-shadow:0 -22px 70px rgba(0,10,18,.48),inset 0 1px rgba(255,255,255,.13)!important;
+}
+.place-map-sheet:before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.46;
+  background:
+    radial-gradient(circle at 16% 28%,rgba(255,255,255,.12) 0 1px,transparent 2px),
+    radial-gradient(circle at 81% 34%,rgba(255,218,116,.17) 0 1.5px,transparent 2.5px),
+    linear-gradient(112deg,transparent 0 18%,rgba(117,225,221,.055) 18.2% 18.7%,transparent 19% 100%);
+  background-size:78px 78px,104px 104px,100% 100%;
+}
+.place-map-backdrop{background:rgba(1,18,27,.67)!important;backdrop-filter:blur(7px) saturate(.9)}
+.place-map-head small{color:#ffe083!important;text-shadow:0 0 15px rgba(255,207,84,.22)}
+.place-map-head h2{color:#fff;text-shadow:0 4px 18px rgba(0,20,28,.24)}
+.place-map-head p{color:rgba(240,252,250,.78)!important}
+.place-map-close{border-color:rgba(176,239,235,.24)!important;background:linear-gradient(145deg,rgba(106,223,219,.18),rgba(255,255,255,.07))!important;box-shadow:inset 0 1px rgba(255,255,255,.16),0 8px 22px rgba(0,20,28,.18)}
+
+.place-map-route{position:relative}
+.place-map-rail{background:linear-gradient(#7be1d5,#f4cf73 52%,#f18aa8)!important;box-shadow:0 0 10px rgba(104,217,208,.22);opacity:.72}
+.place-map-node{
+  border-color:rgba(195,241,238,.16)!important;
+  background:linear-gradient(110deg,rgba(255,255,255,.095),rgba(255,255,255,.035))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.08),0 8px 20px rgba(0,19,28,.10);
+}
+.place-map-node[data-map-place="coast"]{border-left:3px solid rgba(80,218,196,.8)!important;background:linear-gradient(110deg,rgba(62,202,189,.17),rgba(255,214,105,.065) 68%,rgba(255,255,255,.025))!important}
+.place-map-node[data-map-place="sunset"]{border-left:3px solid rgba(255,148,102,.84)!important;background:linear-gradient(110deg,rgba(230,91,140,.14),rgba(255,174,87,.13) 62%,rgba(255,255,255,.025))!important}
+.place-map-node[data-map-place="garden"]{border-left:3px solid rgba(150,197,151,.72)!important;background:linear-gradient(110deg,rgba(103,179,141,.13),rgba(176,132,206,.09) 65%,rgba(255,255,255,.02))!important}
+.place-map-node.selected{transform:translateX(3px);border-color:rgba(255,223,129,.66)!important;box-shadow:0 0 0 1px rgba(255,224,130,.10) inset,0 11px 24px rgba(0,19,28,.18),0 0 20px rgba(255,205,90,.08)!important}
+.place-map-node[data-map-place="coast"].selected{background:linear-gradient(110deg,rgba(62,205,187,.27),rgba(255,214,105,.12) 72%)!important}
+.place-map-node[data-map-place="sunset"].selected{background:linear-gradient(110deg,rgba(228,80,139,.24),rgba(255,174,80,.22) 72%)!important}
+.place-map-node[data-map-place="garden"].selected{background:linear-gradient(110deg,rgba(95,185,139,.23),rgba(177,127,210,.17) 72%)!important}
+.place-map-node.locked{opacity:.48;filter:saturate(.65)}
+.place-map-number{border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px rgba(255,255,255,.19),0 6px 14px rgba(0,20,28,.18)}
+.place-map-node[data-map-place="coast"] .place-map-number{background:linear-gradient(145deg,#5fd6b8,#38a98d)!important}
+.place-map-node[data-map-place="sunset"] .place-map-number{background:linear-gradient(145deg,#ef779a,#dc7957)!important}
+.place-map-node[data-map-place="garden"] .place-map-number{background:linear-gradient(145deg,#76bd93,#7c759e)!important}
+.place-map-node-copy small{color:rgba(236,251,249,.72)!important}
+.place-map-progress{background:rgba(0,28,37,.28)!important}
+.place-map-node[data-map-place="coast"] .place-map-progress i{background:linear-gradient(90deg,#ffd66c,#61ddb5)!important}
+.place-map-node[data-map-place="sunset"] .place-map-progress i{background:linear-gradient(90deg,#ffcc67,#f0749a)!important}
+.place-map-node[data-map-place="garden"] .place-map-progress i{background:linear-gradient(90deg,#70d9aa,#a58bc8)!important}
+
+.place-map-preview{
+  border-color:rgba(210,244,239,.20)!important;
+  background:linear-gradient(155deg,rgba(29,91,98,.96),rgba(11,55,69,.98))!important;
+  box-shadow:0 16px 34px rgba(0,17,26,.22),inset 0 1px rgba(255,255,255,.09);
+}
+.place-map-preview.place-coast{border-color:rgba(99,226,198,.34)!important;background:linear-gradient(155deg,rgba(28,112,108,.96),rgba(10,61,75,.98))!important}
+.place-map-preview.place-sunset{border-color:rgba(255,163,107,.37)!important;background:radial-gradient(circle at 92% 12%,rgba(244,101,143,.18),transparent 35%),linear-gradient(155deg,rgba(91,67,86,.97),rgba(24,55,69,.98))!important}
+.place-map-preview.place-garden{border-color:rgba(143,211,157,.32)!important;background:radial-gradient(circle at 8% 12%,rgba(113,196,146,.16),transparent 34%),linear-gradient(155deg,rgba(48,91,88,.97),rgba(35,54,74,.98))!important}
+.place-map-scene:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 55%,rgba(4,34,44,.20));box-shadow:inset 0 -1px rgba(255,255,255,.08)}
+.place-map-preview-copy small{color:#ffe083!important}
+.place-map-preview-copy p{color:rgba(241,251,249,.80)!important}
+.place-map-preview-progress>i{background:rgba(0,29,38,.30)!important}
+.place-map-preview.place-coast .place-map-preview-progress em{background:linear-gradient(90deg,#ffd66c,#57d9b4)!important}
+.place-map-preview.place-sunset .place-map-preview-progress em{background:linear-gradient(90deg,#ffd064,#f2769b)!important}
+.place-map-preview.place-garden .place-map-preview-progress em{background:linear-gradient(90deg,#67d3a4,#a68ccb)!important}
+.place-map-foot{color:rgba(223,242,239,.60)!important}
+
+@media(max-height:760px){
+  .place-map-node.selected{transform:translateX(2px)}
+  .place-map-sheet:before{opacity:.34}
+}
+@media(prefers-reduced-motion:reduce){.place-map-node{transition:none!important}.place-map-node.selected{transform:none}}
