@@ -75,7 +75,7 @@ function decoratePlace(root,goal){
 }
 
 export function installPurposeUI(root,ui){
-  let decorating=false,pulseTimer=0;
+  let decorating=false,pulseTimer=0,lastViewNode=null,lastSignature='';
   let knownUpgrades=new Set(getState().placeUpgrades);
   const navigateToPlace=()=>root.querySelector('.nav-tab[data-view="place"]')?.click();
   const pulse=(text,tone='progress')=>{
@@ -91,9 +91,13 @@ export function installPurposeUI(root,ui){
     if(layer){layer.classList.add('fx-purpose-built');setTimeout(()=>layer.classList.remove('fx-purpose-built'),1900);}
   };
   const decorate=()=>{
-    if(decorating)return;decorating=true;
+    if(decorating)return;
+    const state=getState(),viewNode=root.querySelector('.game-view');
+    const signature=`${root.dataset.view}|${state.stars}|${state.placeUpgrades.join(',')}|${state.currentOrders.map(order=>order.id).join(',')}`;
+    if(viewNode===lastViewNode&&signature===lastSignature)return;
+    decorating=true;lastViewNode=viewNode;lastSignature=signature;
     try{
-      const state=getState(),goal=purposeGoal(state);
+      const goal=purposeGoal(state);
       if(root.dataset.view==='board')decorateBoard(root,goal);
       if(root.dataset.view==='orders')decorateOrders(root,state,goal);
       if(root.dataset.view==='place')decoratePlace(root,goal);
@@ -111,11 +115,11 @@ export function installPurposeUI(root,ui){
     const detail=event.detail??{},source=detail.source;
     if(source==='order'||source==='daily-bonus'){
       const toast=safeText(document.querySelector('#toast')?.textContent),match=toast.match(/\+(\d+)\s*(?:★|Sterne)/i),stars=Number(match?.[1]||0);
-      setTimeout(()=>{decorate();pulse(purposeRewardLine(getState(),stars));},360);
+      setTimeout(()=>{lastSignature='';decorate();pulse(purposeRewardLine(getState(),stars));},360);
     }
-    if(Number(detail.levelsGained||0)>0)setTimeout(()=>{decorate();pulse(`Level ${detail.after?.level??''} · ${purposeLine(getState())}`,'level');},950);
+    if(Number(detail.levelsGained||0)>0)setTimeout(()=>{lastSignature='';decorate();pulse(`Level ${detail.after?.level??''} · ${purposeLine(getState())}`,'level');},950);
   });
   const observer=new MutationObserver(()=>queueMicrotask(decorate));observer.observe(root,{childList:true,subtree:true});
   decorate();
-  return {refresh:decorate,disconnect:()=>observer.disconnect()};
+  return {refresh:()=>{lastSignature='';decorate();},disconnect:()=>observer.disconnect()};
 }
