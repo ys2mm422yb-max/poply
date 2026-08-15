@@ -10,15 +10,15 @@ function decorateOrders(root,state){
     if(!order)return;
     const guest=guestForSequence(order.sequence),loyalty=guestLoyalty(state,guest.id);
     choice.dataset.guestId=guest.id;
+    choice.dataset.loyaltyTitle=loyalty.title;
     choice.setAttribute('aria-label',`${guest.name}, ${order.title}, ${loyalty.title}, ${loyalty.visits} Besuche`);
     const title=choice.querySelector('strong'),status=choice.querySelector('small');
-    if(title)title.textContent=`${guest.name} · ${order.title}`;
+    if(title)title.textContent=order.title;
     if(status){
-      const ready=choice.classList.contains('ready');
-      const existing=status.textContent?.trim()||'';
-      const task=ready?'Bereit':existing.split(' · ')[0]||existing;
-      status.textContent=`${task} · ${choiceProgress(loyalty)}`;
-      status.title=`${loyalty.title}${loyalty.next?` · ${loyalty.visitsUntilNext} bis ${loyalty.next.title}`:' · höchster Rang'}`;
+      status.textContent=`${guest.name} · ${choiceProgress(loyalty)}`;
+      status.title=loyalty.next
+        ?`${loyalty.title} · noch ${loyalty.visitsUntilNext} bis ${loyalty.next.title} (+${loyalty.next.rewardCoins} Coins)`
+        :`${loyalty.title} · höchster Rang`;
     }
   });
 
@@ -27,6 +27,7 @@ function decorateOrders(root,state){
     if(!order)return;
     const guest=guestForSequence(order.sequence),loyalty=guestLoyalty(state,guest.id);
     card.dataset.guestId=guest.id;
+    card.dataset.loyaltyTitle=loyalty.title;
     const label=card.querySelector('.service-customer>span');
     if(label){
       label.textContent=`${guest.name.toUpperCase()} · ${loyalty.title.toUpperCase()}`;
@@ -38,7 +39,7 @@ function decorateOrders(root,state){
 }
 
 export function installGuestUI(root,ui){
-  let lastSignature='';
+  let lastSignature='',lastViewNode=null;
   let knownVisits=Object.fromEntries(GUEST_PROFILES.map(guest=>[guest.id,guestLoyalty(getState(),guest.id).visits]));
 
   const announceMilestones=state=>{
@@ -53,10 +54,10 @@ export function installGuestUI(root,ui){
   };
 
   const decorate=()=>{
-    const state=getState();
+    const state=getState(),viewNode=root.querySelector('.game-view');
     const signature=`${root.dataset.view}|${state.currentOrders.map(order=>order.id).join(',')}|${GUEST_PROFILES.map(guest=>state.guestVisits?.[guest.id]??0).join(',')}`;
-    if(signature===lastSignature)return;
-    lastSignature=signature;
+    if(signature===lastSignature&&viewNode===lastViewNode)return;
+    lastSignature=signature;lastViewNode=viewNode;
     announceMilestones(state);
     if(root.dataset.view==='orders')decorateOrders(root,state);
   };
@@ -64,5 +65,5 @@ export function installGuestUI(root,ui){
   const observer=new MutationObserver(()=>queueMicrotask(decorate));
   observer.observe(root,{childList:true,subtree:true});
   decorate();
-  return {refresh:()=>{lastSignature='';decorate();},disconnect:()=>observer.disconnect()};
+  return {refresh:()=>{lastSignature='';lastViewNode=null;decorate();},disconnect:()=>observer.disconnect()};
 }
