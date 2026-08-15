@@ -53,7 +53,7 @@ try{
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
-    state.playerXp=110;
+    state.playerXp=110;state.energy=6;state.maxEnergy=40;state.energyUpdatedAt=Date.now()-30_000;
     state.board[9]=game.makeItem('coffee',2,'qa-level-ready-coffee');state.board[10]=null;
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
   });
@@ -61,28 +61,32 @@ try{
   await page.locator('.nav-tab[data-view="orders"]').click();
   await page.locator('[data-select-order="order-0"]').click();
   const beforeOrder=await readSave();
+  assert(beforeOrder.energy<beforeOrder.maxEnergy,`order level-up seed is not low-energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy}`);
   const serve=page.locator('button[data-order="order-0"]');
   assert(await serve.isEnabled(),'level-up QA serve button is disabled');
   await serve.click();await page.waitForTimeout(1500);
   const afterOrder=await readSave();
   assert(afterOrder.playerXp===170,`order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
   assert(afterOrder.coins===245,`level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
+  assert(afterOrder.energy===afterOrder.maxEnergy&&afterOrder.energy===40,`order level-up did not refill energy: ${beforeOrder.energy} -> ${afterOrder.energy}/${afterOrder.maxEnergy}`);
+  assert((await page.locator('.resource.energy').textContent())?.includes('40/40'),'HUD energy did not show full refill after order level-up');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 2'),'HUD did not advance to LV 2');
   const overlay=page.locator('.level-up-overlay');
   assert(await overlay.isVisible(),'level-up overlay is not visible');
   const overlayText=await overlay.textContent();
-  assert(overlayText?.includes('Level 2')&&overlayText?.includes('+100 Coins'),`level-up reward copy missing: ${overlayText}`);
+  assert(overlayText?.includes('Level 2')&&overlayText?.includes('+100 Coins')&&overlayText?.includes('Energie voll'),`level-up reward copy missing: ${overlayText}`);
   await shot('20-player-level-up-order');
-  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins};
+  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy};
 
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
   const reloadedOrder=await readSave();
   assert(reloadedOrder.playerXp===170,'player XP was lost after reload');
+  assert(reloadedOrder.energy===reloadedOrder.maxEnergy,'level-up energy refill was lost after reload');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 2'),'reloaded HUD lost player level');
 
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
-    const state=game.createInitialState();state.playerXp=170;state.stars=10;state.coins=100;
+    const state=game.createInitialState();state.playerXp=170;state.stars=10;state.coins=100;state.energy=9;state.maxEnergy=40;state.energyUpdatedAt=Date.now()-30_000;
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
   });
   await page.reload({waitUntil:'networkidle'});
@@ -93,11 +97,16 @@ try{
   assert(afterBuild.placeUpgrades.includes('lights'),'restoration was not persisted');
   assert(afterBuild.playerXp===310,`restoration XP incorrect: ${afterBuild.playerXp}`);
   assert(afterBuild.coins===200,`restoration level reward missing: ${afterBuild.coins}`);
+  assert(afterBuild.energy===afterBuild.maxEnergy&&afterBuild.energy===40,`restoration level-up did not refill energy: ${afterBuild.energy}/${afterBuild.maxEnergy}`);
+  assert((await page.locator('.resource.energy').textContent())?.includes('40/40'),'HUD energy did not show full refill after restoration level-up');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 3'),'HUD did not advance to LV 3 after restoration');
-  assert(await page.locator('.level-up-overlay').isVisible(),'restoration level-up overlay is not visible');
+  const restorationOverlay=page.locator('.level-up-overlay');
+  assert(await restorationOverlay.isVisible(),'restoration level-up overlay is not visible');
+  const restorationOverlayText=await restorationOverlay.textContent();
+  assert(restorationOverlayText?.includes('+100 Coins')&&restorationOverlayText?.includes('Energie voll'),`restoration level-up reward copy missing: ${restorationOverlayText}`);
   assert(!(await page.locator('.restoration-reveal').isVisible().catch(()=>false)),'restoration and level-up reveals overlap instead of sequencing');
   await shot('21-player-level-up-restoration');
-  report.restoration={xp:afterBuild.playerXp,coins:afterBuild.coins,upgrades:afterBuild.placeUpgrades};
+  report.restoration={xp:afterBuild.playerXp,coins:afterBuild.coins,energy:afterBuild.energy,maxEnergy:afterBuild.maxEnergy,upgrades:afterBuild.placeUpgrades};
 
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
@@ -119,12 +128,12 @@ try{
   assert(await page.locator('.place-badge.complete').count()===2,'not all completed Places render as earned badges');
   assert(sheetText?.includes('Café')&&sheetText?.includes('Sonnenkai')&&sheetText?.includes('Abzeichen verdient'),`earned Place badge copy is missing: ${sheetText}`);
   assert(sheetText?.includes('NÄCHSTES LEVEL')&&sheetText?.includes('360 XP fehlen'),`next level preview is wrong: ${sheetText}`);
-  assert(sheetText?.includes('+100')&&sheetText?.includes('Coins'),`next level reward is missing: ${sheetText}`);
+  assert(sheetText?.includes('+100')&&sheetText?.includes('Coins')&&sheetText?.includes('Energie voll'),`next level reward is missing: ${sheetText}`);
   await assertSheetFits('390x844 milestones');await shot('22-player-milestones-390x844');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertSheetFits('390x720 milestones');await shot('23-player-milestones-short-safari');
   await page.locator('[data-player-progress-close]').click();assert(!(await page.locator('.player-progress-sheet').isVisible().catch(()=>false)),'milestone sheet did not close');
   const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');assert(!('placeBadges' in milestoneSave),'Place badge UI persisted duplicate badge state');
-  report.milestones={completed:5,total:5,title:'Poply-Profi',placeBadges:2,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,nextLevel:6,remainingXp:360,rewardCoins:100,stateNeutral:true};
+  report.milestones={completed:5,total:5,title:'Poply-Profi',placeBadges:2,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,nextLevel:6,remainingXp:360,rewardCoins:100,rewardEnergy:'full',stateNeutral:true};
 
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('29-progression-failure');}catch{}}
