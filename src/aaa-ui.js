@@ -22,6 +22,10 @@ export function createUI(root,toast){
       if(fx.type==='spawn'){source?.classList.add('fx-generator-dispense');target?.classList.add('fx-spawn','fx-dispensed-item');}
     });
   };
+  const centerPoint=element=>{
+    if(!element)return null;const rect=element.getBoundingClientRect();
+    return {x:rect.left+rect.width/2,y:rect.top+rect.height/2};
+  };
   const flyNode=(source,target,className,delay=0)=>{
     if(!source||!target)return;
     const from=source.getBoundingClientRect(),to=target.getBoundingClientRect();
@@ -30,16 +34,28 @@ export function createUI(root,toast){
     node.style.setProperty('--travel-x',`${to.left+to.width/2-x}px`);node.style.setProperty('--travel-y',`${to.top+to.height/2-y}px`);node.style.animationDelay=`${delay}ms`;
     document.body.append(node);setTimeout(()=>node.remove(),950+delay);
   };
+  const rewardFlight=(text,target,className,origin,delay=0,offsetX=0)=>{
+    if(!origin||!target)return;
+    const to=target.getBoundingClientRect(),node=document.createElement('span');
+    node.className=`delivery-flight reward-flight ${className}`;node.textContent=text;node.setAttribute('aria-hidden','true');
+    const x=origin.x+offsetX,y=origin.y;node.style.left=`${x}px`;node.style.top=`${y}px`;
+    node.style.setProperty('--travel-x',`${to.left+to.width/2-x}px`);node.style.setProperty('--travel-y',`${to.top+to.height/2-y}px`);node.style.animationDelay=`${delay}ms`;
+    document.body.append(node);setTimeout(()=>node.remove(),950+delay);
+  };
+  const rewardOriginBurst=origin=>{
+    if(!origin)return;const node=document.createElement('span');node.className='reward-origin-burst';node.setAttribute('aria-hidden','true');node.style.left=`${origin.x}px`;node.style.top=`${origin.y}px`;document.body.append(node);setTimeout(()=>node.remove(),900);
+  };
   const playDelivery=orderElement=>{
     const target=orderElement?.querySelector('.service-avatar,.board-job-avatar,.avatar,.focus-avatar')||orderElement;
     orderElement?.classList.add('fx-order-deliver');orderElement?.querySelectorAll('.need .item-art').forEach((item,index)=>flyNode(item,target,'item-flight',index*55));
   };
-  const playRewards=rewards=>requestAnimationFrame(()=>{
+  const playRewards=(rewards,origin)=>requestAnimationFrame(()=>{
     playFeedback('reward');
-    const origin=root.querySelector('.resource.star')||root.querySelector('.mission-card'),starTarget=root.querySelector('.mission-card,.service-goal'),coinTarget=root.querySelector('.resource.coin');
-    if(origin&&coinTarget){const token=document.createElement('span');token.className='reward-token coin-token';token.textContent=`+${rewards.coins} ●`;origin.append(token);flyNode(token,coinTarget,'reward-flight coin-flight',0);token.remove();}
-    if(origin&&starTarget){const token=document.createElement('span');token.className='reward-token star-token';token.textContent=`+${rewards.stars} ★`;origin.append(token);flyNode(token,starTarget,'reward-flight star-flight',90);token.remove();}
-    setTimeout(()=>{coinTarget?.classList.add('fx-reward-arrive');starTarget?.classList.add('fx-reward-arrive');},620);
+    const coinTarget=root.querySelector('.resource.coin'),starTarget=root.querySelector('.resource.star'),purposeTarget=root.querySelector('.service-purpose,.mission-card,.service-goal');
+    rewardOriginBurst(origin);
+    rewardFlight(`+${rewards.coins} ●`,coinTarget,'coin-flight',origin,0,-15);
+    rewardFlight(`+${rewards.stars} ★`,starTarget,'star-flight',origin,95,15);
+    setTimeout(()=>{coinTarget?.classList.add('fx-reward-arrive');starTarget?.classList.add('fx-reward-arrive');purposeTarget?.classList.add('fx-reward-purpose');},620);
   });
   const playRestorationReveal=(upgrade,unlockedPlace=null)=>requestAnimationFrame(()=>{
     const scene=root.querySelector('.world-hero,.scene-card');if(!scene)return;
@@ -77,12 +93,12 @@ export function createUI(root,toast){
     }
     const order=target.closest('[data-order]');
     if(order){
-      const card=order.closest('.service-card,.board-job,.mini-order,.focus-order'),orderId=order.dataset.order,result=deliverOrder(orderId);
+      const card=order.closest('.service-card,.board-job,.mini-order,.focus-order'),rewardAnchor=card?.querySelector('.service-rewards,.board-job-reward')||card,rewardOrigin=centerPoint(rewardAnchor),orderId=order.dataset.order,result=deliverOrder(orderId);
       if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}
       else{
         playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP`);
         if(selectedOrderId===orderId)selectedOrderId=null;
-        setTimeout(()=>{render();playRewards(result.rewards);emitProgression(result,'order');},320);
+        setTimeout(()=>{render();playRewards(result.rewards,rewardOrigin);emitProgression(result,'order');},320);
       }
       return;
     }
