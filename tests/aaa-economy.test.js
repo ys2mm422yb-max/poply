@@ -42,11 +42,12 @@ test('chapter pacing remains finite and intentionally scales by orders served',(
   const coast=simulateChapterPacing('coast');
   const sunset=simulateChapterPacing('sunset');
   const garden=simulateChapterPacing('garden');
-  assert.deepEqual({orders:coast.ordersServed,energy:coast.energy,coins:coast.coins},{orders:15,energy:228,coins:1745});
+  assert.deepEqual({orders:coast.ordersServed,energy:coast.energy,coins:coast.coins},{orders:15,energy:218,coins:1767});
   assert.deepEqual({orders:sunset.ordersServed,energy:sunset.energy,coins:sunset.coins},{orders:16,energy:286,coins:3195});
   assert.deepEqual({orders:garden.ordersServed,energy:garden.energy,coins:garden.coins},{orders:20,energy:288,coins:4800});
   assert.ok(coast.ordersServed<sunset.ordersServed);
   assert.ok(sunset.ordersServed<garden.ordersServed);
+  assert.ok(coast.energy<228,'first-session variety should not make Place 01 grindier than the previous baseline');
 });
 
 test('economy guard catches pacing regressions before release',()=>{
