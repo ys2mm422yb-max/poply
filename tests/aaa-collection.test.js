@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createInitialState, makeItem, moveOrMerge, PLACE_01_UPGRADES } from '../src/v2-game.js';
+import { createInitialState, makeItem, moveOrMerge, PLACE_01_UPGRADES, PLACE_02_UPGRADES } from '../src/v2-game.js';
 import { discoveryItemKey, discoveryGeneratorKey, discoveryPlaceKey, inferredDiscoveries, ensureCollectionState, recordItemDiscovery, isDiscovered, familyDiscoveryCount, totalItemDiscoveryCount, discoveryXpForItem } from '../src/aaa-collection.js';
 
 test('fresh collection knows only content visible in the starting state',()=>{
@@ -11,6 +11,7 @@ test('fresh collection knows only content visible in the starting state',()=>{
   for(const family of ['coffee','bakery','sweet'])assert.ok(d.includes(discoveryItemKey(family,1)));
   assert.equal(d.includes(discoveryItemKey('coffee',2)),false);
   assert.equal(d.includes(discoveryItemKey('fruit',1)),false);
+  assert.equal(d.includes(discoveryItemKey('herb',1)),false);
 });
 
 test('legacy board backfill includes reached lower tiers but never future tiers',()=>{
@@ -34,9 +35,17 @@ test('completed Place 01 backfill records Sonnenkai and Tropenbar but not fruit 
   assert.equal(isDiscovered(result,discoveryItemKey('fruit',1)),false);
 });
 
+test('completed Sonnenkai backfill records Dachgarten and Gewächshaus but not herb tiers',()=>{
+  const state=createInitialState();state.placeUpgrades=[...PLACE_01_UPGRADES.map(upgrade=>upgrade.id),...PLACE_02_UPGRADES.map(upgrade=>upgrade.id)];delete state.discoveries;
+  const result=ensureCollectionState(state).state;
+  assert.ok(isDiscovered(result,discoveryPlaceKey('garden')));assert.ok(isDiscovered(result,discoveryGeneratorKey('garden-gen')));
+  assert.equal(isDiscovered(result,discoveryItemKey('herb',1)),false);
+});
+
 test('family and overall discovery counts remain deterministic',()=>{
   const state=ensureCollectionState(createInitialState()).state;
   assert.deepEqual(familyDiscoveryCount(state,'coffee'),{found:1,total:6});
   assert.deepEqual(familyDiscoveryCount(state,'fruit'),{found:0,total:6});
-  assert.deepEqual(totalItemDiscoveryCount(state),{found:3,total:24});
+  assert.deepEqual(familyDiscoveryCount(state,'herb'),{found:0,total:6});
+  assert.deepEqual(totalItemDiscoveryCount(state),{found:3,total:30});
 });

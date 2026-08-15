@@ -1,9 +1,11 @@
 import { CUSTOMER_ART, customerArtUrl } from './aaa-customers.js';
 import { artMarkup } from './aaa-art.js';
 import { canRenderSunsetArt, sunsetArtMarkup } from './aaa-sunset-art.js';
+import { canRenderGardenArt, gardenArtMarkup } from './aaa-garden-art.js';
 import { placeSceneMarkup } from './aaa-place-art.js';
 import { sunsetPlaceSceneMarkup } from './aaa-sunset-place.js';
-import { itemDefinition, canFulfillOrder, countRequirement, restorationStatus, activePlaceChapter, currentChapterProgress } from './v2-game.js';
+import { gardenPlaceSceneMarkup } from './aaa-garden-place.js';
+import { itemDefinition, canFulfillOrder, countRequirement, restorationStatus, activePlaceChapter, currentChapterProgress, generatorProductionStatus } from './v2-game.js';
 
 export const ASSETS={customers:CUSTOMER_ART};
 
@@ -26,7 +28,13 @@ const UPGRADE_STORY={
   'sunset-lounge':'Gäste bleiben länger und bestellen mehr',
   'sunset-fire':'Nach Sonnenuntergang entsteht ein echter Treffpunkt',
   'sunset-stage':'Musik macht aus dem Deck einen Abend-Place',
-  'sunset-sign':'Sonnenkai leuchtet als zweiter fertiger Poply Place'
+  'sunset-sign':'Sonnenkai ist komplett – der Dachgarten wartet',
+  'garden-glass':'Das Gewächshaus fängt Licht und schützt die erste Ernte',
+  'garden-beds':'Kräuter und Blüten geben dem Dach seine grüne Identität',
+  'garden-bar':'Frische Ernte wird direkt zum neuen Gäste-Erlebnis',
+  'garden-seating':'Zwischen den Beeten entstehen ruhige Plätze über der Stadt',
+  'garden-lights':'Der Garten bleibt auch am Abend hell und lebendig',
+  'garden-sign':'Der Dachgarten ist vollständig und über der Stadt sichtbar'
 };
 
 const ICONS={
@@ -44,7 +52,7 @@ const iconMarkup=name=>`<span class="ui-icon icon-${name}">${ICONS[name]||''}</s
 export function itemMarkup(item,compact=false){
   const def=itemDefinition(item);
   if(!def)return '';
-  const markup=canRenderSunsetArt(def.art)?sunsetArtMarkup(def.art):artMarkup(def.art);
+  const markup=canRenderGardenArt(def.art)?gardenArtMarkup(def.art):canRenderSunsetArt(def.art)?sunsetArtMarkup(def.art):artMarkup(def.art);
   return compact?markup.replace('class="item-art ','class="item-art compact '):markup;
 }
 const customer=order=>customerArtUrl(order.sequence);
@@ -86,15 +94,20 @@ function serviceOrder(state,order,next){
   const ready=canFulfillOrder(state,order),missing=missingForOrder(state,order);
   return `<article class="service-card ${ready?'ready':''}" data-service-order="${order.id}"><div class="service-customer"><div class="service-avatar-ring"><img src="${customer(order)}" alt="" class="service-avatar"></div><span>${ready?'BEREIT ZUM SERVIEREN':'GAST WARTET'}</span></div><div class="service-content"><div class="service-heading"><small>${ready?'Alles vorbereitet':'Noch zusammenstellen'}</small><h2>${order.title}</h2><span class="service-status">${ready?iconMarkup('check'):`${missing} fehlt`}</span></div><div class="service-needs">${order.requirements.map(req=>requirementMarkup(state,req)).join('')}</div><div class="service-rewards"><span>${iconMarkup('coin')}<b>${order.rewards.coins}</b><small>Coins</small></span><span>${iconMarkup('star')}<b>${order.rewards.stars}</b><small>Ausbau</small></span></div><div class="service-purpose"><span>${iconMarkup('star')}</span><p>${next?`Dieser Auftrag finanziert <strong>${next.label}</strong>.`:'Dieser Auftrag füllt deine Place-Kasse.'}</p></div></div><button data-order="${order.id}" class="service-deliver" ${ready?'':'disabled'}>${ready?'Jetzt servieren':COPY.deliver}</button></article>`;
 }
+function generatorCycleMarkup(item){
+  const cycle=generatorProductionStatus(item);if(!cycle)return '';
+  return `<span class="generator-cycle ${cycle.bonusNext?'bonus-ready':''}" aria-hidden="true"><span class="generator-cycle-dots">${Array.from({length:cycle.total},(_,index)=>`<i class="${index<cycle.progress?'filled':''}"></i>`).join('')}</span><b>${cycle.bonusNext?'BONUS':`${cycle.nextStep}/${cycle.total}`}</b></span>`;
+}
 
 function boardMarkup(state){
   const ready=mergeReadyIndexes(state);
   const cells=state.board.map((item,index)=>{
     if(!item)return `<button class="board-cell empty calm-empty" data-index="${index}" aria-label="Leer"></button>`;
-    const def=itemDefinition(item),generator=item.kind==='generator';
+    const def=itemDefinition(item),generator=item.kind==='generator',cycle=generator?generatorProductionStatus(item):null;
     const identity=generator?`generator generator-${item.generator}`:`family-${item.family} tier-${item.level}`;
-    const classes=['board-cell','occupied',identity,!generator&&neededByOrders(state,item)?'order-needed':'',!generator&&ready.has(index)?'merge-ready':''].filter(Boolean).join(' ');
-    return `<button class="${classes}" data-index="${index}" aria-label="${def.name}">${itemMarkup(item)}${generator?'<span class="generator-mark">'+iconMarkup('energy')+'</span>':`<span class="tier">${item.level}</span>`}${!generator&&neededByOrders(state,item)?'<span class="job-mark">'+iconMarkup('star')+'</span>':''}</button>`;
+    const classes=['board-cell','occupied',identity,!generator&&neededByOrders(state,item)?'order-needed':'',!generator&&ready.has(index)?'merge-ready':'',cycle?.bonusNext?'generator-bonus-ready':''].filter(Boolean).join(' ');
+    const cycleLabel=cycle?`, ${cycle.bonusNext?'Erntebonus bereit':`Erntebonus Schritt ${cycle.nextStep} von ${cycle.total}`}`:'';
+    return `<button class="${classes}" data-index="${index}" aria-label="${def.name}${cycleLabel}">${itemMarkup(item)}${generator?'<span class="generator-mark">'+iconMarkup('energy')+'</span>'+generatorCycleMarkup(item):`<span class="tier">${item.level}</span>`}${!generator&&neededByOrders(state,item)?'<span class="job-mark">'+iconMarkup('star')+'</span>':''}</button>`;
   }).join('');
   return `<section class="board-area"><div class="board-title"><div><strong>${COPY.boardTitle}</strong><small>${COPY.boardRule}</small></div><span>${state.board.filter(Boolean).length}/49</span></div><div class="board-frame board-surface"><div id="merge-board" class="merge-board">${cells}</div></div></section>`;
 }
@@ -103,6 +116,9 @@ export function boardView(state){
   return `<main class="game-view view-board production-board qa-board chapter-${chapter.id}">${missionMarkup(state,true)}<section class="board-jobs" aria-label="Aktive Aufträge">${state.currentOrders.map(order=>boardJob(state,order)).join('')}</section>${boardMarkup(state)}</main>`;
 }
 
+const placeArt=(chapter,stage)=>chapter.id==='garden'?gardenPlaceSceneMarkup(stage):chapter.id==='sunset'?sunsetPlaceSceneMarkup(stage):placeSceneMarkup(stage);
+const placeIntro=(chapter,stage,total)=>stage?`${stage} von ${total} Ausbauten fertig`:chapter.id==='garden'?'Frische Ernte über den Dächern.':chapter.id==='sunset'?'Neuer Place. Neue Produkte. Neuer Abend.':'Dein erster Place wartet auf dich';
+const placeGrowth=chapter=>chapter.id==='garden'?'DEIN DACHGARTEN WÄCHST':chapter.id==='sunset'?'DEIN SONNENKAI WÄCHST':'DEIN CAFÉ WÄCHST';
 export function placeView(state){
   const status=restorationStatus(state),{chapter,completed:stage,total}=currentChapterProgress(state),next=status.upgrade;
   const journey=chapter.upgrades.map((upgrade,index)=>{
@@ -112,9 +128,7 @@ export function placeView(state){
   const overall=Math.round(stage/total*100);
   const story=next?UPGRADE_STORY[next.id]||'Der nächste Schritt macht deinen Place sichtbarer.':`${chapter.label} ist vollständig restauriert.`;
   const goal=next?`<div class="place-current-goal"><div class="goal-copy"><small>${COPY.next}</small><strong>${next.label}</strong><p>${story}</p><span>${iconMarkup('star')} ${status.current}/${status.cost}</span></div><button data-action="build" ${state.stars<next.cost?'disabled':''}>${COPY.build}</button></div>`:`<div class="place-current-goal complete"><div class="goal-copy"><small>${COPY.progress}</small><strong>${chapter.label} fertig</strong><p>${story}</p></div><span class="goal-complete-mark">${iconMarkup('check')}</span></div>`;
-  const art=chapter.id==='sunset'?sunsetPlaceSceneMarkup(stage):placeSceneMarkup(stage);
-  const intro=stage?`${stage} von ${total} Ausbauten fertig`:chapter.id==='sunset'?'Neuer Place. Neue Produkte. Neuer Abend.':'Dein erster Place wartet auf dich';
-  const growth=chapter.id==='sunset'?'DEIN SONNENKAI WÄCHST':'DEIN CAFÉ WÄCHST';
+  const art=placeArt(chapter,stage),intro=placeIntro(chapter,stage,total),growth=placeGrowth(chapter);
   return `<main class="game-view view-place production-place place-${chapter.id}"><section class="world-hero" data-stage="${stage}" data-place="${chapter.id}"><div class="world-art">${art}</div><div class="world-vignette"></div><div class="world-copy"><span class="world-kicker">POPLY PLACE 0${chapter.number} · ${chapter.kicker}</span><h1>${chapter.label}</h1><p>${intro}</p></div><div class="world-progress"><b>${stage}</b><span>/ ${total}</span></div></section><section class="place-command"><div class="place-progress-row"><div class="place-progress-dial" style="--progress:${overall}%"><div><b>${stage}</b><small>/${total}</small></div></div>${goal}</div><div class="journey-wrap"><div class="journey-head"><strong>${growth}</strong><span>${overall}%</span></div><div class="journey-line"><i style="width:${overall}%"></i></div><div class="journey-steps">${journey}</div></div></section></main>`;
 }
 export function resolveSelectedOrder(state,selectedOrderId){return state.currentOrders.find(order=>order.id===selectedOrderId)||state.currentOrders[0]||null;}
