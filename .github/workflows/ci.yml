@@ -19,6 +19,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: node --check scripts/energy-reserve-qa.mjs
+      - run: node --test tests/aaa-energy-reserve.test.js
       - run: node --test tests/aaa-board-atmosphere.test.js
       - run: node --check src/aaa-board-atmosphere.js
       - run: node --test tests/aaa-vibrance.test.js
