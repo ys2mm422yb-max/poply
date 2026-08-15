@@ -3,6 +3,9 @@
 /* One progress story, not three copies of the same number. */
 .view-place .place-progress-dial,.view-place .world-progress,.view-place .journey-head>span{display:none!important}.view-place .place-progress-row{display:block!important}.view-place .place-current-goal{width:100%!important;max-width:none!important}.view-place .journey-wrap{margin-top:10px}.view-place .journey-head{justify-content:flex-start}.view-place .journey-head strong{letter-spacing:.12em}.service-footnote{display:none!important}
 
+/* Purpose copy must stay readable instead of falling back to the old one-line ellipsis rule. */
+.service-hero p{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.22!important;max-width:100%}
+
 /* The selected order already shows missing quantities on its item cards and in the guest choice.
    Removing the third duplicate status prevents the old right-edge pill from clipping. */
 .service-card .service-status{display:none!important}.service-card .service-heading{padding-right:0!important}.service-card .service-heading h2{padding-right:0!important}
@@ -22,5 +25,5 @@
 @keyframes poply-cafe-leaf{from{transform:rotate(-1deg)}to{transform:rotate(1.4deg)}}
 @keyframes poply-cafe-flag{from{transform:skewY(-2deg) scaleX(.96)}to{transform:skewY(2deg) scaleX(1.04)}}
 
-@media(max-height:760px){.view-place .journey-wrap{margin-top:6px}.view-place .place-current-goal{min-height:0}.place-coast .cafe-guest{animation-duration:4.6s}}
+@media(max-height:760px){.view-place .journey-wrap{margin-top:6px}.view-place .place-current-goal{min-height:0}.place-coast .cafe-guest{animation-duration:4.6s}.service-hero p{font-size:8px!important;line-height:1.16!important}}
 @media(prefers-reduced-motion:reduce){.place-coast .scene-base-plant,.place-coast .ambient-sun,.place-coast .cafe-bulb,.place-coast .cafe-evening-wash,.place-coast .cafe-steam path,.place-coast .cafe-barista,.place-coast .menu-spark,.place-coast .cafe-guest,.place-coast .terrace-planters path,.place-coast .cafe-flags path,.place-coast .cafe-celebration-dots{animation:none!important}}
