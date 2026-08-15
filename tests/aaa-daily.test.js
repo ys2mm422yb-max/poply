@@ -2,27 +2,43 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createInitialState, makeItem } from '../src/v2-game.js';
-import { createDailyState, ensureDailyState, progressDailyEvent, claimDailyGoal, canServeDailyBonus, fulfillDailyBonus } from '../src/aaa-daily.js';
+import { createDailyState, dailyGoalTypes, ensureDailyState, progressDailyEvent, claimDailyGoal, canServeDailyBonus, fulfillDailyBonus } from '../src/aaa-daily.js';
 
-test('daily state always contains merge, serve and one contextual third goal',()=>{
+test('daily state chooses three distinct contextual goals instead of two fixed slots',()=>{
   const state=createInitialState(),daily=createDailyState(state,'2026-08-14');
   assert.equal(daily.dateKey,'2026-08-14');assert.equal(daily.goals.length,3);
-  assert.equal(daily.goals[0].type,'merge');assert.equal(daily.goals[1].type,'serve');
-  assert.ok(['generate','discover','restore'].includes(daily.goals[2].type));assert.equal(daily.bonus.served,false);
+  assert.equal(new Set(daily.goals.map(goal=>goal.type)).size,3);
+  assert.ok(daily.goals.every(goal=>['merge','serve','generate','discover','restore'].includes(goal.type)));
+  assert.equal(daily.bonus.served,false);
+});
+
+test('adjacent days avoid the identical goal set when contextual alternatives exist',()=>{
+  const state=createInitialState();
+  const first=dailyGoalTypes(state,'2026-08-14').slice().sort().join('|');
+  const second=dailyGoalTypes(state,'2026-08-15').slice().sort().join('|');
+  assert.notEqual(first,second);
+});
+
+test('daily goal targets and labels vary deterministically across dates',()=>{
+  const state=createInitialState();
+  const days=['2026-08-14','2026-08-15','2026-08-16','2026-08-17'].map(date=>createDailyState(state,date));
+  const signatures=new Set(days.map(daily=>daily.goals.map(goal=>`${goal.type}:${goal.target}`).join('|')));
+  assert.ok(signatures.size>1,'daily targets never vary across dates');
+  assert.deepEqual(createDailyState(state,'2026-08-15'),createDailyState(state,'2026-08-15'));
 });
 
 test('daily migration and next-day reset preserve player value',()=>{
   const state=createInitialState();state.coins=777;state.stars=9;state.board[9]={...state.board[9],id:'keep-me'};
   const first=ensureDailyState(state,'2026-08-14');assert.equal(first.changed,true);assert.equal(first.reset,false);
-  first.state.daily.goals[0].progress=6;first.state.daily.goals[0].claimed=true;
+  first.state.daily.goals[0].progress=first.state.daily.goals[0].target;first.state.daily.goals[0].claimed=true;
   const next=ensureDailyState(first.state,'2026-08-15');
   assert.equal(next.changed,true);assert.equal(next.reset,true);assert.equal(next.state.coins,777);assert.equal(next.state.stars,9);assert.equal(next.state.board[9].id,'keep-me');assert.equal(next.state.daily.goals[0].progress,0);assert.equal(next.state.daily.goals[0].claimed,false);
 });
 
-test('daily progress caps at target and claim pays exactly once',()=>{
-  let state=ensureDailyState(createInitialState(),'2026-08-14').state;const before=state.coins;
-  state=progressDailyEvent(state,'merge',99,'2026-08-14').state;const goal=state.daily.goals.find(entry=>entry.type==='merge');
-  assert.equal(goal.progress,goal.target);
+test('daily progress caps at target and claim pays exactly once for a generated daily type',()=>{
+  let state=ensureDailyState(createInitialState(),'2026-08-14').state;const before=state.coins,goal=state.daily.goals[0];
+  state=progressDailyEvent(state,goal.type,99,'2026-08-14').state;const progressed=state.daily.goals.find(entry=>entry.id===goal.id);
+  assert.equal(progressed.progress,progressed.target);
   const first=claimDailyGoal(state,goal.id,'2026-08-14');assert.equal(first.changed,true);assert.equal(first.state.coins,before+goal.reward.coins);assert.equal(first.state.daily.goals.find(entry=>entry.id===goal.id).claimed,true);
   const second=claimDailyGoal(first.state,goal.id,'2026-08-14');assert.equal(second.changed,false);assert.equal(second.reason,'already-claimed');assert.equal(second.state.coins,before+goal.reward.coins);
 });

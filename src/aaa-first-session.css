@@ -1,0 +1,29 @@
+.place-coast .scene-base-plant{transform-box:fill-box;transform-origin:50% 100%;animation:poply-cafe-plant 5.8s ease-in-out infinite alternate}.place-coast .plant-right{animation-delay:-2.7s;animation-duration:6.6s}.place-coast .ambient-sun{transform-box:fill-box;transform-origin:center;animation:poply-cafe-sun 7s ease-in-out infinite alternate}.place-coast .cafe-bulb{transform-box:fill-box;transform-origin:center;animation:poply-cafe-bulb 2.1s ease-in-out infinite alternate}.place-coast .cafe-bulb:nth-child(4n){animation-delay:-.8s}.place-coast .cafe-bulb:nth-child(4n+2){animation-delay:-1.5s}.place-coast .cafe-evening-wash{animation:poply-cafe-warmth 4.4s ease-in-out infinite alternate}.place-coast .cafe-steam path{animation:poply-cafe-steam 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}.place-coast .cafe-steam path:nth-child(2){animation-delay:-.8s}.place-coast .cafe-steam path:nth-child(3){animation-delay:-1.5s}.place-coast .cafe-barista{transform-box:fill-box;transform-origin:50% 100%;animation:poply-cafe-worker 3.6s ease-in-out infinite alternate}.place-coast .menu-spark{animation:poply-cafe-spark 2.3s ease-in-out infinite alternate}.place-coast .cafe-guest{transform-box:fill-box;transform-origin:50% 100%;animation:poply-cafe-guest 3.8s ease-in-out infinite alternate}.place-coast .guest-b{animation-delay:-1.9s;animation-duration:4.4s}.place-coast .terrace-planters path{transform-box:fill-box;transform-origin:50% 100%;animation:poply-cafe-leaf 4.5s ease-in-out infinite alternate}.place-coast .cafe-flags path{transform-box:fill-box;transform-origin:0 0;animation:poply-cafe-flag 2.8s ease-in-out infinite alternate}.place-coast .cafe-celebration-dots{animation:poply-cafe-spark 1.9s ease-in-out infinite alternate}
+
+/* One progress story, not three copies of the same number. */
+.view-place .place-progress-dial,.view-place .world-progress,.view-place .journey-head>span{display:none!important}.view-place .place-progress-row{display:block!important}.view-place .place-current-goal{width:100%!important;max-width:none!important}.view-place .journey-wrap{margin-top:10px}.view-place .journey-head{justify-content:flex-start}.view-place .journey-head strong{letter-spacing:.12em}.service-footnote{display:none!important}
+
+/* Purpose copy must stay readable instead of falling back to the old one-line ellipsis rule. */
+.service-hero p{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.22!important;max-width:100%}
+
+/* The selected order already shows missing quantities on its item cards and in the guest choice.
+   Removing the third duplicate status prevents the old right-edge pill from clipping. */
+.service-card .service-status{display:none!important}.service-card .service-heading{padding-right:0!important}.service-card .service-heading h2{padding-right:0!important}
+
+/* Opening orders must read as intentionally different jobs. */
+.customer-choice:has(.need:nth-child(2)),.board-job:has(.need:nth-child(2)){box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 0 0 1px rgba(255,210,93,.18),0 8px 18px rgba(1,28,39,.18)}
+.service-card .service-needs:has(.need:nth-child(2)){gap:10px}.service-card .service-needs:has(.need:nth-child(2)) .need{transform:scale(1.04)}
+
+@keyframes poply-cafe-plant{from{transform:rotate(-.7deg)}to{transform:rotate(.85deg)}}
+@keyframes poply-cafe-sun{from{opacity:.88;transform:scale(.98)}to{opacity:1;transform:scale(1.03)}}
+@keyframes poply-cafe-bulb{from{opacity:.78;transform:scale(.92);filter:brightness(.94)}to{opacity:1;transform:scale(1.12);filter:brightness(1.25)}}
+@keyframes poply-cafe-warmth{from{opacity:.05}to{opacity:.13}}
+@keyframes poply-cafe-steam{0%{opacity:0;transform:translateY(4px)}35%{opacity:.88}100%{opacity:0;transform:translateY(-13px)}}
+@keyframes poply-cafe-worker{from{transform:translateY(0) rotate(-.2deg)}to{transform:translateY(-2px) rotate(.35deg)}}
+@keyframes poply-cafe-spark{from{opacity:.35;filter:brightness(.9)}to{opacity:1;filter:brightness(1.35)}}
+@keyframes poply-cafe-guest{from{transform:translateY(0) rotate(-.25deg)}to{transform:translateY(-2px) rotate(.3deg)}}
+@keyframes poply-cafe-leaf{from{transform:rotate(-1deg)}to{transform:rotate(1.4deg)}}
+@keyframes poply-cafe-flag{from{transform:skewY(-2deg) scaleX(.96)}to{transform:skewY(2deg) scaleX(1.04)}}
+
+@media(max-height:760px){.view-place .journey-wrap{margin-top:6px}.view-place .place-current-goal{min-height:0}.place-coast .cafe-guest{animation-duration:4.6s}.service-hero p{font-size:8px!important;line-height:1.16!important}}
+@media(prefers-reduced-motion:reduce){.place-coast .scene-base-plant,.place-coast .ambient-sun,.place-coast .cafe-bulb,.place-coast .cafe-evening-wash,.place-coast .cafe-steam path,.place-coast .cafe-barista,.place-coast .menu-spark,.place-coast .cafe-guest,.place-coast .terrace-planters path,.place-coast .cafe-flags path,.place-coast .cafe-celebration-dots{animation:none!important}}

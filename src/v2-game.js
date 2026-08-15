@@ -39,12 +39,12 @@ export const GENERATORS = {
 };
 
 export const PLACE_01_UPGRADES = [
-  { id: 'lights', label: 'Lichter', cost: 4, copy: 'Warme Lichter machen das Café abends sichtbar und einladend.' },
-  { id: 'counter', label: 'Neue Theke', cost: 6, copy: 'Die alte Theke wird zum Herzstück des Cafés.' },
-  { id: 'menu', label: 'Menüwand', cost: 7, copy: 'Eine neue Menüwand zeigt Gästen, was Poply besonders macht.' },
-  { id: 'seating', label: 'Sitzecke', cost: 9, copy: 'Bequeme Plätze machen aus Laufkundschaft Stammgäste.' },
-  { id: 'terrace', label: 'Meerterrasse', cost: 11, copy: 'Die Terrasse öffnet das Café zum Meer.' },
-  { id: 'sign', label: 'Poply-Schild', cost: 14, copy: 'Das neue Schild vollendet den ersten Poply Place.' },
+  { id: 'lights', label: 'Lichter', cost: 4, copy: 'Warme Lichter machen das Café abends sichtbar und einladend.', unlock:'Kombi-Aufträge am Abend' },
+  { id: 'counter', label: 'Neue Theke', cost: 6, copy: 'Die alte Theke wird zum Herzstück des Cafés.', unlock:'Tier-3-Bestellungen' },
+  { id: 'menu', label: 'Menüwand', cost: 7, copy: 'Eine neue Menüwand zeigt Gästen, was Poply besonders macht.', unlock:'größere Café-Kombis' },
+  { id: 'seating', label: 'Sitzecke', cost: 9, copy: 'Bequeme Plätze machen aus Laufkundschaft Stammgäste.', unlock:'anspruchsvolle Küsten-Aufträge' },
+  { id: 'terrace', label: 'Meerterrasse', cost: 11, copy: 'Die Terrasse öffnet das Café zum Meer.', unlock:'Premium-Küstenbestellungen' },
+  { id: 'sign', label: 'Poply-Schild', cost: 14, copy: 'Das neue Schild vollendet den ersten Poply Place.', unlock:'Sonnenkai + Tropenbar' },
 ];
 
 export const PLACE_02_UPGRADES = [
@@ -82,6 +82,15 @@ const COAST_ORDER_TEMPLATES = [
   { title:'Küsten-Brunch', requirements:[{family:'bakery',level:5,qty:1},{family:'coffee',level:4,qty:1}], rewards:{coins:210,stars:6} },
   { title:'Sonnenuntergang', requirements:[{family:'sweet',level:5,qty:1},{family:'coffee',level:5,qty:1}], rewards:{coins:275,stars:7} },
   { title:'Poply Festtafel', requirements:[{family:'bakery',level:6,qty:1},{family:'sweet',level:6,qty:1}], rewards:{coins:420,stars:9} },
+  { title:'Frühstücksduo', requirements:[{family:'coffee',level:2,qty:1},{family:'bakery',level:2,qty:1}], rewards:{coins:82,stars:3} },
+  { title:'Milchkaffee-Pause', requirements:[{family:'coffee',level:2,qty:1},{family:'sweet',level:2,qty:1}], rewards:{coins:88,stars:3} },
+  { title:'Kleine Frühstücksplatte', requirements:[{family:'bakery',level:2,qty:1},{family:'sweet',level:2,qty:1}], rewards:{coins:92,stars:3} },
+];
+
+const OPENING_ORDER_TEMPLATES = [
+  { title:'Erster Kaffee', requirements:[{family:'coffee',level:2,qty:1}], rewards:{coins:50,stars:4}, opening:true, hook:'Der erste Gast finanziert direkt die Lichter.' },
+  { title:'Frühstück am Fenster', requirements:[{family:'bakery',level:2,qty:1},{family:'coffee',level:2,qty:1}], rewards:{coins:90,stars:3}, opening:true, hook:'Zwei Familien, ein echter Café-Auftrag.' },
+  { title:'Süße Begrüßung', requirements:[{family:'sweet',level:2,qty:1},{family:'bakery',level:2,qty:1}], rewards:{coins:95,stars:3}, opening:true, hook:'Baue mehrere Produkte für einen Gast.' },
 ];
 
 const SUNSET_ORDER_TEMPLATES = [
@@ -105,8 +114,8 @@ const GARDEN_ORDER_TEMPLATES = [
 const ORDER_TEMPLATES = { coast:COAST_ORDER_TEMPLATES, sunset:SUNSET_ORDER_TEMPLATES, garden:GARDEN_ORDER_TEMPLATES };
 const ORDER_DIFFICULTY_BANDS = {
   coast:[
-    {key:'starter',minCompleted:0,maxCompleted:1,indexes:[0,1,2]},
-    {key:'growing',minCompleted:2,maxCompleted:3,indexes:[1,2,3,4,5]},
+    {key:'starter',minCompleted:0,maxCompleted:1,indexes:[0,1,2,9,10,11]},
+    {key:'growing',minCompleted:2,maxCompleted:3,indexes:[1,2,3,4,5,9,10,11]},
     {key:'established',minCompleted:4,maxCompleted:6,indexes:[3,4,5,6,7,8]},
   ],
   sunset:[
@@ -120,6 +129,16 @@ const ORDER_DIFFICULTY_BANDS = {
     {key:'established',minCompleted:4,maxCompleted:6,indexes:[2,3,4,5]},
   ],
 };
+
+const COAST_STAGE_POOLS = [
+  [0,1,2,9],
+  [0,1,2,9,10,11],
+  [1,2,3,9,10,11],
+  [2,3,4,5,9,10,11],
+  [3,4,5,6,7],
+  [4,5,6,7,8],
+  [5,6,7,8],
+];
 
 const clone = value => structuredClone(value);
 function nextId(state,prefix='item'){ state.nextId += 1; return `${prefix}-${state.nextId}`; }
@@ -165,6 +184,10 @@ export function createOrder(sequence,chapterId='coast'){
   const template=templates[sequence%templates.length];
   return {id:`order-${sequence}`,sequence,chapter:chapterId,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}};
 }
+export function createOpeningOrder(sequence){
+  const template=OPENING_ORDER_TEMPLATES[sequence%OPENING_ORDER_TEMPLATES.length];
+  return {id:`order-${sequence}`,sequence,chapter:'coast',difficulty:'opening',opening:true,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards},hook:template.hook};
+}
 
 export function orderDifficultyBand(state,chapterId=activePlaceChapter(state).id){
   const chapter=PLACE_CHAPTERS.find(entry=>entry.id===chapterId)??PLACE_CHAPTERS[0];
@@ -172,17 +195,29 @@ export function orderDifficultyBand(state,chapterId=activePlaceChapter(state).id
   const bands=ORDER_DIFFICULTY_BANDS[chapter.id]??ORDER_DIFFICULTY_BANDS.coast;
   return bands.find(band=>completed>=band.minCompleted&&completed<=band.maxCompleted)??bands[bands.length-1];
 }
+export function orderPoolIndexes(state,chapterId=activePlaceChapter(state).id){
+  const chapter=PLACE_CHAPTERS.find(entry=>entry.id===chapterId)??PLACE_CHAPTERS[0];
+  if(chapter.id==='coast'){
+    const completed=Math.min(COAST_STAGE_POOLS.length-1,completedUpgradeCount(state,chapter.upgrades));
+    return [...COAST_STAGE_POOLS[completed]];
+  }
+  return [...orderDifficultyBand(state,chapterId).indexes];
+}
 
-export function createProgressionOrder(state,sequence=state.orderSequence,chapterId=activePlaceChapter(state).id){
+export function createProgressionOrder(state,sequence=state.orderSequence,chapterId=activePlaceChapter(state).id,avoidTitles=[]){
   const templates=ORDER_TEMPLATES[chapterId]??COAST_ORDER_TEMPLATES;
   const band=orderDifficultyBand(state,chapterId);
-  const index=band.indexes[sequence%band.indexes.length];
+  const indexes=orderPoolIndexes(state,chapterId);
+  const blocked=new Set([...(state.currentOrders||[]).map(order=>order.title),...avoidTitles]);
+  const available=indexes.filter(index=>!blocked.has(templates[index]?.title));
+  const candidates=available.length?available:indexes;
+  const index=candidates[Math.abs(sequence)%candidates.length];
   const template=templates[index];
   return {id:`order-${sequence}`,sequence,chapter:chapterId,difficulty:band.key,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}};
 }
 
 export function createInitialState(){
-  const state={version:SAVE_VERSION,nextId:20,board:Array(BOARD_SIZE).fill(null),energy:40,maxEnergy:40,coins:100,stars:0,placeUpgrades:[],currentOrders:[createOrder(0),createOrder(1),createOrder(2)],orderSequence:3,stats:{merges:0,generated:0,orders:0},updatedAt:Date.now()};
+  const state={version:SAVE_VERSION,nextId:20,board:Array(BOARD_SIZE).fill(null),energy:40,maxEnergy:40,coins:100,stars:0,placeUpgrades:[],currentOrders:[createOpeningOrder(0),createOpeningOrder(1),createOpeningOrder(2)],orderSequence:3,stats:{merges:0,generated:0,orders:0},updatedAt:Date.now()};
   state.board[0]=makeGenerator('coffee-gen','generator-coffee');
   state.board[6]=makeGenerator('pantry-gen','generator-pantry');
   state.board[9]=makeItem('coffee',1,'starter-coffee-a'); state.board[10]=makeItem('coffee',1,'starter-coffee-b');
@@ -208,7 +243,7 @@ export function normalizeState(input){
   state.maxEnergy=state.maxEnergy??40; state.energy=Math.max(0,Math.min(state.maxEnergy,Number(state.energy)||0));
   state.coins=Math.max(0,Number(state.coins)||0); state.stars=Math.max(0,Number(state.stars)||0);
   state.placeUpgrades=Array.isArray(state.placeUpgrades)?state.placeUpgrades.filter(id=>PLACE_UPGRADES.some(u=>u.id===id)):[];
-  state.currentOrders=Array.isArray(state.currentOrders)&&state.currentOrders.length?state.currentOrders:[createOrder(0),createOrder(1),createOrder(2)];
+  state.currentOrders=Array.isArray(state.currentOrders)&&state.currentOrders.length?state.currentOrders:[createOpeningOrder(0),createOpeningOrder(1),createOpeningOrder(2)];
   state.orderSequence=Number.isInteger(state.orderSequence)?state.orderSequence:3; state.nextId=Number.isInteger(state.nextId)?state.nextId:20;
   state.stats=state.stats??{merges:0,generated:0,orders:0};
   state.board=state.board.map(item=>item?.kind==='generator'?{...item,taps:Number.isInteger(item.taps)&&item.taps>=0?item.taps:0}:item);
@@ -247,7 +282,7 @@ export function fulfillOrder(inputState,orderId){
   const state=clone(inputState); const active=state.currentOrders.find(entry=>entry.id===orderId); active.requirements.forEach(req=>consumeRequirement(state,req));
   state.coins+=active.rewards.coins; state.stars+=active.rewards.stars; state.stats.orders+=1; state.currentOrders=state.currentOrders.filter(entry=>entry.id!==orderId);
   syncProgressionContent(state);
-  state.currentOrders.push(createProgressionOrder(state,state.orderSequence,activePlaceChapter(state).id)); state.orderSequence+=1; state.updatedAt=Date.now();
+  state.currentOrders.push(createProgressionOrder(state,state.orderSequence,activePlaceChapter(state).id,[active.title])); state.orderSequence+=1; state.updatedAt=Date.now();
   return {state,changed:true,reason:null,rewards:active.rewards};
 }
 export function nextPlaceUpgrade(state){ const chapter=activePlaceChapter(state); return chapter.upgrades.find(upgrade=>!state.placeUpgrades.includes(upgrade.id))??null; }
@@ -261,6 +296,6 @@ export function buildNextUpgrade(inputState){
   if(inputState.stars<upgrade.cost) return {state:inputState,changed:false,reason:'not-enough-stars',upgrade};
   const state=clone(inputState); state.stars-=upgrade.cost; state.placeUpgrades.push(upgrade.id);
   const unlockedPlace=upgrade.id==='sign'?'sunset':upgrade.id==='sunset-sign'?'garden':null; syncProgressionContent(state); state.updatedAt=Date.now();
-  return {state,changed:true,reason:null,upgrade,unlockedPlace};
+  return {state,changed:true,reason:null,upgrade,unlock:upgrade.unlock??null,unlockedPlace};
 }
 export function addEnergy(inputState,amount){ const state=clone(inputState); state.energy=Math.min(state.maxEnergy,state.energy+Math.max(0,amount)); state.updatedAt=Date.now(); return state; }

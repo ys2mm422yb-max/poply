@@ -71,12 +71,14 @@ try{
   await page.locator('[data-select-order="order-0"]').click();
   const beforeOrder=await readSave();
   assert(beforeOrder.energy<beforeOrder.maxEnergy,`capacity level-up seed is not low-energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy}`);
+  const orderCoinReward=Number(beforeOrder.currentOrders.find(order=>order.id==='order-0')?.rewards?.coins||0);
+  assert(orderCoinReward>0,`capacity level-up order has no authored coin reward: ${orderCoinReward}`);
   const serve=page.locator('button[data-order="order-0"]');
   assert(await serve.isEnabled(),'capacity level-up QA serve button is disabled');
   await serve.click();await page.waitForTimeout(1500);
   const afterOrder=await readSave();
   assert(afterOrder.playerXp===860,`capacity order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
-  assert(afterOrder.coins===245,`capacity level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
+  assert(afterOrder.coins===beforeOrder.coins+orderCoinReward+100,`capacity level-up coin reward incorrect: ${beforeOrder.coins} + ${orderCoinReward} order + 100 level -> ${afterOrder.coins}`);
   assert(afterOrder.maxEnergy===45&&afterOrder.energy===45,`Level 5 did not expand/refill Energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy} -> ${afterOrder.energy}/${afterOrder.maxEnergy}`);
   assert((await page.locator('.resource.energy').textContent())?.includes('45/45'),'HUD energy did not show 45/45 after capacity level-up');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'HUD did not advance to LV 5');
@@ -87,7 +89,7 @@ try{
   await assertLevelUpFits('390x844 capacity level-up');await shot('20-player-level-up-order');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(80);await assertLevelUpFits('390x720 capacity level-up');await shot('26-energy-capacity-level-up-short-safari');
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(80);
-  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy,capacityGain:5};
+  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,orderCoinReward,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy,capacityGain:5};
 
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
   const reloadedOrder=await readSave();

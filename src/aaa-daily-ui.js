@@ -35,11 +35,11 @@ export function installDailyUI(root,ui){
     }
     const queue=root.querySelector('.customer-queue');if(!queue)return;
     const completed=dailyCompletedCount(state),claimed=state.daily.goals.filter(goal=>goal.claimed).length,bonus=state.daily.bonus;
-    let ribbon=root.querySelector('.daily-ribbon');
-    if(!ribbon){ribbon=document.createElement('button');ribbon.className='daily-ribbon';ribbon.dataset.dailyToggle='';queue.before(ribbon);}
+    let ribbon=root.querySelector('.daily-ribbon'),created=false;
+    if(!ribbon){ribbon=document.createElement('button');ribbon.className='daily-ribbon';ribbon.dataset.dailyToggle='';queue.before(ribbon);created=true;}
     queue.closest('.service-orders')?.classList.add('has-daily-ribbon');
     const nextSignature=signature(state);
-    if(nextSignature!==lastSignature){
+    if(created||nextSignature!==lastSignature){
       ribbon.innerHTML=`<span class="daily-ribbon-icon">${sunIcon}</span><span class="daily-ribbon-copy"><small>HEUTE · ${completed}/3 ZIELE</small><strong>${claimed===3?'Ziele eingesammelt':'Tagesziele & Gast'}</strong></span><span class="daily-ribbon-reward">${bonus.served?checkIcon:`${coinIcon}<b>${bonus.rewards.coins}</b>`}</span><span class="daily-ribbon-chevron">›</span>`;
       lastSignature=nextSignature;
     }
