@@ -1,13 +1,26 @@
-import { normalizeState } from './v2-game.js';
+import { normalizeState, createOpeningOrder } from './v2-game.js';
 import { ensurePlayerProgress } from './aaa-progression.js';
 import { ensureCollectionState } from './aaa-collection.js';
 import { ensureInventoryState } from './aaa-inventory.js';
 
 const FAMILIES=['coffee','bakery','sweet'];
+const LEGACY_STARTER_TITLES=['Morgenkaffee','Frisches Gebäck','Kleine Pause'].sort();
 const noProgress=state=>Number(state.stats?.generated||0)===0&&Number(state.stats?.orders||0)===0&&(state.placeUpgrades?.length||0)===0;
+const hasLegacyStarterOrders=state=>{
+  const titles=(state.currentOrders||[]).map(order=>order?.title).filter(Boolean).sort();
+  return Number(state.stats?.orders||0)===0
+    &&(state.placeUpgrades?.length||0)===0
+    &&Number(state.orderSequence)===3
+    &&titles.length===LEGACY_STARTER_TITLES.length
+    &&titles.every((title,index)=>title===LEGACY_STARTER_TITLES[index]);
+};
 
 export function migrateState(input){
   let state=structuredClone(normalizeState(input));
+  if(hasLegacyStarterOrders(state)){
+    state.currentOrders=[createOpeningOrder(0),createOpeningOrder(1),createOpeningOrder(2)];
+    state.orderSequence=3;
+  }
   if(noProgress(state)&&Number(state.stats?.merges||0)===0){
     for(let i=0;i<state.board.length;i+=1){
       if(String(state.board[i]?.id||'').startsWith('starter-plus-'))state.board[i]=null;
