@@ -6,8 +6,9 @@ import { ensureCollectionState, recordItemDiscovery, recordGeneratorDiscovery, r
 import { ensureInventoryState, storeBoardItem, restoreStoredItem, recycleStoredItem, upgradeStorage } from './aaa-inventory.js';
 import { ensureDailyState, progressDailyEvent, claimDailyGoal, fulfillDailyBonus } from './aaa-daily.js';
 import { ensureGuestState, recordGuestService } from './aaa-guests.js';
+import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flow.js';
 
-const ensureMeta=source=>ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(source).state).state).state).state).state;
+const ensureMeta=source=>ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureFlowState(source).state).state).state).state).state).state;
 let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
 const syncEnergy=(now=Date.now())=>{
@@ -31,6 +32,9 @@ export function resetSession(){
 export function generateAt(index){
   const current=getState(),beforeEnergy=current.energy,result=generateFromSlot(current,index);
   if(result.changed){
+    const boost=applyGeneratorBoost(result.state,result.spawnedIndex);
+    result.state=boost.state;result.flow=boost.status;result.flowBoosted=boost.boosted;result.flowBoost=boost.boosted?boost:null;
+    if(boost.boosted)result.level=boost.toLevel;
     result.state=recordEnergySpend(result.state,beforeEnergy);
     const item=result.state.board[result.spawnedIndex],discovery=recordItemDiscovery(result.state,item);
     result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(item):null;result.progression=discovery.progression||null;result.mastery=discovery.mastery||null;
@@ -44,6 +48,7 @@ export function moveOrMergeAt(from,to){
   const result=moveOrMerge(getState(),from,to);
   if(result.changed){
     if(result.type==='merge'){
+      const flow=recordMergeFlow(result.state);result.state=flow.state;result.flow=flow.status;result.flowReady=flow.becameReady;
       const discovery=recordItemDiscovery(result.state,result.item);result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(result.item):null;result.progression=discovery.progression||null;result.mastery=discovery.mastery||null;
       const merged=progressDailyEvent(result.state,'merge');result.state=merged.state;
       if(discovery.changed){const discovered=progressDailyEvent(result.state,'discover');result.state=discovered.state;}

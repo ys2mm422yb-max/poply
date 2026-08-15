@@ -70,6 +70,7 @@ test('mobile Board title keeps high contrast after the final color layer',()=>{
 test('combined shell release cache key is explicit',()=>{
   const html=read('index.html');
   assert.match(html,/aaa\.css\?v=20260815-worldlife2/);
-  assert.match(html,/aaa-main\.js\?v=20260815-worldlife2/);
-  assert.match(html,/data-build="aaa-foundation-20260815-worldlife2"/);
+  assert.match(html,/aaa-flow\.css\?v=20260815-flow1/);
+  assert.match(html,/aaa-main\.js\?v=20260815-flow1/);
+  assert.match(html,/data-build="aaa-foundation-20260815-flow1"/);
 });
