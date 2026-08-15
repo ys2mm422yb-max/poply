@@ -53,3 +53,16 @@ test('AAA motion provides anticipation, delivery, reward, restoration and reduce
   assert.match(sunset,/place-unlock-reveal/);
   assert.match(sunset,/prefers-reduced-motion:reduce/);
 });
+
+test('restoration payoff layer connects all three Place worlds to the real world-hero reveal hook',async()=>{
+  const [css,index,ui]=await Promise.all([read('src/aaa-restoration-payoff.css'),read('index.html'),read('src/aaa-ui.js')]);
+  for(const place of ['place-coast','place-sunset','place-garden'])assert.match(css,new RegExp(`\\.${place}\\{[\\s\\S]*--place-payoff`));
+  assert.match(css,/\.production-place \.world-hero\.fx-restoration-reveal\{[\s\S]*restoration-scene-reveal/);
+  assert.match(css,/\.production-place \.world-hero\.fx-restoration-reveal::after\{[\s\S]*restoration-sweep/);
+  assert.match(css,/\.journey-wrap/);
+  assert.match(css,/\.journey-step\.current>span/);
+  assert.match(css,/\.restoration-reveal:not\(\.place-unlock-reveal\)/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*animation:none!important/);
+  assert.match(index,/aaa-restoration-payoff\.css\?v=20260815-restore2/);
+  assert.match(ui,/querySelector\('\.world-hero,\.scene-card'\)/);
+});
