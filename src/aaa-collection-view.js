@@ -2,6 +2,8 @@ import { ITEM_FAMILIES, GENERATORS } from './v2-game.js';
 import { artMarkup } from './aaa-art.js';
 import { canRenderSunsetArt, sunsetArtMarkup } from './aaa-sunset-art.js';
 import { canRenderGardenArt, gardenArtMarkup } from './aaa-garden-art.js';
+import { customerArtUrl } from './aaa-customers.js';
+import { GUEST_PROFILES, guestLoyalty, totalGuestVisits } from './aaa-guests.js';
 import { discoveryItemKey, isDiscovered, familyDiscoveryCount, familyMastery, totalItemDiscoveryCount } from './aaa-collection.js';
 
 const FAMILY_ORDER=['coffee','bakery','sweet','fruit','herb'];
@@ -32,6 +34,15 @@ function masteryMarkup(state,family){
   return `<div class="collection-mastery ${mastery.completed?'complete':''}" data-mastery-family="${family}"><small>${mastery.completed?'FAMILIE GEMEISTERT':'MEISTERSCHAFT'}</small><strong>${mastery.title}</strong><span>${mastery.completed?`✓ +${mastery.rewardCoins} ● verdient`:`${remaining} ${remaining===1?'Stufe':'Stufen'} bis Meister · +${mastery.rewardCoins} ●`}</span></div>`;
 }
 
+function guestSummary(state){
+  const total=totalGuestVisits(state);
+  return `<section class="collection-guests" aria-label="Stammgäste"><div class="guest-summary-head"><small>STAMMGÄSTE</small><strong>${total} Besuche</strong></div><div class="guest-summary-row">${GUEST_PROFILES.map((guest,index)=>{
+    const loyalty=guestLoyalty(state,guest.id),next=loyalty.next;
+    const nextCopy=next?`${next.visits-loyalty.visits} bis ${next.title}`:'Max';
+    return `<article class="guest-summary-card ${loyalty.complete?'complete':''}" data-guest-id="${guest.id}" title="${guest.name}: ${loyalty.title}, ${loyalty.visits} Besuche${next?`, ${nextCopy}`:''}"><img src="${customerArtUrl(index)}" alt=""><div><strong>${guest.name}</strong><span>${loyalty.title} · ${loyalty.visits}</span><small>${next?`${nextCopy} · +${next.rewardCoins} ●`:'Lieblingsgast erreicht'}</small></div></article>`;
+  }).join('')}</div></section>`;
+}
+
 function worldDiscoveries(state){
   const entries=[
     ['place:coast','Café am Meer','Place 01'],
@@ -46,6 +57,6 @@ function worldDiscoveries(state){
 }
 
 export function collectionView(state,selectedFamily='coffee'){
-  const family=ITEM_FAMILIES[selectedFamily]?selectedFamily:'coffee',count=familyDiscoveryCount(state,family),total=totalItemDiscoveryCount(state),percent=total.total?Math.round(total.found/total.total*100):0;
-  return `<main class="game-view view-collection collection-book" data-collection-family-active="${family}"><section class="collection-hero"><div><small>POPLY SAMMLUNG</small><h1>Deine Entdeckungen</h1><p>Jede neue Stufe bleibt für immer in deinem Buch.</p></div><div class="collection-total"><strong>${total.found}/${total.total}</strong><span>${percent}%</span></div></section>${familySelector(state,family)}<section class="collection-focus"><header><div><small>ITEM-FAMILIE</small><h2>${FAMILY_TITLE_COPY[family]}</h2></div>${masteryMarkup(state,family)}</header><div class="collection-tier-grid">${ITEM_FAMILIES[family].stages.map((_,index)=>tierCard(state,family,index+1)).join('')}</div></section>${worldDiscoveries(state)}</main>`;
+  const family=ITEM_FAMILIES[selectedFamily]?selectedFamily:'coffee',total=totalItemDiscoveryCount(state),percent=total.total?Math.round(total.found/total.total*100):0;
+  return `<main class="game-view view-collection collection-book" data-collection-family-active="${family}"><section class="collection-hero"><div><small>POPLY SAMMLUNG</small><h1>Deine Entdeckungen</h1><p>Items meistern. Gäste wiedersehen. Places aufbauen.</p></div><div class="collection-total"><strong>${total.found}/${total.total}</strong><span>${percent}%</span></div></section>${guestSummary(state)}${familySelector(state,family)}<section class="collection-focus"><header><div><small>ITEM-FAMILIE</small><h2>${FAMILY_TITLE_COPY[family]}</h2></div>${masteryMarkup(state,family)}</header><div class="collection-tier-grid">${ITEM_FAMILIES[family].stages.map((_,index)=>tierCard(state,family,index+1)).join('')}</div></section>${worldDiscoveries(state)}</main>`;
 }
