@@ -13,13 +13,18 @@ test('AAA UI wires distinct merge and generator game-feel states',async()=>{
   assert.match(ui,/fx-tier-up/);
 });
 
-test('AAA UI turns fulfilled jobs into delivery and reward travel feedback',async()=>{
-  const ui=await read('src/aaa-ui.js');
+test('AAA UI turns fulfilled jobs into delivery and service-sourced reward travel feedback',async()=>{
+  const [ui,css]=await Promise.all([read('src/aaa-ui.js'),read('src/aaa-motion.css')]);
   assert.match(ui,/playDelivery\(card\)/);
   assert.match(ui,/querySelectorAll\('\.need \.item-art'\)/);
-  assert.match(ui,/playRewards\(result\.rewards\)/);
+  assert.match(ui,/rewardOriginSnapshot\(card\)/);
+  assert.match(ui,/querySelector\('\.service-rewards'\)/);
+  assert.match(ui,/playRewards\(result\.rewards,rewardOrigin\)/);
+  assert.doesNotMatch(ui,/const origin=root\.querySelector\('\.resource\.star'\)/);
   assert.match(ui,/\.resource\.coin/);
   assert.match(ui,/\.mission-card/);
+  assert.match(css,/\.service-reward-origin/);
+  assert.match(css,/reward-source-pulse/);
 });
 
 test('successful builds switch to Place and resolve named unlock reveals from chapter data',async()=>{
@@ -49,6 +54,7 @@ test('AAA motion provides anticipation, delivery, reward, restoration and reduce
   assert.match(css,/restoration-sweep/);
   assert.match(css,/restoration-badge/);
   assert.match(css,/@media \(prefers-reduced-motion:reduce\)/);
+  assert.match(css,/\.delivery-flight,\.service-reward-origin,\.restoration-reveal/);
   assert.match(sunset,/\.world-hero\.fx-restoration-reveal/);
   assert.match(sunset,/place-unlock-reveal/);
   assert.match(sunset,/prefers-reduced-motion:reduce/);

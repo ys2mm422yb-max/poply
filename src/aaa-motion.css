@@ -28,8 +28,10 @@
 .delivery-flight{position:fixed!important;z-index:9999!important;width:34px!important;height:34px!important;margin:-17px 0 0 -17px!important;pointer-events:none!important;transform-origin:center;animation:delivery-flight .72s cubic-bezier(.2,.72,.16,1) both;filter:drop-shadow(0 5px 8px rgba(0,20,28,.32))}
 .delivery-flight.item-flight{border-radius:50%;background:rgba(255,248,218,.92);padding:4px}
 .delivery-flight.reward-flight{width:auto!important;height:auto!important;min-width:42px!important;margin:-12px 0 0 -21px!important;padding:4px 8px;border-radius:999px;font-weight:900;font-size:13px;white-space:nowrap}
-.delivery-flight.coin-flight{background:#ffe17a;color:#5b4210}
-.delivery-flight.star-flight{background:#fff1bb;color:#6a4810}
+.delivery-flight.coin-flight{background:#ffe17a;color:#5b4210;box-shadow:0 0 18px rgba(255,211,84,.5)}
+.delivery-flight.star-flight{background:#ffd9f2;color:#72235f;box-shadow:0 0 18px rgba(255,105,201,.42)}
+.service-reward-origin{position:fixed;z-index:9998;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,#fff8c9 0,#ffd45f 34%,#ff72c8 60%,transparent 72%);box-shadow:0 0 20px rgba(255,215,91,.72),0 0 34px rgba(255,100,196,.35);animation:reward-source-pulse .72s ease-out both}
+.service-reward-origin.fx-reward-source{animation:reward-source-pulse .72s ease-out both}
 .resource.fx-reward-arrive,.mission-card.fx-reward-arrive{animation:reward-arrive .5s cubic-bezier(.16,.9,.2,1)}
 .reward-token{position:absolute;opacity:0;pointer-events:none}
 
@@ -53,13 +55,14 @@
 @keyframes dispensed-item-land{0%{transform:scale(.42) translateY(-18%);filter:brightness(1.45)}58%{transform:scale(1.08) translateY(0);filter:brightness(1.12)}100%{transform:scale(.96);filter:drop-shadow(0 3px 2px rgba(0,20,25,.18)) saturate(1.04)}}
 @keyframes order-accept{0%{transform:scale(1)}45%{transform:scale(.97);filter:brightness(1.16)}100%{transform:scale(1.015);filter:brightness(1.06)}}
 @keyframes delivery-flight{0%{opacity:1;transform:translate(0,0) scale(1)}72%{opacity:1;transform:translate(calc(var(--travel-x)*.82),calc(var(--travel-y)*.82 - 10px)) scale(.78)}100%{opacity:0;transform:translate(var(--travel-x),var(--travel-y)) scale(.32)}}
+@keyframes reward-source-pulse{0%{opacity:0;transform:scale(.3)}24%{opacity:1;transform:scale(2.4)}65%{opacity:.8;transform:scale(1.35)}100%{opacity:0;transform:scale(3.1)}}
 @keyframes reward-arrive{0%{transform:scale(1)}42%{transform:scale(1.13);filter:brightness(1.28)}100%{transform:scale(1);filter:none}}
 @keyframes restoration-scene-reveal{0%{transform:scale(.985);filter:brightness(.74) saturate(.82)}34%{transform:scale(1.018);filter:brightness(1.28) saturate(1.16)}100%{transform:scale(1);filter:none}}
 @keyframes restoration-sweep{0%{opacity:0;transform:translateX(-85%) skewX(-12deg)}35%{opacity:1}100%{opacity:0;transform:translateX(90%) skewX(-12deg)}}
 @keyframes restoration-badge{0%{opacity:0;transform:translate(-50%,-42%) scale(.68)}22%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-58%) scale(.96)}}
 
 @media (prefers-reduced-motion:reduce){
-  .board-cell.drop-merge,.board-cell.drop-merge::before,.board-cell.fx-merge,.board-cell.fx-merge::before,.board-cell.fx-merge::after,.board-cell.fx-tier-up .item-art,.board-cell.fx-tier-up .tier,.board-cell.fx-generator-dispense,.board-cell.fx-generator-dispense .item-art,.board-cell.fx-dispensed-item,.board-cell.fx-dispensed-item .item-art,.fx-order-deliver,.delivery-flight,.resource.fx-reward-arrive,.mission-card.fx-reward-arrive,.scene-card.fx-restoration-reveal,.scene-card.fx-restoration-reveal::after,.restoration-reveal{animation:none!important;transition:none!important}
+  .board-cell.drop-merge,.board-cell.drop-merge::before,.board-cell.fx-merge,.board-cell.fx-merge::before,.board-cell.fx-merge::after,.board-cell.fx-tier-up .item-art,.board-cell.fx-tier-up .tier,.board-cell.fx-generator-dispense,.board-cell.fx-generator-dispense .item-art,.board-cell.fx-dispensed-item,.board-cell.fx-dispensed-item .item-art,.fx-order-deliver,.delivery-flight,.service-reward-origin,.resource.fx-reward-arrive,.mission-card.fx-reward-arrive,.scene-card.fx-restoration-reveal,.scene-card.fx-restoration-reveal::after,.restoration-reveal{animation:none!important;transition:none!important}
   .board-cell.drop-merge{transform:scale(1.035)}
-  .delivery-flight,.restoration-reveal,.scene-card.fx-restoration-reveal::after{display:none!important}
+  .delivery-flight,.service-reward-origin,.restoration-reveal,.scene-card.fx-restoration-reveal::after{display:none!important}
 }
