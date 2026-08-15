@@ -6,95 +6,78 @@ Durable coordination: GitHub Issue #42.
 Poply grows on two parallel tracks: real product/gameplay depth and screenshot-driven production quality. Neither track may overwrite active work from the other.
 
 ## Live product baseline
-Already live before the current parallel slices:
+Already live before the current reliability slice:
 - persistent 7×7 merge Board / Werkbank;
-- four six-tier item families across Café am Meer and Sonnenkai;
-- three generators;
+- four established six-tier item families across Café am Meer and Sonnenkai;
+- multiple generators;
 - three simultaneous customer orders with deterministic replacement-order difficulty bands;
 - exact delivery consumption + Coins + restoration Stars;
-- two six-step restoration arcs;
-- fair regenerating Energy;
-- Player XP + Levels;
+- two visible restoration arcs;
+- fair regenerating Energy plus persistent Player XP/Levels;
 - Collection / Discovery;
 - persistent Storage with permanent Coin expansion;
 - Daily Goals + fair Bonus Guest;
 - first Places world-map/revisit slice;
-- Player Milestone shelf behind the existing Level badge;
+- Player milestone/title/reward-preview progression surfaces;
 - local save/resume and migration safety;
 - CI + Mobile WebKit + screenshot self-review + canonical Pages release gates.
 
 ## Completed milestones
-### E1 — Player XP + Level — LIVE
-Persistent XP, deterministic level curve, XP from orders/restoration/discovery, Coin rewards on crossed levels, reload-safe presentation.
+### E — Player XP + Level — LIVE
+Persistent XP, deterministic level curve, XP from core progression actions and visible deterministic reward previews.
 
 ### E2 — Collection Book + discovery — LIVE
-Persistent item/generator/Place discoveries, silhouettes, one-time discovery XP and reveal.
+Persistent discoveries, silhouettes, one-time discovery progression and family presentation.
 
 ### F1 — Storage + first permanent Coin sink — LIVE
-4 starting slots, identity-safe Board ↔ Storage transfer, generators excluded, upgrades 4→6 for 200 Coins and 6→8 for 450 Coins.
+4 starting slots, identity-safe Board ↔ Storage transfer, generators excluded, permanent Coin-funded capacity expansion.
 
-### G — Daily Goals + fair return loop — LIVE via PR #43
-Three deterministic daily goals plus one Bonus Guest, no streak punishment, no forced ad, no new currency.
+### G — Daily Goals + fair return loop — LIVE
+Three deterministic daily goals plus one Bonus Guest, no streak punishment, forced ad or new currency.
 
-### H — World Map / Places first slice — LIVE via PR #48
-Café and Sonnenkai map presentation with safe completed-Place revisit and independent progress display. Active gameplay Place switching remains deferred until all generator/order semantics can be preserved safely.
+### H — World Map / Places first slice — LIVE
+Café and Sonnenkai map presentation with safe completed-Place revisit and independent progress display.
 
-### J1 — Player Milestone shelf — LIVE via PR #59
-Existing Level badge opens five long-term milestones derived from persisted orders, merges, restoration, discoveries and XP. No duplicate achievement save field or claim currency.
+### J — Player progression depth — LIVE / continuing
+Long-term milestones, cosmetic titles, next-Level reward/XP preview and related non-grindy progression cues are integrated into the existing Level sheet rather than a disconnected profile dashboard.
 
 ### K1 — Replacement-order difficulty bands — LIVE
-Replacement orders scale from visible restoration progress rather than an opaque global sequence.
+Replacement orders scale from visible restoration progress rather than opaque hidden adjustment.
 
-## Active parallel slices
-### Milestone I — Place 03 · Dachgarten — ACTIVE in PR #58
-Manual product worker owns the current Place03 files and integration.
+## Active product slice — F2 guaranteed Board recovery
+Branch: `feature/storage-recycling-recovery`.
+Start main: `6874efb534dd5539bb93703b0de4fc196f251328`.
 
-Target:
-- genuinely distinct third Place;
-- new item family and producer behavior;
-- six restoration beats;
-- new orders;
-- clear fair gameplay wrinkle rather than only higher numbers;
-- Collection/Map integration, migration safety and dedicated browser evidence.
+Player problem:
+Storage solves normal Board pressure, but a full Board plus full Storage can otherwise create a hard deadlock. Binding project rules require a fair recovery tool.
 
-No other worker may start a competing Place03 implementation while PR #58 is open.
+Contract:
+- explicit Storage Recycling mode;
+- player chooses exactly which stored item is removed;
+- deterministic tier-based Coin value is shown before removal;
+- no random deletion, hidden loss, purchase, ad, new currency or forced item choice;
+- recycling removes exactly one selected stored item and frees one Storage slot;
+- storing one chosen Board item into that new slot creates exactly one Board vacancy;
+- exact item identity, Coin reward and recovered layout persist after reload;
+- deterministic tests plus full Storage WebKit QA at 390×844 and 390×720.
 
-### J2 — Next-level reward preview — ACTIVE product-automation slice
-Contract: `docs/PLAYER_MILESTONES.md`.
-Branch/PR state is logged in Issue #42.
+## Place 03 — reopen later from fresh main
+Former PR #58 (`Milestone I: Place 03 Dachgarten`) is closed and unmerged. Its old branch is not an active integration source.
 
-Player value:
-The existing Level sheet should answer the immediate motivation question as well as the long-term one: exactly how much XP is left, which Level comes next and what deterministic reward will be paid.
+The product target still wants a genuinely distinct third Place with new content and a meaningful gameplay wrinkle, but that work must be re-planned from then-current `main` after the reliability slice, not revived wholesale from a stale draft.
 
-Scope:
-- reuse the existing `LV N` sheet, no extra navigation;
-- show target Level, exact remaining XP and existing `+100 Coins` Level reward;
-- derive all values from canonical `playerXp`, `playerProgress()` and `LEVEL_REWARD_COINS`;
-- no new save field, currency, claim flow, expiration or alternate reward schedule;
-- opening/closing is state-neutral;
-- fit both 390×844 and 390×720 above primary navigation;
-- deterministic tests + real progression WebKit evidence.
-
-Why this is safe in parallel:
-- it does not touch PR #58 Place03 domain/session/Collection/Map files;
-- it does not touch PR #55 workflow/motion/Collection-QA files;
-- it does not touch PR #60 Orders service CSS.
-
-### Milestone B — visual production quality — OPEN in parallel
+## Milestone B — visual production quality — OPEN in parallel
 Current goals remain stronger color/material identity, better item/generator differentiation, more authored Board atmosphere, stronger merge/discovery/delivery/restoration effects and less dashboard-like presentation. Generated phone screenshots remain the acceptance evidence.
 
-## Parked reliability follow-up — Board recovery beyond Storage
-Binding rules require full-board states to remain fairly recoverable. Storage solves most pressure but a future fresh slice should explicitly solve the Board-full + Storage-full deadlock without item loss, hidden deletion or monetization pressure.
+Visual workers must continue choosing files that do not overlap the active Storage/session reliability slice.
 
-An exploratory branch exists but has **no PR and is not active** because its required session integration overlaps current Place03 work. Rebuild it from then-current `main` only after the active session owner is clear.
-
-## J — Collection depth & achievements
-After J2 and Place03:
+## J — Collection depth & achievements — continuing
+Potential future slices:
 - family mastery/completion;
 - guest/customer collection;
 - Place completion badges;
 - non-grindy achievements;
-- cosmetic-only milestone rewards if they add visible value;
+- cosmetic-only milestone rewards when they add visible player value;
 - no disconnected generic profile dashboard.
 
 ## K — Economy, balancing & configuration
@@ -102,7 +85,7 @@ After J2 and Place03:
 - automated progression simulations;
 - pacing targets for Energy, merges, orders, Stars, Coins and restoration;
 - every currency must have a clear player purpose;
-- no hidden rigging/dynamic difficulty that falsifies outcomes.
+- no hidden rigging or dynamic difficulty that falsifies outcomes.
 
 ## L — Optional cloud/account layer
 Only after local schema and progression are stable: local-first, conflict-safe sync, privacy-minimal account data.
@@ -114,10 +97,10 @@ Only after base progression has enough depth. No punitive urgency, forced ads or
 Shared codebase, PWA/native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance/battery/accessibility audits.
 
 # Immediate build order
-1. Finish independent exact-head gates for J2 next-level reward preview.
-2. Let PR #58 continue Place03 without duplicate/overlapping edits.
-3. Continue visual/effects work independently through screenshot-first PRs.
-4. After Place03/session ownership clears, implement guaranteed Board-full + Storage-full recovery on a fresh main branch.
+1. Finish guaranteed Board-full + Storage-full recovery through exact-head deterministic + Mobile WebKit QA and screenshot review.
+2. Verify exact merged `main` with normal CI, Browser QA and canonical Pages.
+3. Re-read current main/open ownership and re-plan Place 03 from fresh main.
+4. Continue screenshot-first visual/effects work independently.
 5. Continue deeper J/K content/economy work.
 
 # Feature-selection rule
