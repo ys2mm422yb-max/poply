@@ -1,0 +1,68 @@
+import { getState } from './aaa-session.js';
+import { GUEST_PROFILES, GUEST_LOYALTY_MILESTONES, guestForSequence, guestLoyalty } from './aaa-guests.js';
+
+const visitTarget=loyalty=>loyalty.next?.visits??GUEST_LOYALTY_MILESTONES.at(-1).visits;
+const choiceProgress=loyalty=>`${loyalty.visits}/${visitTarget(loyalty)}`;
+
+function decorateOrders(root,state){
+  root.querySelectorAll('.customer-choice[data-select-order]').forEach(choice=>{
+    const order=state.currentOrders.find(entry=>entry.id===choice.dataset.selectOrder);
+    if(!order)return;
+    const guest=guestForSequence(order.sequence),loyalty=guestLoyalty(state,guest.id);
+    choice.dataset.guestId=guest.id;
+    choice.setAttribute('aria-label',`${guest.name}, ${order.title}, ${loyalty.title}, ${loyalty.visits} Besuche`);
+    const title=choice.querySelector('strong'),status=choice.querySelector('small');
+    if(title)title.textContent=`${guest.name} · ${order.title}`;
+    if(status){
+      const ready=choice.classList.contains('ready');
+      const existing=status.textContent?.trim()||'';
+      const task=ready?'Bereit':existing.split(' · ')[0]||existing;
+      status.textContent=`${task} · ${choiceProgress(loyalty)}`;
+      status.title=`${loyalty.title}${loyalty.next?` · ${loyalty.visitsUntilNext} bis ${loyalty.next.title}`:' · höchster Rang'}`;
+    }
+  });
+
+  root.querySelectorAll('.service-card[data-service-order]').forEach(card=>{
+    const order=state.currentOrders.find(entry=>entry.id===card.dataset.serviceOrder);
+    if(!order)return;
+    const guest=guestForSequence(order.sequence),loyalty=guestLoyalty(state,guest.id);
+    card.dataset.guestId=guest.id;
+    const label=card.querySelector('.service-customer>span');
+    if(label){
+      label.textContent=`${guest.name.toUpperCase()} · ${loyalty.title.toUpperCase()}`;
+      label.title=loyalty.next
+        ?`${loyalty.visits} Besuche · noch ${loyalty.visitsUntilNext} bis ${loyalty.next.title} (+${loyalty.next.rewardCoins} Coins)`
+        :`${loyalty.visits} Besuche · höchster Rang`;
+    }
+  });
+}
+
+export function installGuestUI(root,ui){
+  let lastSignature='';
+  let knownVisits=Object.fromEntries(GUEST_PROFILES.map(guest=>[guest.id,guestLoyalty(getState(),guest.id).visits]));
+
+  const announceMilestones=state=>{
+    for(const guest of GUEST_PROFILES){
+      const before=knownVisits[guest.id]??0,now=guestLoyalty(state,guest.id).visits;
+      if(now>before){
+        const milestone=GUEST_LOYALTY_MILESTONES.find(entry=>entry.visits>before&&entry.visits<=now);
+        if(milestone)ui?.message?.(`${guest.name}: ${milestone.title} · +${milestone.rewardCoins} Coins`);
+      }
+      knownVisits[guest.id]=now;
+    }
+  };
+
+  const decorate=()=>{
+    const state=getState();
+    const signature=`${root.dataset.view}|${state.currentOrders.map(order=>order.id).join(',')}|${GUEST_PROFILES.map(guest=>state.guestVisits?.[guest.id]??0).join(',')}`;
+    if(signature===lastSignature)return;
+    lastSignature=signature;
+    announceMilestones(state);
+    if(root.dataset.view==='orders')decorateOrders(root,state);
+  };
+
+  const observer=new MutationObserver(()=>queueMicrotask(decorate));
+  observer.observe(root,{childList:true,subtree:true});
+  decorate();
+  return {refresh:()=>{lastSignature='';decorate();},disconnect:()=>observer.disconnect()};
+}
