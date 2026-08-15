@@ -35,18 +35,18 @@ Latest exact-main verification for `19a43e897c54c8b21d447c107162dcaa8c80c73b`:
 GitHub Issue #42 remains the durable cross-worker work log.
 
 ## Open product ownership
-PR #99 `Guests: add persistent loyalty collection progression` is still open, but it is **not merge-ready**.
+Issue #115 `Guests: rebuild loyalty progression on current main` is the next defined product slice.
 
-Current audit against `main`:
-- PR #99 head: `a1e0d1c4b392f11d62e9b30139079646f6e36927`;
+Historical PR #99 is **closed without merge**. Its product idea was retained, but its stale branch was rejected after audit:
+- old head: `a1e0d1c4b392f11d62e9b30139079646f6e36927`;
 - merge base: `cabfb7797b5e8647d24499e5eb9c02f1a846dfa4`;
-- it has diverged from current `main` and is 8 commits behind / 11 commits ahead;
-- its stale diff touches `aaa-session.js`, Collection, Browser QA, `sw.js` and PWA update tests and would overwrite newer First-Session/PWA behavior if merged blindly.
+- at audit it had diverged from `main` by 8 commits behind / 11 commits ahead;
+- its stale diff touched `aaa-session.js`, Collection, Browser QA, `sw.js` and PWA update tests and could overwrite newer First-Session/PWA behavior.
 
-Therefore #99 must be closed/replaced by a fresh current-main implementation if Guest Loyalty is retained. The useful product contract can be preserved; the stale branch implementation cannot be merged as-is.
+#115 preserves only the useful Guest Loyalty contract and requires a fresh current-main implementation with current mobile screenshot review. No code from #99 may be merged wholesale.
 
 ## Current product priorities
-1. Resolve stale PR #99 safely: preserve only the Guest Loyalty product contract and rebuild it from current `main` without reverting newer code.
+1. Implement #115 from fresh current `main`: lightweight durable Mika/Nora/Sam loyalty only if it still strengthens the core Orders → relationship → Collection/world loop.
 2. Continue Milestone B visual production quality: stronger authored game-world presence, color/material identity, motion and reward payoff while reducing dashboard-like UI.
 3. Continue K economy/pacing/configuration: centralized tuning data, progression simulations and clear currency purpose across all three Places.
 4. Only then broaden Collection/world completion where it strengthens the merge → serve → build → world-change loop.
