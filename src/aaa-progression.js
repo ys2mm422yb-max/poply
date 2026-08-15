@@ -33,7 +33,7 @@ export function nextEnergyCapacityUpgrade(totalXp=0,currentMaxEnergy=BASE_MAX_EN
   const safeCurrent=Math.max(BASE_MAX_ENERGY,Number(currentMaxEnergy)||BASE_MAX_ENERGY,maxEnergyForLevel(progress.level));
   const target=Math.max(safeCurrent,maxEnergyForLevel(nextLevel));
   const gain=Math.max(0,target-safeCurrent);
-  const nextMilestone=ENERGY_CAPACITY_MILESTONES.find(entry=>entry.level>progress.level&&entry.level>=nextLevel)||null;
+  const nextMilestone=ENERGY_CAPACITY_MILESTONES.find(entry=>entry.level>progress.level)||null;
   return {level:nextLevel,gain,maxEnergy:target,nextMilestoneLevel:nextMilestone?.level||null};
 }
 
@@ -62,12 +62,14 @@ export function ensurePlayerProgress(state){
   const hasXp=Number.isFinite(Number(state?.playerXp))&&Number(state.playerXp)>=0;
   const playerXp=hasXp?Number(state.playerXp):legacyXpForState(state);
   const progress=playerProgress(playerXp);
-  const existingMax=Math.max(BASE_MAX_ENERGY,Number(state?.maxEnergy)||BASE_MAX_ENERGY);
-  const requiredMax=Math.max(existingMax,maxEnergyForLevel(progress.level));
-  if(hasXp&&requiredMax===existingMax)return {state,changed:false};
+  const rawMaxEnergy=Number(state?.maxEnergy);
+  const existingMax=Number.isFinite(rawMaxEnergy)&&rawMaxEnergy>0?rawMaxEnergy:BASE_MAX_ENERGY;
+  const requiredMax=Math.max(BASE_MAX_ENERGY,existingMax,maxEnergyForLevel(progress.level));
+  const needsMaxSync=rawMaxEnergy!==requiredMax;
+  if(hasXp&&!needsMaxSync)return {state,changed:false};
   const next=structuredClone(state);
   if(!hasXp)next.playerXp=playerXp;
-  if(requiredMax!==existingMax)next.maxEnergy=requiredMax;
+  if(needsMaxSync)next.maxEnergy=requiredMax;
   return {state:next,changed:true};
 }
 
