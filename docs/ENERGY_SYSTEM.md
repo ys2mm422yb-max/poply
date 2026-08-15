@@ -11,7 +11,7 @@ Energy should create understandable pacing without making normal return time fee
 - When below the cap, Poply restores **1 Energy every 2 minutes**.
 - Regeneration continues while the page/app is closed by using a persisted refill clock.
 - While normal Energy is full, the same deterministic two-minute intervals bank an **Energy Reserve**, up to maximal **5** points.
-- Reserve is not a new currency or manually claimed resource. It is stored overflow regeneration and is automatically used first to refill spent Energy.
+- Die Reserve ist **keine neue Währung** und keine manuell abholbare Belohnung. Sie ist nur gespeicherte Überlauf-Regeneration und wird automatisch zuerst genutzt, um verbrauchte Energy wieder aufzufüllen.
 - A real generator action is still required; Reserve never creates items by itself and never lets Energy exceed the current Max-Energy cap.
 - Spending from full Energy starts a fresh two-minute interval. Spending while already below full does not reset the running interval.
 
