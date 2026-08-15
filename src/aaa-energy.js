@@ -1,8 +1,10 @@
 export const ENERGY_REGEN_MS=2*60*1000;
 export const ENERGY_REGEN_MINUTES=2;
+export const ENERGY_RESERVE_CAP=5;
 
 const clone=value=>structuredClone(value);
 const validClock=(value,now)=>Number.isFinite(Number(value))&&Number(value)>0&&Number(value)<=now;
+const reserveValue=state=>Math.max(0,Math.min(ENERGY_RESERVE_CAP,Math.floor(Number(state?.energyReserve)||0)));
 
 export function ensureEnergyClock(inputState,now=Date.now()){
   if(validClock(inputState.energyUpdatedAt,now))return {state:inputState,changed:false};
@@ -13,35 +15,62 @@ export function regenerateEnergy(inputState,now=Date.now()){
   const ensured=ensureEnergyClock(inputState,now);
   const base=ensured.state;
   const maxEnergy=Math.max(1,Number(base.maxEnergy)||40);
-  const energy=Math.max(0,Math.min(maxEnergy,Number(base.energy)||0));
-  if(energy>=maxEnergy){
-    if(!ensured.changed&&energy===base.energy)return {state:inputState,changed:false,gained:0};
-    const state=ensured.changed?base:clone(base);state.energy=maxEnergy;return {state,changed:true,gained:0};
-  }
-  const elapsed=Math.max(0,now-Number(base.energyUpdatedAt));
+  let energy=Math.max(0,Math.min(maxEnergy,Number(base.energy)||0));
+  let reserve=reserveValue(base);
+  const reserveNeedsSync=Number(base.energyReserve)!==reserve;
+  const anchor=Number(base.energyUpdatedAt);
+  const elapsed=Math.max(0,now-anchor);
   const intervals=Math.floor(elapsed/ENERGY_REGEN_MS);
-  if(intervals<1){
-    if(!ensured.changed&&energy===base.energy)return {state:inputState,changed:false,gained:0};
-    const state=ensured.changed?base:clone(base);state.energy=energy;return {state,changed:true,gained:0};
+
+  if(energy>=maxEnergy){
+    const reserveGained=Math.min(ENERGY_RESERVE_CAP-reserve,intervals);
+    if(reserveGained>0){
+      const state=clone(base);state.energy=maxEnergy;state.energyReserve=reserve+reserveGained;
+      state.energyUpdatedAt=state.energyReserve>=ENERGY_RESERVE_CAP?now:anchor+reserveGained*ENERGY_REGEN_MS;
+      state.updatedAt=now;
+      return {state,changed:true,gained:0,reserveGained,reserveUsed:0};
+    }
+    if(!ensured.changed&&!reserveNeedsSync&&energy===base.energy)return {state:inputState,changed:false,gained:0,reserveGained:0,reserveUsed:0};
+    const state=clone(base);state.energy=maxEnergy;state.energyReserve=reserve;
+    return {state,changed:true,gained:0,reserveGained:0,reserveUsed:0};
   }
-  const gained=Math.min(maxEnergy-energy,intervals);
-  const state=clone(base);state.energy=energy+gained;
-  state.energyUpdatedAt=state.energy>=maxEnergy?now:Number(base.energyUpdatedAt)+gained*ENERGY_REGEN_MS;
+
+  const reserveUsed=Math.min(reserve,maxEnergy-energy);
+  if(reserveUsed){energy+=reserveUsed;reserve-=reserveUsed;}
+  if(energy>=maxEnergy){
+    const reserveGained=Math.min(ENERGY_RESERVE_CAP-reserve,intervals);
+    const state=clone(base);state.energy=maxEnergy;state.energyReserve=reserve+reserveGained;
+    state.energyUpdatedAt=reserveGained?state.energyReserve>=ENERGY_RESERVE_CAP?now:anchor+reserveGained*ENERGY_REGEN_MS:anchor;
+    state.updatedAt=now;
+    return {state,changed:true,gained:reserveUsed,reserveGained,reserveUsed};
+  }
+
+  if(intervals<1){
+    if(!ensured.changed&&!reserveNeedsSync&&!reserveUsed&&energy===base.energy)return {state:inputState,changed:false,gained:0,reserveGained:0,reserveUsed:0};
+    const state=clone(base);state.energy=energy;state.energyReserve=reserve;if(reserveUsed)state.updatedAt=now;
+    return {state,changed:true,gained:reserveUsed,reserveGained:0,reserveUsed};
+  }
+
+  const regenerated=Math.min(maxEnergy-energy,intervals);
+  const state=clone(base);state.energy=energy+regenerated;state.energyReserve=reserve;
+  state.energyUpdatedAt=state.energy>=maxEnergy?now:anchor+regenerated*ENERGY_REGEN_MS;
   state.updatedAt=now;
-  return {state,changed:true,gained};
+  return {state,changed:true,gained:reserveUsed+regenerated,reserveGained:0,reserveUsed};
 }
 
 export function recordEnergySpend(inputState,previousEnergy,now=Date.now()){
   const ensured=ensureEnergyClock(inputState,now);
   const state=ensured.changed?ensured.state:clone(inputState);
   const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
+  state.energyReserve=reserveValue(state);
   if(Number(previousEnergy)>=maxEnergy&&Number(state.energy)<maxEnergy)state.energyUpdatedAt=now;
   return state;
 }
 
 export function energyMsUntilNext(state,now=Date.now()){
   const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
-  if(Number(state.energy)>=maxEnergy)return 0;
+  const reserve=reserveValue(state);
+  if(Number(state.energy)>=maxEnergy&&reserve>=ENERGY_RESERVE_CAP)return 0;
   const anchor=validClock(state.energyUpdatedAt,now)?Number(state.energyUpdatedAt):now;
   const elapsed=Math.max(0,now-anchor);
   const remainder=elapsed%ENERGY_REGEN_MS;
@@ -51,11 +80,15 @@ export function energyMsUntilNext(state,now=Date.now()){
 export function energyRechargePlan(state,now=Date.now()){
   const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
   const energy=Math.max(0,Math.min(maxEnergy,Number(state.energy)||0));
-  const missing=Math.max(0,maxEnergy-energy);
-  if(missing===0)return {energy,maxEnergy,missing:0,nextMs:0,fullMs:0,fullAt:now};
-  const nextMs=energyMsUntilNext({...state,energy,maxEnergy},now);
+  const reserve=reserveValue(state);
+  const effectiveEnergy=Math.min(maxEnergy,energy+reserve);
+  const reserveUsed=Math.min(reserve,maxEnergy-energy);
+  const reserveAfter=Math.max(0,reserve-reserveUsed);
+  const missing=Math.max(0,maxEnergy-effectiveEnergy);
+  if(missing===0)return {energy:effectiveEnergy,maxEnergy,reserve:reserveAfter,missing:0,nextMs:0,fullMs:0,fullAt:now};
+  const nextMs=energyMsUntilNext({...state,energy:effectiveEnergy,energyReserve:reserveAfter,maxEnergy},now);
   const fullMs=nextMs+(missing-1)*ENERGY_REGEN_MS;
-  return {energy,maxEnergy,missing,nextMs,fullMs,fullAt:now+fullMs};
+  return {energy:effectiveEnergy,maxEnergy,reserve:reserveAfter,missing,nextMs,fullMs,fullAt:now+fullMs};
 }
 
 export function energyFullRechargeLabel(state,now=Date.now()){
@@ -67,9 +100,12 @@ export function energyFullRechargeLabel(state,now=Date.now()){
   return `Voll in ca. ${hours} Std${minutes?` ${minutes} Min`:''}`;
 }
 
+export function energyReserveLabel(state){return `Reserve ${reserveValue(state)}/${ENERGY_RESERVE_CAP}`;}
+
 export function energyStatusLabel(state,now=Date.now()){
   const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
-  if(Number(state.energy)>=maxEnergy)return `Auto · ${ENERGY_REGEN_MINUTES} Min`;
+  const reserve=reserveValue(state);
+  if(Number(state.energy)>=maxEnergy)return reserve>=ENERGY_RESERVE_CAP?`Reserve ${reserve}/${ENERGY_RESERVE_CAP}`:`Reserve ${reserve}/${ENERGY_RESERVE_CAP}`;
   const seconds=Math.max(1,Math.ceil(energyMsUntilNext(state,now)/1000));
   const minutes=Math.floor(seconds/60),rest=String(seconds%60).padStart(2,'0');
   return `+1 in ${minutes}:${rest}`;
