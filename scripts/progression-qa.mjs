@@ -76,7 +76,8 @@ try{
   await serve.click();await page.waitForTimeout(1500);
   const afterOrder=await readSave();
   assert(afterOrder.playerXp===860,`capacity order XP incorrect: ${beforeOrder.playerXp} -> ${afterOrder.playerXp}`);
-  assert(afterOrder.coins===245,`capacity level-up coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
+  assert(afterOrder.coins===270,`capacity level-up + guest milestone coin reward incorrect: ${beforeOrder.coins} -> ${afterOrder.coins}`);
+  assert(afterOrder.guestVisits?.mika===1,`capacity level-up order did not record first Mika visit: ${JSON.stringify(afterOrder.guestVisits)}`);
   assert(afterOrder.maxEnergy===45&&afterOrder.energy===45,`Level 5 did not expand/refill Energy: ${beforeOrder.energy}/${beforeOrder.maxEnergy} -> ${afterOrder.energy}/${afterOrder.maxEnergy}`);
   assert((await page.locator('.resource.energy').textContent())?.includes('45/45'),'HUD energy did not show 45/45 after capacity level-up');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'HUD did not advance to LV 5');
@@ -87,7 +88,7 @@ try{
   await assertLevelUpFits('390x844 capacity level-up');await shot('20-player-level-up-order');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(80);await assertLevelUpFits('390x720 capacity level-up');await shot('26-energy-capacity-level-up-short-safari');
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(80);
-  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy,capacityGain:5};
+  report.order={beforeXp:beforeOrder.playerXp,afterXp:afterOrder.playerXp,coins:afterOrder.coins,beforeEnergy:beforeOrder.energy,afterEnergy:afterOrder.energy,maxEnergy:afterOrder.maxEnergy,capacityGain:5,guestVisits:afterOrder.guestVisits};
 
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
   const reloadedOrder=await readSave();
