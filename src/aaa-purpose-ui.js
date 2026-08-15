@@ -50,7 +50,7 @@ function decorateOrders(root,state,goal){
   const hero=root.querySelector('.service-hero');
   const heading=hero?.querySelector('h2'),intro=hero?.querySelector('p');
   if(heading)heading.textContent=goal.ready?'Das Café ist baubereit.':'Wähle deinen nächsten Auftrag.';
-  if(intro)intro.textContent=goal.ready?`„${goal.label}“ ist bereit – jetzt bauen.`:`Noch ${goal.missing} ★ bis „${goal.label}“. Kombis bringen mehr ★.`;
+  if(intro)intro.textContent=goal.ready?`„${goal.label}“ ist bereit – jetzt bauen.`:`Noch ${goal.missing} ★ bis „${goal.label}“. Kombis bringen mehr.`;
   const goalNode=hero?.querySelector('.service-goal');
   if(goalNode){
     goalNode.classList.add('purpose-service-goal');delete goalNode.dataset.purposeGoOrders;goalNode.dataset.purposeGoPlace='';goalNode.setAttribute('role','button');goalNode.setAttribute('tabindex','0');goalNode.setAttribute('aria-label',`${goal.label}: ${goal.current} von ${goal.cost} Sterne. Place öffnen.`);
