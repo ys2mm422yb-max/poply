@@ -31,6 +31,17 @@ test('discovery UI exposes family color hook and authored spark burst',()=>{
   const source=read('src/aaa-discovery-ui.js');
   assert.match(source,/discovery-reveal family-\$\{item\.family\}/);
   assert.match(source,/class="discovery-sparks"/);
+  assert.equal((source.match(/<span><\/span>/g)||[]).length,6);
+});
+
+test('Discovery celebration gives all five families distinct one-shot light with reduced-motion safety',()=>{
+  const css=read('src/aaa-discovery-celebration.css'),html=read('index.html');
+  for(const family of ['coffee','bakery','sweet','fruit','herb'])assert.match(css,new RegExp(`discovery-reveal\\.family-${family}`));
+  assert.match(css,/poply-discovery-family-ring/);
+  assert.match(css,/poply-discovery-sheen/);
+  assert.match(css,/\.discovery-sparks span/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*animation:none!important/);
+  assert.match(html,/aaa-discovery-celebration\.css\?v=20260815-discovery2/);
 });
 
 test('Daily ribbon participates in Orders grid instead of creating a dead flexible row',()=>{

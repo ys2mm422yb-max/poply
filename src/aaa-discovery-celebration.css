@@ -1,0 +1,80 @@
+/* Discovery celebration — family-specific light and one-shot premium motion.
+   The existing six sparks remain the burst source; this layer gives the reveal itself a real family identity. */
+.discovery-reveal.family-coffee{
+  --discovery-accent:240,154,91;--discovery-main:#f09a5b;--discovery-soft:#ffd08a;--discovery-panel:#6e443b;--discovery-panel-deep:#173d49;
+}
+.discovery-reveal.family-bakery{
+  --discovery-accent:243,207,98;--discovery-main:#f3cf62;--discovery-soft:#fff0a3;--discovery-panel:#6c6037;--discovery-panel-deep:#19434a;
+}
+.discovery-reveal.family-sweet{
+  --discovery-accent:239,143,187;--discovery-main:#ef8fbb;--discovery-soft:#ffd0e6;--discovery-panel:#68445e;--discovery-panel-deep:#203a50;
+}
+.discovery-reveal.family-fruit{
+  --discovery-accent:255,151,91;--discovery-main:#ff975b;--discovery-soft:#ffd38e;--discovery-panel:#6f4b36;--discovery-panel-deep:#22494a;
+}
+.discovery-reveal.family-herb{
+  --discovery-accent:151,216,105;--discovery-main:#97d869;--discovery-soft:#dcf29d;--discovery-panel:#46613c;--discovery-panel-deep:#1d4945;
+}
+
+.discovery-reveal[class*="family-"]{
+  border-color:color-mix(in srgb,var(--discovery-main) 72%,#fff 28%)!important;
+  background:
+    radial-gradient(circle at 13% 28%,rgba(var(--discovery-accent),.42),transparent 30%),
+    radial-gradient(circle at 87% 8%,color-mix(in srgb,var(--discovery-soft) 20%,transparent),transparent 37%),
+    linear-gradient(138deg,var(--discovery-panel),#15515b 48%,var(--discovery-panel-deep))!important;
+  box-shadow:
+    0 24px 58px rgba(0,10,19,.5),
+    0 0 0 1px color-mix(in srgb,var(--discovery-main) 20%,transparent),
+    0 0 34px rgba(var(--discovery-accent),.22),
+    inset 0 1px rgba(255,255,255,.22)!important;
+}
+.discovery-reveal[class*="family-"]::after{
+  content:"";position:absolute;z-index:2;top:-38%;bottom:-38%;left:-35%;width:48%;pointer-events:none;opacity:0;
+  background:linear-gradient(106deg,transparent 8%,rgba(255,255,255,.05) 27%,rgba(255,255,255,.42) 49%,rgba(255,255,255,.08) 67%,transparent 88%);
+  transform:skewX(-16deg);mix-blend-mode:screen;
+}
+.discovery-reveal.is-visible[class*="family-"]::after{animation:poply-discovery-sheen .82s .08s ease-out both}
+
+.discovery-reveal[class*="family-"] .discovery-item::before,
+.discovery-reveal[class*="family-"] .discovery-item::after{
+  content:"";position:absolute;left:50%;top:50%;pointer-events:none;border-radius:50%;transform:translate(-50%,-50%);opacity:0;
+}
+.discovery-reveal[class*="family-"] .discovery-item::before{
+  width:82px;height:82px;border:2px solid color-mix(in srgb,var(--discovery-soft) 84%,#fff 16%);
+  box-shadow:0 0 0 5px rgba(var(--discovery-accent),.08),0 0 22px rgba(var(--discovery-accent),.32);
+}
+.discovery-reveal[class*="family-"] .discovery-item::after{
+  width:62px;height:62px;background:radial-gradient(circle,rgba(var(--discovery-accent),.26),rgba(var(--discovery-accent),.08) 50%,transparent 72%);
+  filter:blur(1px);z-index:-1;
+}
+.discovery-reveal.is-visible[class*="family-"] .discovery-item::before{animation:poply-discovery-family-ring .72s .03s cubic-bezier(.16,.9,.2,1) both}
+.discovery-reveal.is-visible[class*="family-"] .discovery-item::after{animation:poply-discovery-family-halo .8s ease-out both}
+.discovery-reveal[class*="family-"] .discovery-copy small{color:var(--discovery-soft)!important;text-shadow:0 0 12px rgba(var(--discovery-accent),.24)}
+.discovery-reveal[class*="family-"] .discovery-copy span{color:color-mix(in srgb,var(--discovery-soft) 54%,#b8ded7)!important}
+.discovery-reveal[class*="family-"] .discovery-sparks span{background:var(--discovery-main)!important;box-shadow:0 0 10px rgba(var(--discovery-accent),.9)!important}
+
+@keyframes poply-discovery-sheen{
+  0%{left:-42%;opacity:0}
+  24%{opacity:.72}
+  100%{left:112%;opacity:0}
+}
+@keyframes poply-discovery-family-ring{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.38)}
+  24%{opacity:.95}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.48)}
+}
+@keyframes poply-discovery-family-halo{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.58)}
+  30%{opacity:1}
+  100%{opacity:.18;transform:translate(-50%,-50%) scale(1.34)}
+}
+
+@media(max-height:740px){
+  .discovery-reveal[class*="family-"] .discovery-item::before{width:68px;height:68px}
+  .discovery-reveal[class*="family-"] .discovery-item::after{width:54px;height:54px}
+}
+@media(prefers-reduced-motion:reduce){
+  .discovery-reveal[class*="family-"]::after,.discovery-reveal[class*="family-"] .discovery-item::before,.discovery-reveal[class*="family-"] .discovery-item::after{animation:none!important}
+  .discovery-reveal[class*="family-"]::after,.discovery-reveal[class*="family-"] .discovery-item::before{display:none!important}
+  .discovery-reveal[class*="family-"] .discovery-item::after{opacity:.34!important;transform:translate(-50%,-50%) scale(1)!important}
+}
