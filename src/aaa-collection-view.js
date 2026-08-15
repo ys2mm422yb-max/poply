@@ -2,7 +2,7 @@ import { ITEM_FAMILIES, GENERATORS } from './v2-game.js';
 import { artMarkup } from './aaa-art.js';
 import { canRenderSunsetArt, sunsetArtMarkup } from './aaa-sunset-art.js';
 import { canRenderGardenArt, gardenArtMarkup } from './aaa-garden-art.js';
-import { discoveryItemKey, isDiscovered, familyDiscoveryCount, totalItemDiscoveryCount } from './aaa-collection.js';
+import { discoveryItemKey, isDiscovered, familyDiscoveryCount, familyMastery, totalItemDiscoveryCount } from './aaa-collection.js';
 
 const FAMILY_ORDER=['coffee','bakery','sweet','fruit','herb'];
 const FAMILY_TAB_COPY={coffee:'Getränke',bakery:'Backstube',sweet:'Süßes',fruit:'Früchte',herb:'Dachgarten'};
@@ -27,6 +27,11 @@ function tierCard(state,family,level){
   return `<article class="collection-tier ${known?'discovered':'locked'}" data-discovery-key="${key}"><div class="collection-art ${known?'':'silhouette'}">${renderArt(art)}</div><div class="collection-tier-copy"><span>STUFE ${level}</span><strong>${known?name:'???'}</strong>${known?'<small>Entdeckt</small>':'<small>Noch entdecken</small>'}</div></article>`;
 }
 
+function masteryMarkup(state,family){
+  const mastery=familyMastery(state,family),remaining=Math.max(0,mastery.total-mastery.found);
+  return `<div class="collection-mastery ${mastery.completed?'complete':''}" data-mastery-family="${family}"><small>${mastery.completed?'FAMILIE GEMEISTERT':'MEISTERSCHAFT'}</small><strong>${mastery.title}</strong><span>${mastery.completed?`✓ +${mastery.rewardCoins} ● verdient`:`${remaining} ${remaining===1?'Stufe':'Stufen'} bis Meister · +${mastery.rewardCoins} ●`}</span></div>`;
+}
+
 function worldDiscoveries(state){
   const entries=[
     ['place:coast','Café am Meer','Place 01'],
@@ -42,5 +47,5 @@ function worldDiscoveries(state){
 
 export function collectionView(state,selectedFamily='coffee'){
   const family=ITEM_FAMILIES[selectedFamily]?selectedFamily:'coffee',count=familyDiscoveryCount(state,family),total=totalItemDiscoveryCount(state),percent=total.total?Math.round(total.found/total.total*100):0;
-  return `<main class="game-view view-collection collection-book" data-collection-family-active="${family}"><section class="collection-hero"><div><small>POPLY SAMMLUNG</small><h1>Deine Entdeckungen</h1><p>Jede neue Stufe bleibt für immer in deinem Buch.</p></div><div class="collection-total"><strong>${total.found}/${total.total}</strong><span>${percent}%</span></div></section>${familySelector(state,family)}<section class="collection-focus"><header><div><small>ITEM-FAMILIE</small><h2>${FAMILY_TITLE_COPY[family]}</h2></div><strong>${count.found}/${count.total}</strong></header><div class="collection-tier-grid">${ITEM_FAMILIES[family].stages.map((_,index)=>tierCard(state,family,index+1)).join('')}</div></section>${worldDiscoveries(state)}</main>`;
+  return `<main class="game-view view-collection collection-book" data-collection-family-active="${family}"><section class="collection-hero"><div><small>POPLY SAMMLUNG</small><h1>Deine Entdeckungen</h1><p>Jede neue Stufe bleibt für immer in deinem Buch.</p></div><div class="collection-total"><strong>${total.found}/${total.total}</strong><span>${percent}%</span></div></section>${familySelector(state,family)}<section class="collection-focus"><header><div><small>ITEM-FAMILIE</small><h2>${FAMILY_TITLE_COPY[family]}</h2></div>${masteryMarkup(state,family)}</header><div class="collection-tier-grid">${ITEM_FAMILIES[family].stages.map((_,index)=>tierCard(state,family,index+1)).join('')}</div></section>${worldDiscoveries(state)}</main>`;
 }
