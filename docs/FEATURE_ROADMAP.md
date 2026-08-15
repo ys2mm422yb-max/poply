@@ -6,7 +6,7 @@ Durable coordination: GitHub Issue #42.
 Poply grows on two parallel tracks: real product/gameplay depth and screenshot-driven production quality. Neither track may overwrite active work from the other.
 
 ## Live product baseline
-Already live before the current parallel slices:
+Already live:
 - persistent 7×7 merge Board / Werkbank;
 - four six-tier item families across Café am Meer and Sonnenkai;
 - three generators;
@@ -14,12 +14,12 @@ Already live before the current parallel slices:
 - exact delivery consumption + Coins + restoration Stars;
 - two six-step restoration arcs;
 - fair regenerating Energy;
-- Player XP + Levels;
+- Player XP + Levels with deterministic next-Level reward preview;
 - Collection / Discovery;
 - persistent Storage with permanent Coin expansion;
 - Daily Goals + fair Bonus Guest;
 - first Places world-map/revisit slice;
-- Player Milestone shelf behind the existing Level badge;
+- Player Milestone shelf plus earned cosmetic title ladder behind the existing Level badge;
 - local save/resume and migration safety;
 - CI + Mobile WebKit + screenshot self-review + canonical Pages release gates.
 
@@ -42,6 +42,12 @@ Café and Sonnenkai map presentation with safe completed-Place revisit and indep
 ### J1 — Player Milestone shelf — LIVE via PR #59
 Existing Level badge opens five long-term milestones derived from persisted orders, merges, restoration, discoveries and XP. No duplicate achievement save field or claim currency.
 
+### J2 — Next-level reward preview — LIVE
+The existing Level sheet shows the next Level, exact XP remaining and the canonical deterministic `+100 Coins` Level reward. No new save state, claim flow or alternate reward schedule.
+
+### J3 — Earned cosmetic player titles — LIVE via PR #64
+Five canonical milestones now drive an earned title ladder: `Neu dabei → Gastgeber → Merge-Kenner → Place-Macher → Entdecker → Poply-Profi`. Titles are derived only from existing milestone progress, add no currency/save field, and are visible in the existing Level/milestone sheet.
+
 ### K1 — Replacement-order difficulty bands — LIVE
 Replacement orders scale from visible restoration progress rather than an opaque global sequence.
 
@@ -59,29 +65,10 @@ Target:
 
 No other worker may start a competing Place03 implementation while PR #58 is open.
 
-### J2 — Next-level reward preview — ACTIVE product-automation slice
-Contract: `docs/PLAYER_MILESTONES.md`.
-Branch/PR state is logged in Issue #42.
-
-Player value:
-The existing Level sheet should answer the immediate motivation question as well as the long-term one: exactly how much XP is left, which Level comes next and what deterministic reward will be paid.
-
-Scope:
-- reuse the existing `LV N` sheet, no extra navigation;
-- show target Level, exact remaining XP and existing `+100 Coins` Level reward;
-- derive all values from canonical `playerXp`, `playerProgress()` and `LEVEL_REWARD_COINS`;
-- no new save field, currency, claim flow, expiration or alternate reward schedule;
-- opening/closing is state-neutral;
-- fit both 390×844 and 390×720 above primary navigation;
-- deterministic tests + real progression WebKit evidence.
-
-Why this is safe in parallel:
-- it does not touch PR #58 Place03 domain/session/Collection/Map files;
-- it does not touch PR #55 workflow/motion/Collection-QA files;
-- it does not touch PR #60 Orders service CSS.
-
 ### Milestone B — visual production quality — OPEN in parallel
 Current goals remain stronger color/material identity, better item/generator differentiation, more authored Board atmosphere, stronger merge/discovery/delivery/restoration effects and less dashboard-like presentation. Generated phone screenshots remain the acceptance evidence.
+
+Active visual work is tracked through open focused PRs and Issue #42; product workers must avoid their owned presentation/test files.
 
 ## Parked reliability follow-up — Board recovery beyond Storage
 Binding rules require full-board states to remain fairly recoverable. Storage solves most pressure but a future fresh slice should explicitly solve the Board-full + Storage-full deadlock without item loss, hidden deletion or monetization pressure.
@@ -89,12 +76,12 @@ Binding rules require full-board states to remain fairly recoverable. Storage so
 An exploratory branch exists but has **no PR and is not active** because its required session integration overlaps current Place03 work. Rebuild it from then-current `main` only after the active session owner is clear.
 
 ## J — Collection depth & achievements
-After J2 and Place03:
+After Place03 and current independent slices:
 - family mastery/completion;
 - guest/customer collection;
 - Place completion badges;
 - non-grindy achievements;
-- cosmetic-only milestone rewards if they add visible value;
+- cosmetic-only milestone rewards only where they create visible value;
 - no disconnected generic profile dashboard.
 
 ## K — Economy, balancing & configuration
@@ -114,11 +101,10 @@ Only after base progression has enough depth. No punitive urgency, forced ads or
 Shared codebase, PWA/native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance/battery/accessibility audits.
 
 # Immediate build order
-1. Finish independent exact-head gates for J2 next-level reward preview.
-2. Let PR #58 continue Place03 without duplicate/overlapping edits.
-3. Continue visual/effects work independently through screenshot-first PRs.
-4. After Place03/session ownership clears, implement guaranteed Board-full + Storage-full recovery on a fresh main branch.
-5. Continue deeper J/K content/economy work.
+1. Let PR #58 finish Place03 without duplicate/overlapping edits.
+2. Continue visual/effects work independently through screenshot-first PRs.
+3. After Place03/session ownership clears, implement guaranteed Board-full + Storage-full recovery on a fresh main branch.
+4. Continue deeper J/K Collection/economy work from the then-current main.
 
 # Feature-selection rule
 Before adding a feature, answer:
