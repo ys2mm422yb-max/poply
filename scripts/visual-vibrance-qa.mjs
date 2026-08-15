@@ -56,7 +56,10 @@ try{
   await page.evaluate(()=>{const state=JSON.parse(localStorage.getItem('poply-v2-state-1'));state.placeUpgrades=['lights','counter','menu','seating','terrace','sign','sunset-lanterns'];state.stars=99;localStorage.setItem('poply-v2-state-1',JSON.stringify(state));});
   await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.place-sunset');
   const sunset=await page.evaluate(()=>{const art=document.querySelector('.world-art'),lantern=document.querySelector('.scene-upgrade.sunset-lanterns circle'),palms=document.querySelector('.sunset-palms');return {overlay:getComputedStyle(art,'::after').animationName,lantern:lantern?getComputedStyle(lantern).animationName:null,palms:palms?getComputedStyle(palms).animationName:null};});
-  assert(sunset.overlay.includes('poply-sunset-light'),`sunset ambient life is not active ${JSON.stringify(sunset)}`);assert(sunset.lantern?.includes('poply-place-lamp-glow'),`sunset lantern life is not active ${JSON.stringify(sunset)}`);assert(sunset.palms?.includes('poply-palms-sway'),`sunset palms are static ${JSON.stringify(sunset)}`);await shot('73-sunset-world-alive');
+  assert(sunset.overlay.includes('poply-sunset-light'),`sunset ambient life is not active ${JSON.stringify(sunset)}`);
+  assert(sunset.lantern?.includes('poply-lamp-warmth'),`sunset lantern authored warmth is not active ${JSON.stringify(sunset)}`);
+  assert(sunset.palms?.includes('poply-palm-sway'),`sunset authored palm motion is not active ${JSON.stringify(sunset)}`);
+  await shot('73-sunset-world-alive');
 
   await page.setViewportSize({width:390,height:720});await page.locator('.nav-tab[data-view="board"]').click();await page.waitForTimeout(120);await assertFits('vibrance board 390x720');await shot('74-vibrance-short-safari');
   report={palette,mergeFx,coast,sunset};if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
