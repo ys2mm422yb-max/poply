@@ -22,13 +22,17 @@ export function ensureFlowState(source){
   return {state,changed:true,status:flowStatus(state)};
 }
 
-export function recordMergeFlow(source){
-  const ensured=ensureFlowState(source),state=ensured.changed?ensured.state:structuredClone(source),before=flowStatus(state);
-  if(before.boostReady)return {state:ensured.state,changed:ensured.changed,becameReady:false,status:before};
-  const charge=Math.min(FLOW_THRESHOLD,before.charge+1),boostReady=charge>=FLOW_THRESHOLD;
+export function chargeFlow(source,amount=1){
+  const ensured=ensureFlowState(source),before=flowStatus(ensured.state),gain=Math.max(0,Math.floor(Number(amount)||0));
+  if(!gain||before.boostReady)return {state:ensured.state,changed:ensured.changed,gained:0,becameReady:false,status:before};
+  const charge=Math.min(FLOW_THRESHOLD,before.charge+gain),actual=charge-before.charge,boostReady=charge>=FLOW_THRESHOLD;
+  if(!actual)return {state:ensured.state,changed:ensured.changed,gained:0,becameReady:false,status:before};
+  const state=ensured.changed?structuredClone(ensured.state):structuredClone(source);
   state.mergeFlow={charge,boostReady,boostsUsed:before.boostsUsed};
-  return {state,changed:true,becameReady:boostReady,status:flowStatus(state)};
+  return {state,changed:true,gained:actual,becameReady:boostReady&&!before.boostReady,status:flowStatus(state)};
 }
+
+export function recordMergeFlow(source){return chargeFlow(source,1);}
 
 export function applyGeneratorBoost(source,spawnedIndex){
   const ensured=ensureFlowState(source),before=flowStatus(ensured.state);

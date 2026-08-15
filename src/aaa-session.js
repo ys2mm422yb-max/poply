@@ -8,8 +8,9 @@ import { ensureDailyState, progressDailyEvent, claimDailyGoal, fulfillDailyBonus
 import { ensureGuestState, recordGuestService } from './aaa-guests.js';
 import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flow.js';
 import { ensureServiceSpecials, progressServiceSpecials, awardServiceSpecialBonus } from './aaa-specials.js';
+import { ensurePlacePowerState, applyPreparationBonus, recordServicePlacePowers, replaceOrderWithGuestChoice, unlockPlacePowerForUpgrade } from './aaa-place-powers.js';
 
-const ensureMeta=source=>ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state;
+const ensureMeta=source=>ensurePlacePowerState(ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state).state;
 let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
 const collectSpecialProgress=(result,event)=>{
@@ -38,6 +39,9 @@ export function resetSession(){
 export function generateAt(index){
   const current=getState(),beforeEnergy=current.energy,result=generateFromSlot(current,index);
   if(result.changed){
+    const preparation=applyPreparationBonus(result.state,result.spawnedIndex);
+    result.state=preparation.state;result.preparation=preparation;result.preparationBoosted=preparation.boosted;
+    if(preparation.boosted)result.level=preparation.toLevel;
     const boost=applyGeneratorBoost(result.state,result.spawnedIndex);
     result.state=boost.state;result.flow=boost.status;result.flowBoosted=boost.boosted;result.flowBoost=boost.boosted?boost:null;
     if(boost.boosted)result.level=boost.toLevel;
@@ -71,6 +75,11 @@ export function storeAt(boardIndex){const result=storeBoardItem(getState(),board
 export function restoreAt(storageIndex,targetIndex=null){const result=restoreStoredItem(getState(),storageIndex,targetIndex);if(result.changed)keep(result.state);return result;}
 export function recycleStorageAt(storageIndex){const result=recycleStoredItem(getState(),storageIndex);if(result.changed)keep(result.state);return result;}
 export function expandStorage(){const result=upgradeStorage(getState());if(result.changed)keep(result.state);return result;}
+export function replaceOrder(id){
+  const result=replaceOrderWithGuestChoice(getState(),id);if(!result.changed)return result;
+  result.state=ensureServiceSpecials(result.state).state;result.replacement=structuredClone(result.state.currentOrders.find(order=>order.id===result.replacement.id));
+  keep(result.state);return result;
+}
 export function deliverOrder(id){
   const current=getState(),order=current.currentOrders.find(entry=>entry.id===id);
   const result=fulfillOrder(current,id);
@@ -84,6 +93,7 @@ export function deliverOrder(id){
   result.state=progressDailyEvent(result.state,'serve').state;
   const guest=recordGuestService(result.state,order.sequence);
   result.state=guest.state;result.guest=guest;
+  const powers=recordServicePlacePowers(result.state,order);result.state=powers.state;result.placePowers=powers.effects;result.placePowerStatus=powers.status;
   keep(result.state);return result;
 }
 export function buildUpgrade(){
@@ -98,6 +108,7 @@ export function buildUpgrade(){
     if(generatorId){const generator=recordGeneratorDiscovery(result.state,generatorId);result.state=generator.state;if(generator.changed)discoveries.push(generator.key);}
   }
   result.state=progressDailyEvent(result.state,'restore').state;
+  const power=unlockPlacePowerForUpgrade(result.state,result.upgrade.id);result.state=power.state;result.placePower=power.power;result.placePowerStatus=power.status;
   result.discoveries=discoveries;keep(result.state);return result;
 }
 export function claimTodayGoal(goalId){const result=claimDailyGoal(getState(),goalId);if(result.changed)keep(result.state);return result;}
