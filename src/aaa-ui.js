@@ -34,12 +34,19 @@ export function createUI(root,toast){
     const target=orderElement?.querySelector('.service-avatar,.board-job-avatar,.avatar,.focus-avatar')||orderElement;
     orderElement?.classList.add('fx-order-deliver');orderElement?.querySelectorAll('.need .item-art').forEach((item,index)=>flyNode(item,target,'item-flight',index*55));
   };
-  const playRewards=rewards=>requestAnimationFrame(()=>{
+  const rewardOriginSnapshot=orderElement=>{
+    const source=orderElement?.querySelector('.service-rewards')||orderElement?.querySelector('.service-customer')||orderElement;
+    if(!source)return null;
+    const rect=source.getBoundingClientRect(),node=document.createElement('span');
+    node.className='service-reward-origin';node.setAttribute('aria-hidden','true');node.style.left=`${rect.left+rect.width/2}px`;node.style.top=`${rect.top+rect.height/2}px`;
+    document.body.append(node);setTimeout(()=>node.remove(),1400);return node;
+  };
+  const playRewards=(rewards,origin)=>requestAnimationFrame(()=>{
     playFeedback('reward');
-    const origin=root.querySelector('.resource.star')||root.querySelector('.mission-card'),starTarget=root.querySelector('.mission-card,.service-goal'),coinTarget=root.querySelector('.resource.coin');
-    if(origin&&coinTarget){const token=document.createElement('span');token.className='reward-token coin-token';token.textContent=`+${rewards.coins} ●`;origin.append(token);flyNode(token,coinTarget,'reward-flight coin-flight',0);token.remove();}
-    if(origin&&starTarget){const token=document.createElement('span');token.className='reward-token star-token';token.textContent=`+${rewards.stars} ★`;origin.append(token);flyNode(token,starTarget,'reward-flight star-flight',90);token.remove();}
-    setTimeout(()=>{coinTarget?.classList.add('fx-reward-arrive');starTarget?.classList.add('fx-reward-arrive');},620);
+    const source=origin||root.querySelector('.service-rewards,.service-customer'),starTarget=root.querySelector('.mission-card,.service-goal'),coinTarget=root.querySelector('.resource.coin');
+    if(source&&coinTarget){const token=document.createElement('span');token.className='reward-token coin-token';token.textContent=`+${rewards.coins} ●`;source.append(token);flyNode(token,coinTarget,'reward-flight coin-flight',0);token.remove();}
+    if(source&&starTarget){const token=document.createElement('span');token.className='reward-token star-token';token.textContent=`+${rewards.stars} ★`;source.append(token);flyNode(token,starTarget,'reward-flight star-flight',90);token.remove();}
+    source?.classList.add('fx-reward-source');setTimeout(()=>{coinTarget?.classList.add('fx-reward-arrive');starTarget?.classList.add('fx-reward-arrive');},620);
   });
   const playRestorationReveal=(upgrade,unlockedPlace=null)=>requestAnimationFrame(()=>{
     const scene=root.querySelector('.world-hero,.scene-card');if(!scene)return;
@@ -80,9 +87,9 @@ export function createUI(root,toast){
       const card=order.closest('.service-card,.board-job,.mini-order,.focus-order'),orderId=order.dataset.order,result=deliverOrder(orderId);
       if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}
       else{
-        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP`);
+        const rewardOrigin=rewardOriginSnapshot(card);playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP`);
         if(selectedOrderId===orderId)selectedOrderId=null;
-        setTimeout(()=>{render();playRewards(result.rewards);emitProgression(result,'order');},320);
+        setTimeout(()=>{render();playRewards(result.rewards,rewardOrigin);emitProgression(result,'order');},320);
       }
       return;
     }
