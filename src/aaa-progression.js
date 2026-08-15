@@ -37,6 +37,22 @@ export function nextEnergyCapacityUpgrade(totalXp=0,currentMaxEnergy=BASE_MAX_EN
   return {level:nextLevel,gain,maxEnergy:target,nextMilestoneLevel:nextMilestone?.level||null};
 }
 
+export function energyCapacityRoadmap(totalXp=0,currentMaxEnergy=BASE_MAX_ENERGY){
+  const progress=playerProgress(totalXp);
+  const safeCurrent=Math.max(BASE_MAX_ENERGY,Number(currentMaxEnergy)||BASE_MAX_ENERGY,maxEnergyForLevel(progress.level));
+  const nextMilestone=ENERGY_CAPACITY_MILESTONES.find(entry=>entry.level>progress.level&&maxEnergyForLevel(entry.level)>safeCurrent)||null;
+  if(!nextMilestone)return {currentMaxEnergy:safeCurrent,nextMilestoneLevel:null,nextMaxEnergy:safeCurrent,gain:0,levelsAway:0,complete:true};
+  const nextMaxEnergy=maxEnergyForLevel(nextMilestone.level);
+  return {
+    currentMaxEnergy:safeCurrent,
+    nextMilestoneLevel:nextMilestone.level,
+    nextMaxEnergy,
+    gain:Math.max(0,nextMaxEnergy-safeCurrent),
+    levelsAway:Math.max(0,nextMilestone.level-progress.level),
+    complete:false
+  };
+}
+
 export function nextLevelRewardPreview(totalXp=0,currentMaxEnergy=BASE_MAX_ENERGY){
   const progress=playerProgress(totalXp),capacity=nextEnergyCapacityUpgrade(totalXp,currentMaxEnergy);
   return {

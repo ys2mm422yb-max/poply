@@ -1,5 +1,5 @@
 import { getState } from './aaa-session.js';
-import { playerProgress, nextLevelRewardPreview } from './aaa-progression.js';
+import { playerProgress, nextLevelRewardPreview, energyCapacityRoadmap } from './aaa-progression.js';
 import { playerMilestones, completedMilestoneCount, playerTitleProgress, placeCompletionBadges, completedPlaceBadgeCount } from './aaa-milestones.js';
 
 const safeRemove=node=>{if(node?.isConnected)node.remove();};
@@ -8,16 +8,17 @@ const checkIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.
 export function installPlayerUI(root){
   let overlayTimer=0,levelDelayTimer=0,milestonesOpen=false,decorating=false;
   const milestoneData=state=>playerMilestones(state);
-  const milestoneSignature=(milestones,preview,title,badges)=>`${milestones.map(entry=>`${entry.id}:${entry.current}:${entry.complete?'1':'0'}`).join('|')}|next:${preview.level}:${preview.remainingXp}:${preview.rewardEnergy}:${preview.rewardMaxEnergyGain}|title:${title.current.rank}|places:${badges.map(entry=>`${entry.id}:${entry.completedSteps}:${entry.complete?'1':'0'}`).join(',')}`;
-  const nextLevelMarkup=preview=>`<div class="next-level-preview" aria-label="Nächstes Level ${preview.level}, ${preview.remainingXp} XP fehlen, ${preview.rewardCoins} Coins und volle Energie als Belohnung${preview.rewardMaxEnergyGain?`, plus ${preview.rewardMaxEnergyGain} Max-Energie`:''}"><span class="next-level-orb">LV ${preview.level}</span><div class="next-level-copy"><small>NÄCHSTES LEVEL</small><strong>${preview.remainingXp} XP fehlen</strong><div class="next-level-track"><i style="width:${Math.round(preview.ratio*100)}%"></i></div></div><div class="next-level-reward"><small>${preview.rewardMaxEnergyGain?`BELOHNUNG · MAX +${preview.rewardMaxEnergyGain}`:'BELOHNUNG'}</small><strong>+${preview.rewardCoins}</strong><span>Coins · Energie voll</span></div></div>`;
+  const milestoneSignature=(milestones,preview,capacity,title,badges)=>`${milestones.map(entry=>`${entry.id}:${entry.current}:${entry.complete?'1':'0'}`).join('|')}|next:${preview.level}:${preview.remainingXp}:${preview.rewardEnergy}:${preview.rewardMaxEnergyGain}|capacity:${capacity.currentMaxEnergy}:${capacity.nextMilestoneLevel||'max'}:${capacity.nextMaxEnergy}|title:${title.current.rank}|places:${badges.map(entry=>`${entry.id}:${entry.completedSteps}:${entry.complete?'1':'0'}`).join(',')}`;
+  const capacityText=capacity=>capacity.complete?`MAX ${capacity.currentMaxEnergy} · VOLL`:`MAX ${capacity.currentMaxEnergy} → ${capacity.nextMaxEnergy} · +${capacity.gain} BEI LV ${capacity.nextMilestoneLevel}`;
+  const nextLevelMarkup=(preview,capacity)=>`<div class="next-level-preview" aria-label="Nächstes Level ${preview.level}, ${preview.remainingXp} XP fehlen, ${preview.rewardCoins} Coins und volle Energie als Belohnung${preview.rewardMaxEnergyGain?`, plus ${preview.rewardMaxEnergyGain} Max-Energie`:''}. Max-Energie ${capacity.complete?`${capacity.currentMaxEnergy}, vollständig ausgebaut`:`${capacity.currentMaxEnergy}, nächste Erhöhung auf ${capacity.nextMaxEnergy} bei Level ${capacity.nextMilestoneLevel}`}"><span class="next-level-orb">LV ${preview.level}</span><div class="next-level-copy"><small>NÄCHSTES LEVEL</small><strong>${preview.remainingXp} XP fehlen</strong><div class="next-level-track"><i style="width:${Math.round(preview.ratio*100)}%"></i></div><small>${capacityText(capacity)}</small></div><div class="next-level-reward"><small>${preview.rewardMaxEnergyGain?`BELOHNUNG · MAX +${preview.rewardMaxEnergyGain}`:'BELOHNUNG'}</small><strong>+${preview.rewardCoins}</strong><span>Coins · Energie voll</span></div></div>`;
   const titleMarkup=title=>`<div class="player-title-line" aria-label="Spielertitel ${title.current.label}"><span>DEIN TITEL</span><strong>${title.current.label}</strong>${title.next?`<small>Nächster: ${title.next.label}</small>`:'<small>Höchster Titel erreicht</small>'}</div>`;
   const placeBadgesMarkup=badges=>{
     const completed=badges.filter(entry=>entry.complete).length;
     return `<section class="place-badge-shelf" aria-label="Place-Abzeichen ${completed} von ${badges.length}"><header><span>DEINE PLACES</span><b>${completed}/${badges.length}</b></header><div class="place-badge-list">${badges.map(entry=>`<div class="place-badge ${entry.complete?'complete':entry.unlocked?'in-progress':'locked'}" aria-label="Place ${entry.number} ${entry.label}: ${entry.complete?'Abzeichen verdient':entry.unlocked?`${entry.completedSteps} von ${entry.totalSteps} Ausbauten`:'noch gesperrt'}"><span class="place-badge-emblem">${entry.complete?checkIcon:`0${entry.number}`}</span><div><strong>${entry.shortLabel}</strong><small>${entry.complete?'Abzeichen verdient':entry.unlocked?`${entry.completedSteps}/${entry.totalSteps} Ausbau`:'Noch gesperrt'}</small></div></div>`).join('')}</div></section>`;
   };
-  const milestoneMarkup=(milestones,signature,preview,title,badges)=>{
+  const milestoneMarkup=(milestones,signature,preview,capacity,title,badges)=>{
     const done=milestones.filter(entry=>entry.complete).length;
-    return `<section class="player-progress-sheet" data-signature="${signature}" aria-label="Spielerfortschritt"><header><div><small>DEIN FORTSCHRITT</small><strong>${done}/${milestones.length} Meilensteine</strong></div><button data-player-progress-close aria-label="Fortschritt schließen">×</button></header>${titleMarkup(title)}${placeBadgesMarkup(badges)}${nextLevelMarkup(preview)}<div class="milestone-list">${milestones.map(entry=>`<article class="milestone-row ${entry.complete?'complete':''}"><span class="milestone-mark">${entry.complete?checkIcon:`${entry.current}`}</span><div class="milestone-copy"><strong>${entry.label}</strong><small>${entry.detail}</small><div class="milestone-track"><i style="width:${Math.round(entry.ratio*100)}%"></i></div></div><b>${entry.complete?'Fertig':`${entry.current}/${entry.target}`}</b></article>`).join('')}</div></section>`;
+    return `<section class="player-progress-sheet" data-signature="${signature}" aria-label="Spielerfortschritt"><header><div><small>DEIN FORTSCHRITT</small><strong>${done}/${milestones.length} Meilensteine</strong></div><button data-player-progress-close aria-label="Fortschritt schließen">×</button></header>${titleMarkup(title)}${placeBadgesMarkup(badges)}${nextLevelMarkup(preview,capacity)}<div class="milestone-list">${milestones.map(entry=>`<article class="milestone-row ${entry.complete?'complete':''}"><span class="milestone-mark">${entry.complete?checkIcon:`${entry.current}`}</span><div class="milestone-copy"><strong>${entry.label}</strong><small>${entry.detail}</small><div class="milestone-track"><i style="width:${Math.round(entry.ratio*100)}%"></i></div></div><b>${entry.complete?'Fertig':`${entry.current}/${entry.target}`}</b></article>`).join('')}</div></section>`;
   };
   const decorate=()=>{
     if(decorating)return;decorating=true;
@@ -37,9 +38,9 @@ export function installPlayerUI(root){
       track.setAttribute('aria-label',track.title);
       const existing=root.querySelector('.player-progress-sheet');
       if(!milestonesOpen){existing?.remove();return;}
-      const milestones=milestoneData(state),preview=nextLevelRewardPreview(state.playerXp,state.maxEnergy),badges=placeCompletionBadges(state),signature=milestoneSignature(milestones,preview,title,badges);
+      const milestones=milestoneData(state),preview=nextLevelRewardPreview(state.playerXp,state.maxEnergy),capacity=energyCapacityRoadmap(state.playerXp,state.maxEnergy),badges=placeCompletionBadges(state),signature=milestoneSignature(milestones,preview,capacity,title,badges);
       if(existing?.dataset.signature===signature)return;
-      existing?.remove();topbar.insertAdjacentHTML('afterend',milestoneMarkup(milestones,signature,preview,title,badges));
+      existing?.remove();topbar.insertAdjacentHTML('afterend',milestoneMarkup(milestones,signature,preview,capacity,title,badges));
     }finally{decorating=false;}
   };
   const revealLevelUp=progression=>{
