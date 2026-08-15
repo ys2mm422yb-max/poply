@@ -5,8 +5,9 @@ import { ensurePlayerProgress, awardPlayerXp, xpForOrder, xpForRestoration } fro
 import { ensureCollectionState, recordItemDiscovery, recordGeneratorDiscovery, recordPlaceDiscovery } from './aaa-collection.js';
 import { ensureInventoryState, storeBoardItem, restoreStoredItem, recycleStoredItem, upgradeStorage } from './aaa-inventory.js';
 import { ensureDailyState, progressDailyEvent, claimDailyGoal, fulfillDailyBonus } from './aaa-daily.js';
+import { ensureGuestState, recordGuestService } from './aaa-guests.js';
 
-const ensureMeta=source=>ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(source).state).state).state).state;
+const ensureMeta=source=>ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(source).state).state).state).state).state;
 let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
 const syncEnergy=(now=Date.now())=>{
@@ -62,6 +63,7 @@ export function deliverOrder(id){
   const progression=awardPlayerXp(result.state,xpForOrder(order));
   result.state=progression.state;result.progression=progression;
   result.state=progressDailyEvent(result.state,'serve').state;
+  const guest=recordGuestService(result.state,order.sequence);result.state=guest.state;result.guest=guest;
   keep(result.state);return result;
 }
 export function buildUpgrade(){
@@ -82,6 +84,8 @@ export function claimTodayGoal(goalId){const result=claimDailyGoal(getState(),go
 export function serveDailyGuest(){
   const result=fulfillDailyBonus(getState());if(!result.changed)return result;
   const progression=awardPlayerXp(result.state,xpForOrder(result.order));result.state=progression.state;result.progression=progression;
-  result.state=progressDailyEvent(result.state,'serve').state;keep(result.state);return result;
+  result.state=progressDailyEvent(result.state,'serve').state;
+  const guest=recordGuestService(result.state,result.order.sequence);result.state=guest.state;result.guest=guest;
+  keep(result.state);return result;
 }
 saveGameState(state);
