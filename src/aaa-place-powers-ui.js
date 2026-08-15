@@ -2,17 +2,16 @@ import { getState, replaceOrder } from './aaa-session.js';
 import { purposeGoal } from './aaa-purpose.js';
 import { placePowerForUpgrade, placePowerStatus, unlockedPlacePowers } from './aaa-place-powers.js';
 
-const bolt='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13.2 2-7 10.1h4.5L10.1 22l7.7-11h-4.6V2Z" fill="currentColor"/></svg>';
 const swap='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11l-2.6-2.6M19 17H8l2.6 2.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function decoratePlace(root,state){
-  const goal=purposeGoal(state),power=placePowerForUpgrade(goal.upgrade?.id);
-  root.querySelectorAll('.place-power-preview').forEach(node=>node.remove());
-  if(!power)return;
-  const copy=root.querySelector('.place-current-goal .goal-copy');if(!copy)return;
-  const panel=document.createElement('div');panel.className='place-power-preview';panel.dataset.power=power.key;
-  panel.innerHTML=`<span class="place-power-emblem">${bolt}</span><span><small>NEUE FÄHIGKEIT</small><strong>${power.label}</strong><em>${power.copy}</em></span>`;
-  const after=copy.querySelector('.purpose-after');if(after)copy.insertBefore(panel,after);else copy.append(panel);
+  const goal=purposeGoal(state),power=placePowerForUpgrade(goal.upgrade?.id),unlock=root.querySelector('.place-current-goal .purpose-place-unlock');
+  root.querySelectorAll('.place-power-inline').forEach(node=>node.remove());
+  root.querySelector('.place-current-goal')?.classList.toggle('has-place-power-preview',Boolean(power));
+  if(!power||!unlock)return;
+  const strong=unlock.querySelector('strong');if(!strong)return;
+  const inline=document.createElement('em');inline.className='place-power-inline';inline.dataset.power=power.key;inline.textContent=` · Fähigkeit: ${power.label} — ${power.short}`;strong.append(inline);
+  unlock.setAttribute('aria-label',`${unlock.textContent}. Neue Fähigkeit ${power.label}: ${power.copy}`);
 }
 
 function decorateBoard(root,state){
@@ -21,7 +20,7 @@ function decorateBoard(root,state){
   board.classList.toggle('place-prep-ready',status.prepReady);
   let hud=lead?.querySelector('.place-prep-hud');
   if(status.prepReady&&lead){
-    if(!hud){hud=document.createElement('span');hud.className='place-prep-hud';hud.innerHTML=`<b>THEKE</b><small>+1 nächster Drop</small>`;lead.append(hud);}
+    if(!hud){hud=document.createElement('span');hud.className='place-prep-hud';hud.innerHTML='<b>THEKE</b><small>+1 nächster Drop</small>';lead.append(hud);}
   }else hud?.remove();
   board.querySelectorAll('.board-cell.generator').forEach(cell=>{
     cell.classList.toggle('prep-boost-target',status.prepReady);
@@ -37,6 +36,7 @@ function decorateBoard(root,state){
 
 function decorateOrders(root,state){
   root.querySelectorAll('.place-power-reroll').forEach(node=>node.remove());
+  root.querySelectorAll('.service-card.guest-choice-ready').forEach(node=>node.classList.remove('guest-choice-ready'));
   const status=placePowerStatus(state);if(!status.menuChoiceReady)return;
   const card=root.querySelector('.service-card[data-service-order]');if(!card)return;
   const purpose=card.querySelector('.service-purpose');if(!purpose)return;
