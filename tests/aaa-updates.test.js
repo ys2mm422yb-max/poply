@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { fetchReleaseSha, releaseUrl, shouldReloadForRelease } from '../src/aaa-updates.js';
+import { fetchReleaseSha, releasePollingForWindow, releaseUrl, shouldReloadForRelease } from '../src/aaa-updates.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
@@ -11,6 +11,13 @@ test('release comparison reloads only for a real newer canonical release',()=>{
   assert.equal(shouldReloadForRelease(null,'def'),false);
   assert.equal(shouldReloadForRelease('development','def'),false);
   assert.equal(shouldReloadForRelease('abc','development'),false);
+});
+
+test('automatic release polling is production HTTPS behavior, not local QA traffic',()=>{
+  assert.equal(releasePollingForWindow({location:{protocol:'https:'}}),true);
+  assert.equal(releasePollingForWindow({location:{protocol:'http:'}}),false);
+  assert.equal(releasePollingForWindow({location:{protocol:'file:'}}),false);
+  assert.equal(releasePollingForWindow(null),false);
 });
 
 test('release marker URL stays on the app origin and preserves the GitHub Pages subpath',()=>{
@@ -27,13 +34,15 @@ test('release marker reader requires a non-empty SHA and uses an absolute same-o
   assert.equal(await fetchReleaseSha(async()=>({ok:false,json:async()=>({sha:'abc'})}),'https://example.test/poply/src/aaa-updates.js'),null);
 });
 
-test('installed Poply app uses stable identity and network-first automatic updates',async()=>{
+test('installed Poply app uses stable identity and deployed-only release polling',async()=>{
   const [manifest,main,updates,worker,pages,release]=await Promise.all([
     read('manifest.webmanifest'),read('src/aaa-main.js'),read('src/aaa-updates.js'),read('sw.js'),read('.github/workflows/pages.yml'),read('release.json')
   ]);
   assert.equal(JSON.parse(manifest).id,'./');
   assert.match(main,/installAppUpdates\(\)\.catch/);
   assert.match(updates,/serviceWorker\.register\('\.\/sw\.js',\{scope:'\.\/',updateViaCache:'none'\}\)/);
+  assert.match(updates,/location\?\.protocol==='https:'/);
+  assert.match(updates,/if\(releasePolling\)/);
   assert.match(updates,/new URL\('\.\.\/release\.json',moduleUrl\)\.href/);
   assert.match(updates,/visibilitychange/);
   assert.match(updates,/windowObj\.location\.reload\(\)/);
