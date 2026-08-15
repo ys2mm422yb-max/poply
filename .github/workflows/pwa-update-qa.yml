@@ -1,0 +1,48 @@
+name: PWA Update QA
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  pwa-update-webkit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright WebKit for PWA QA
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps webkit
+      - name: Start static app
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/poply-http.log 2>&1 &
+          echo $! > /tmp/poply-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/poply-http.log
+          exit 1
+      - name: Prove automatic installed-app updates
+        env:
+          QA_BASE_URL: http://127.0.0.1:4173
+          QA_OUT_DIR: qa-artifacts
+          QA_SERVER_PID_FILE: /tmp/poply-http.pid
+        run: node scripts/pwa-update-qa.mjs
+      - name: Upload PWA QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pwa-update-qa
+          path: qa-artifacts/pwa-update-report.json
+          if-no-files-found: error
+          retention-days: 7
