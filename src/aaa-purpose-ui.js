@@ -64,10 +64,14 @@ function decorateOrders(root,state,goal){
     let badge=service.querySelector('.service-strategy');if(!badge){badge=document.createElement('span');badge.className='service-strategy';service.querySelector('.service-heading')?.prepend(badge);}if(badge)badge.textContent=strategyLabel(order);
     const purpose=service.querySelector('.service-purpose p');
     if(purpose){
-      const stars=Number(order.rewards?.stars)||0,projected=Math.max(0,goal.missing-stars);
-      purpose.innerHTML=projected===0
-        ?`<strong>+${stars} ★</strong> macht „${goal.label}“ baubereit.`
-        :`<strong>+${stars} ★</strong> für „${goal.label}“ · danach noch ${projected} ★.`;
+      const stars=Number(order.rewards?.stars)||0;
+      if(goal.ready)purpose.innerHTML=`<strong>+${stars} ★</strong> bleiben dir für danach.`;
+      else{
+        const projected=Math.max(0,goal.missing-stars);
+        purpose.innerHTML=projected===0
+          ?`<strong>+${stars} ★</strong> macht „${goal.label}“ baubereit.`
+          :`<strong>+${stars} ★</strong> für „${goal.label}“ · danach noch ${projected} ★.`;
+      }
     }
   });
 }
