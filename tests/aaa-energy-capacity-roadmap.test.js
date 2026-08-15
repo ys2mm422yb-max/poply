@@ -25,7 +25,7 @@ test('Energy capacity roadmap advances to the next unearned capacity milestone',
 });
 
 test('Energy capacity roadmap is complete after the final milestone and respects larger legacy caps',()=>{
-  const level15Xp=6600;
+  const level15Xp=7140;
   assert.deepEqual(energyCapacityRoadmap(level15Xp,55),{
     currentMaxEnergy:55,
     nextMilestoneLevel:null,
