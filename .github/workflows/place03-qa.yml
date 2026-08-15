@@ -1,0 +1,67 @@
+name: Place 03 QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/place03-qa.mjs'
+      - 'tests/**'
+      - 'index.html'
+      - '.github/workflows/place03-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/place03-qa.mjs'
+      - 'tests/**'
+      - 'index.html'
+      - '.github/workflows/place03-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  place03-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Syntax-check dedicated Place 03 flow
+        run: node --check scripts/place03-qa.mjs
+      - name: Install Playwright WebKit for QA
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps webkit
+      - name: Start static app
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/poply-place03-http.log 2>&1 &
+          echo $! >/tmp/poply-place03-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/poply-place03-http.log
+          exit 1
+      - name: Run dedicated Place 03 WebKit flow
+        env:
+          QA_BASE_URL: http://127.0.0.1:4173
+          QA_OUT_DIR: qa-artifacts-place03
+        run: node scripts/place03-qa.mjs
+      - name: Print Place 03 QA report
+        if: always()
+        run: |
+          if [ -f qa-artifacts-place03/place03-report.json ]; then cat qa-artifacts-place03/place03-report.json; fi
+      - name: Upload Place 03 screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: place03-webkit-qa
+          path: qa-artifacts-place03/
+          if-no-files-found: error
+          retention-days: 7

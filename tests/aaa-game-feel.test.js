@@ -22,13 +22,17 @@ test('AAA UI turns fulfilled jobs into delivery and reward travel feedback',asyn
   assert.match(ui,/\.mission-card/);
 });
 
-test('successful builds switch to Place and support named Place unlock reveals',async()=>{
-  const ui=await read('src/aaa-ui.js');
+test('successful builds switch to Place and resolve named unlock reveals from chapter data',async()=>{
+  const [ui,game]=await Promise.all([read('src/aaa-ui.js'),read('src/v2-game.js')]);
   assert.match(ui,/playRestorationReveal=\(upgrade,unlockedPlace=null\)/);
   assert.match(ui,/view='place';menuOpen=false;render\(\);playRestorationReveal\(result\.upgrade,result\.unlockedPlace\)/);
   assert.match(ui,/AUSBAU FERTIG/);
   assert.match(ui,/NEUER PLACE FREIGESCHALTET/);
-  assert.match(ui,/Sonnenkai/);
+  assert.match(ui,/PLACE_CHAPTERS\.find\(entry=>entry\.id===unlockedPlace\)/);
+  assert.match(ui,/0\$\{chapter\.number\}/);
+  assert.match(ui,/chapter\.label/);
+  assert.match(game,/label:'Sonnenkai'/);
+  assert.match(game,/label:'Dachgarten'/);
   assert.match(ui,/fx-restoration-reveal/);
 });
 
