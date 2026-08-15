@@ -40,7 +40,10 @@ test('installed Poply app uses stable identity and deployed-only release polling
   ]);
   assert.equal(JSON.parse(manifest).id,'./');
   assert.match(main,/installAppUpdates\(\)\.catch/);
-  assert.match(updates,/serviceWorker\.register\('\.\/sw\.js',\{scope:'\.\/',updateViaCache:'none'\}\)/);
+  assert.match(updates,/const documentBase=documentObj\.baseURI\|\|windowObj\.location\?\.href/);
+  assert.match(updates,/const workerUrl=new URL\('\.\/sw\.js',documentBase\)\.href/);
+  assert.match(updates,/const workerScope=new URL\('\.\/',documentBase\)\.href/);
+  assert.match(updates,/serviceWorker\.register\(workerUrl,\{scope:workerScope,updateViaCache:'none'\}\)/);
   assert.match(updates,/location\?\.protocol==='https:'/);
   assert.match(updates,/if\(releasePolling\)/);
   assert.match(updates,/new URL\('\.\.\/release\.json',moduleUrl\)\.href/);
