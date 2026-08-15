@@ -101,7 +101,8 @@ export function createUI(root,toast){
   const spawn=index=>{
     const result=generateAt(index);
     if(!result.changed){playFeedback('invalid');message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
-    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex,boosted:result.flowBoosted};playFeedback(result.flowBoosted?'reward':'spawn');
+    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex,boosted:result.flowBoosted};
+    if(result.flowBoosted)playFeedback('reward');else playFeedback('spawn');
     message(result.flowBoosted?'FLOW-BOOST! Stärkerer Drop.':result.mastery?`Familie gemeistert! +${result.mastery.rewardCoins} Coins`:result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item');
     render();emitDiscovery(result);
   };
