@@ -1,6 +1,7 @@
 import { itemMarkup } from './aaa-view.js';
 import { getState, moveOrMergeAt } from './aaa-session.js';
 import { canMerge } from './v2-game.js';
+import { serviceSpecialUpdateText } from './aaa-specials.js';
 
 export function installDrag({root,ghost,ui}){
   let drag=null;
@@ -39,7 +40,8 @@ export function installDrag({root,ghost,ui}){
         ui.setFx({type:result.type,sourceIndex:from,index:result.type==='merge'?result.mergedIndex:to});
         ui.render();
         if(result.flowReady)ui.feedback('reward');else ui.feedback(result.type==='merge'?'merge':'move');
-        const mergeMessage=result.flowReady?'FLOW VOLL – Generator für Boost wählen!':result.discovery?'Neue Entdeckung!':result.type==='merge'&&result.flow?`Merge-Flow ${result.flow.charge}/${result.flow.threshold}`:result.type==='merge'?'Neue Stufe!':'Item verschoben';
+        const completedSpecial=result.specialUpdates?.find(update=>update.becameCompleted),specialUpdate=completedSpecial||result.specialUpdates?.[0];
+        const mergeMessage=result.flowReady?'FLOW VOLL – Generator für Boost wählen!':completedSpecial?serviceSpecialUpdateText(completedSpecial):result.discovery?'Neue Entdeckung!':specialUpdate?serviceSpecialUpdateText(specialUpdate):result.type==='merge'&&result.flow?`Merge-Flow ${result.flow.charge}/${result.flow.threshold}`:result.type==='merge'?'Neue Stufe!':'Item verschoben';
         ui.message(mergeMessage);
         if(result.discovery)ui.discovery(result);
       }else if(to!==from){ui.feedback('invalid');ui.message('Diese Items passen nicht zusammen.','bad');}
