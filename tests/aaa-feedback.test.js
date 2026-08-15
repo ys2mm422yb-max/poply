@@ -33,3 +33,19 @@ test('UI and drag route gameplay feedback through the centralized module',async(
   assert.match(drag,/ui\.feedback\('invalid'\)/);
   assert.doesNotMatch(ui,/const buzz=/);
 });
+
+test('global mobile chrome carries authored resource and destination color identity',async()=>{
+  const css=await read('src/aaa-integration.css');
+  for(const resource of ['energy','coin','star'])assert.match(css,new RegExp(`\\.resource\\.${resource}\\{`));
+  for(const view of ['place','orders','board','collection']){
+    assert.match(css,new RegExp(`\\.nav-tab\\[data-view="${view}"\\] \\.nav-icon`));
+    assert.match(css,new RegExp(`\\.nav-tab\\.active\\[data-view="${view}"\\]`));
+    assert.match(css,new RegExp(`\\.nav-tab\\.active\\[data-view="${view}"\\]:before`));
+  }
+  assert.match(css,/\.topbar\{[\s\S]*radial-gradient/);
+  assert.match(css,/\.main-nav\{[\s\S]*radial-gradient/);
+  assert.match(css,/\.app-shell\{max-height:100vh\}/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{[\s\S]*\.nav-tab \.nav-icon\{transition:none\}/);
+  assert.doesNotMatch(css,/\.topbar\{[^}]*height:/);
+  assert.doesNotMatch(css,/\.main-nav\{[^}]*height:/);
+});
