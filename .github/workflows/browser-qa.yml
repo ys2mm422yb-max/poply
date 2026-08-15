@@ -44,6 +44,9 @@ jobs:
       - name: Run player progression WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/progression-qa.mjs
+      - name: Run Energy reserve WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/energy-reserve-qa.mjs
       - name: Run Collection Book WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/collection-qa.mjs
