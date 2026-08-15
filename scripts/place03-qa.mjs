@@ -7,9 +7,11 @@ await mkdir(outDir,{recursive:true});
 const browser=await webkit.launch({headless:true});
 const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'de-DE'});
 const page=await context.newPage();
-const problems=[];
+const problems=[],badResponses=[],requestFailures=[];
 page.on('console',msg=>{if(['error','warning'].includes(msg.type()))problems.push(`${msg.type()}: ${msg.text()}`);});
 page.on('pageerror',error=>problems.push(`pageerror: ${error.message}`));
+page.on('response',response=>{if(response.status()>=400)badResponses.push({status:response.status(),url:response.url(),resourceType:response.request().resourceType()});});
+page.on('requestfailed',request=>requestFailures.push({url:request.url(),resourceType:request.resourceType(),failure:request.failure()?.errorText||'unknown'}));
 const assert=(value,message)=>{if(!value)throw new Error(message);};
 const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
@@ -54,8 +56,9 @@ try{
   await page.locator('[data-action="place-map"]').click();await page.waitForSelector('.place-map-sheet');assert(await page.locator('[data-map-place="garden"]').isEnabled(),'Dachgarten map node not enabled');assert((await page.locator('[data-map-place="garden"] small').textContent())?.includes('1/6'),'Dachgarten map progress did not reflect build');await page.locator('[data-map-place="garden"]').click();assert((await page.locator('.place-map-preview h3').textContent())==='Dachgarten','Dachgarten map preview missing');await shot('85-place03-map');await page.locator('[data-place-map-close]').last().click();
 
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await page.locator('.nav-tab[data-view="board"]').click();await page.waitForSelector('.view-board');const short=await assertFits('390x720 garden board');assert(short.board?.width===376&&short.board?.height===376,`short Safari changed 7x7 Board geometry ${JSON.stringify(short.board)}`);await shot('86-place03-short-safari');
-  const final=await readSave();report={gardenGeneratorTaps:final.board.find(item=>item?.generator==='garden-gen')?.taps,herbTier2:final.board.some(item=>item?.family==='herb'&&item.level===2),gardenStage:final.placeUpgrades.filter(id=>id.startsWith('garden-')).length,stars:final.stars,shortBoard:short.board};if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
+  const final=await readSave();report={gardenGeneratorTaps:final.board.find(item=>item?.generator==='garden-gen')?.taps,herbTier2:final.board.some(item=>item?.family==='herb'&&item.level===2),gardenStage:final.placeUpgrades.filter(id=>id.startsWith('garden-')).length,stars:final.stars,shortBoard:short.board};
+  if(problems.length||badResponses.length||requestFailures.length)throw new Error(`network/console problems: ${JSON.stringify({problems,badResponses,requestFailures})}`);
 }catch(error){failure=error;try{await shot('89-place03-failure');}catch{}}
-finally{await writeFile(`${outDir}/place03-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
+finally{await writeFile(`${outDir}/place03-report.json`,JSON.stringify({report,problems,badResponses,requestFailures,failure:failure?.message||null},null,2));await browser.close();}
 if(failure)throw failure;
 console.log('Place 03 WebKit QA passed.');
