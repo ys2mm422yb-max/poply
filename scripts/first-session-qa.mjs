@@ -16,6 +16,7 @@ const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-s
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertVisibleWithin=async(locator,label)=>{const box=await locator.boundingBox();assert(box&&box.y>=-1&&box.y+box.height<=await page.evaluate(()=>window.visualViewport?.height||innerHeight)+1,`${label} outside viewport ${JSON.stringify(box)}`);};
 const assertNotClipped=async(locator,label)=>{const m=await locator.evaluate(node=>({scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,text:node.textContent}));assert(m.scrollWidth<=m.clientWidth+1&&m.scrollHeight<=m.clientHeight+1,`${label} visually clipped ${JSON.stringify(m)}`);};
+const assertNoEllipsisStyle=async(locator,label)=>{const style=await locator.evaluate(node=>{const css=getComputedStyle(node);return {whiteSpace:css.whiteSpace,textOverflow:css.textOverflow,overflowX:css.overflowX,overflowY:css.overflowY};});assert(style.whiteSpace!=='nowrap'&&style.textOverflow!=='ellipsis',`${label} still uses ellipsis CSS ${JSON.stringify(style)}`);};
 const seed=async mutate=>page.evaluate(async source=>{const game=await import('./src/v2-game.js');const state=game.createInitialState();const fn=(0,eval)(`(${source})`);fn(state,game);localStorage.setItem('poply-v2-state-1',JSON.stringify(state));},mutate.toString());
 
 let report={},failure=null;
@@ -38,6 +39,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
   assert((await page.locator('.service-hero h2').textContent())?.includes('Wähle'),'orders hero still explains instead of offering a choice');
   assert((await page.locator('.daily-ribbon').textContent())?.includes('Tagesziele & Gast'),'Daily ribbon rendered as an empty surface');
+  await assertNoEllipsisStyle(page.locator('.service-hero p'),'opening Orders purpose line');
   await assertNotClipped(page.locator('.service-hero p'),'opening Orders purpose line');
   const choices=page.locator('.customer-choice');assert(await choices.count()===3,'opening does not expose three guest choices');
   await page.locator('[data-select-order="order-1"]').click();
@@ -58,6 +60,7 @@ try{
   assert(new Set(postTitles).size===3,`replacement duplicated a visible title ${JSON.stringify(postTitles)}`);
   assert(served.stars===4,'first real service did not reach first build exactly');
   assert((await page.locator('.service-hero h2').textContent())?.includes('baubereit'),'orders did not acknowledge build readiness');
+  await assertNoEllipsisStyle(page.locator('.service-hero p'),'ready Orders purpose line');
   await assertNotClipped(page.locator('.service-hero p'),'ready Orders purpose line');
   await shot('82-first-service-payoff-390x844');
 
@@ -103,11 +106,11 @@ try{
   await page.setViewportSize({width:390,height:720});
   await seed(()=>{});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board .purpose-card');
   await assertNoScroll('fresh board 390x720');await shot('88-first-session-board-390x720');
-  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNotClipped(page.locator('.service-hero p'),'short Orders purpose line');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
+  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNoEllipsisStyle(page.locator('.service-hero p'),'short Orders purpose line');await assertNotClipped(page.locator('.service-hero p'),'short Orders purpose line');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.cafe-guest');
   await assertNotClipped(page.locator('.purpose-place-unlock strong'),'short mid-stage unlock copy');await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
 
-  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true};
+  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('98-first-session-failure');}catch{}}
 finally{await writeFile(`${outDir}/first-session-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
