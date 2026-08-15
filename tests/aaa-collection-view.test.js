@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createInitialState } from '../src/v2-game.js';
-import { ensureCollectionState } from '../src/aaa-collection.js';
+import { FAMILY_MASTERY_REWARD_COINS, discoveryItemKey, ensureCollectionState } from '../src/aaa-collection.js';
 import { collectionView, navWithCollection } from '../src/aaa-collection-view.js';
 
 const root=new URL('../',import.meta.url),read=path=>readFile(new URL(path,root),'utf8');
@@ -10,12 +10,21 @@ const root=new URL('../',import.meta.url),read=path=>readFile(new URL(path,root)
 test('Collection Book renders known starting tiers and hides future names',()=>{
   const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'coffee');
   assert.match(html,/Deine Entdeckungen/);assert.match(html,/3\/30/);assert.match(html,/Getränke/);assert.match(html,/Kaffeebohnen/);assert.match(html,/1\/6/);
+  assert.match(html,/MEISTERSCHAFT/);assert.match(html,/Entdecker/);assert.match(html,new RegExp(`5 Stufen bis Meister · \+${FAMILY_MASTERY_REWARD_COINS} ●`));
   assert.ok((html.match(/Noch entdecken/g)||[]).length>=5);assert.doesNotMatch(html,/Kaffeetasse/);
+});
+
+test('completed family renders earned mastery inside existing Collection focus',()=>{
+  const state=ensureCollectionState(createInitialState()).state;
+  state.discoveries=state.discoveries.filter(key=>!key.startsWith('item:coffee:'));
+  for(let level=1;level<=6;level+=1)state.discoveries.push(discoveryItemKey('coffee',level));
+  const html=collectionView(state,'coffee');
+  assert.match(html,/collection-mastery complete/);assert.match(html,/FAMILIE GEMEISTERT/);assert.match(html,/Meister/);assert.match(html,new RegExp(`\+${FAMILY_MASTERY_REWARD_COINS} ● verdient`));
 });
 
 test('undiscovered fruit family is represented by six locked silhouettes',()=>{
   const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'fruit');
-  assert.match(html,/Sonnenfrüchte/);assert.match(html,/0\/6/);assert.equal((html.match(/collection-tier locked/g)||[]).length,6);
+  assert.match(html,/Sonnenfrüchte/);assert.match(html,/0\/6/);assert.match(html,/Unentdeckt/);assert.equal((html.match(/collection-tier locked/g)||[]).length,6);
 });
 
 test('undiscovered Dachgarten family has six silhouettes and no leaked tier names',()=>{
