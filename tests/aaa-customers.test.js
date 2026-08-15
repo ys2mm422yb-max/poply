@@ -43,3 +43,15 @@ test('compact Orders guest choices preserve two readable title lines without gro
   assert.match(ORDER_CHOICE_POLISH_CSS,/\.customer-choice\{height:68px/);
   assert.doesNotMatch(ORDER_CHOICE_POLISH_CSS,/height:\s*(?:7[3-9]|[89]\d|\d{3,})px/);
 });
+
+test('Orders counter polish is loaded after the main bundle and stays interaction-safe',async()=>{
+  const [html,css]=await Promise.all([read('index.html'),read('src/aaa-orders-counter.css')]);
+  const mainIndex=html.indexOf('./src/aaa.css');
+  const counterIndex=html.indexOf('./src/aaa-orders-counter.css');
+  assert.ok(mainIndex>=0&&counterIndex>mainIndex,'counter polish must load after the main AAA stylesheet');
+  assert.match(css,/Orders service-counter anchor/);
+  assert.match(css,/\.service-card:after\{[\s\S]*pointer-events:none/);
+  assert.match(css,/\.service-deliver:disabled\{/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+  assert.doesNotMatch(css,/pointer-events:\s*(?:auto|all)/);
+});

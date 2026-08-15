@@ -1,0 +1,53 @@
+/* Orders service-counter anchor — screenshot-first visual polish.
+   Loaded after the main AAA bundle so it can refine the existing service stage
+   without changing order markup, gameplay, touch targets, or Place03-owned files. */
+
+.service-card{
+  box-shadow:
+    0 22px 40px rgba(0,18,25,.31),
+    inset 0 1px rgba(255,255,255,.1),
+    inset 0 -22px 44px rgba(5,32,42,.16);
+}
+
+/* Replace the floating lower glow with a stable counter/table plane. */
+.service-card:after{
+  left:4%;
+  right:4%;
+  bottom:54px;
+  height:31%;
+  pointer-events:none;
+  border-radius:48% 48% 22px 22px / 25% 25% 18px 18px;
+  border-top:1px solid rgba(255,226,158,.2);
+  background:
+    linear-gradient(180deg,rgba(255,239,194,.12) 0,rgba(255,239,194,.035) 3px,transparent 3px),
+    radial-gradient(ellipse at 18% 10%,rgba(255,187,72,.15),transparent 37%),
+    radial-gradient(ellipse at 78% 12%,rgba(89,226,207,.14),transparent 39%),
+    linear-gradient(180deg,rgba(14,86,91,.62),rgba(5,47,59,.24));
+  box-shadow:
+    0 -16px 30px rgba(255,180,64,.055),
+    inset 0 1px rgba(255,255,255,.07);
+  filter:none;
+  transform:none;
+  animation:none;
+}
+
+/* The waiting state should feel intentionally inactive, not like a dead utility bar. */
+.service-deliver:disabled{
+  border:1px solid rgba(130,214,205,.13);
+  background:linear-gradient(180deg,rgba(24,92,99,.96),rgba(13,65,76,.98));
+  color:#9abebb;
+  box-shadow:inset 0 1px rgba(255,255,255,.07),0 8px 18px rgba(0,20,27,.11);
+}
+
+.service-footnote{
+  color:#83a8a5;
+  text-shadow:0 1px rgba(0,20,27,.35);
+}
+
+@media(max-width:430px){
+  .service-card:after{bottom:50px;height:29%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .service-card:after{animation:none!important;transform:none!important}
+}
