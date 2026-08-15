@@ -22,9 +22,13 @@ test('Board families own both persistent cell color and merge-effect color',()=>
 
 test('Board and Orders no longer resolve to a single petrol surface',()=>{
   const css=read('src/aaa-vibrance.css');
-  assert.match(css,/\.production-board \.board-frame\{[\s\S]*157,124,244[\s\S]*255,158,105/);
+  assert.match(css,/\.production-board \.board-frame\{/);
+  assert.match(css,/rgba\(255,158,105,\.28\)/);
+  assert.match(css,/rgba\(157,124,244,\.27\)/);
   assert.match(css,/\.board-cell\.empty:nth-child\(4n\+3\)/);
-  assert.match(css,/\.service-orders\{[\s\S]*255,139,104[\s\S]*160,125,244/);
+  assert.match(css,/\.service-orders\{/);
+  assert.match(css,/rgba\(255,139,104,\.24\)/);
+  assert.match(css,/rgba\(160,125,244,\.24\)/);
   assert.match(css,/\.service-card\{[\s\S]*239,143,187/);
 });
 
