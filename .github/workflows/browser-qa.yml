@@ -62,6 +62,9 @@ jobs:
       - name: Run Merge Flow WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/merge-flow-qa.mjs
+      - name: Run Service Specials WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/service-specials-qa.mjs
       - name: Run legacy opening-order migration WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/legacy-opening-migration-qa.mjs
