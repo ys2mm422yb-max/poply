@@ -3,6 +3,11 @@ import { purposeGoal } from './aaa-purpose.js';
 import { placePowerForUpgrade, placePowerStatus, unlockedPlacePowers } from './aaa-place-powers.js';
 
 const swap='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11l-2.6-2.6M19 17H8l2.6 2.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const unlockToast=power=>({
+  'evening-service':'Abendservice frei · Special → +1 FLOW',
+  'counter-prep':'Vorbereitung frei · Nächster Drop +1',
+  'guest-choice':'Gastwahl frei · 1 Auftrag tauschen',
+}[power?.key]||`${power?.label||'Fähigkeit'} frei`);
 
 function decoratePlace(root,state){
   const goal=purposeGoal(state),power=placePowerForUpgrade(goal.upgrade?.id),unlock=root.querySelector('.place-current-goal .purpose-place-unlock');
@@ -20,7 +25,7 @@ function decorateBoard(root,state){
   board.classList.toggle('place-prep-ready',status.prepReady);
   let hud=lead?.querySelector('.place-prep-hud');
   if(status.prepReady&&lead){
-    if(!hud){hud=document.createElement('span');hud.className='place-prep-hud';hud.innerHTML='<b>THEKE</b><small>+1 nächster Drop</small>';lead.append(hud);}
+    if(!hud){hud=document.createElement('span');hud.className='place-prep-hud';hud.innerHTML='<b>THEKE +1</b>';lead.append(hud);}
   }else hud?.remove();
   board.querySelectorAll('.board-cell.generator').forEach(cell=>{
     cell.classList.toggle('prep-boost-target',status.prepReady);
@@ -52,7 +57,7 @@ export function installPlacePowersUI(root,ui){
   const announceChanges=state=>{
     const fresh=(state.placeUpgrades||[]).filter(id=>!knownUpgrades.has(id));knownUpgrades=new Set(state.placeUpgrades||[]);
     const unlocked=fresh.map(placePowerForUpgrade).filter(Boolean).at(-1);
-    if(unlocked)setTimeout(()=>ui?.message?.(`Neue Fähigkeit: ${unlocked.label} · ${unlocked.short}`),420);
+    if(unlocked)setTimeout(()=>ui?.message?.(unlockToast(unlocked)),420);
     const status=placePowerStatus(state);
     if(status.prepsUsed>knownPreps)setTimeout(()=>ui?.message?.('Vorbereitung genutzt · Generator-Drop +1 Stufe'),120);
     knownPreps=status.prepsUsed;
