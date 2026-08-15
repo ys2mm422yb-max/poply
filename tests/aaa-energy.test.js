@@ -57,6 +57,7 @@ test('live shell installs interactive energy planning and keeps the player-facin
   assert.match(ui,/data\.energyTimer|dataset\.energyTimer/);assert.match(ui,/data\.energyPlan|dataset\.energyPlan/);assert.match(ui,/aria-expanded/);assert.match(ui,/setInterval\(paint,1000\)/);
   assert.match(session,/regenerateEnergy/);assert.match(session,/recordEnergySpend/);
   assert.match(css,/\.energy-timer/);assert.match(css,/\.energy-plan/);assert.match(css,/fx-energy-refill/);
+  assert.match(css,/resource\.energy\[aria-expanded='true'\]/);assert.match(css,/rgba\(255,210,85,.2\)/);assert.match(css,/linear-gradient\(90deg,rgba\(255,208,77,.95\),rgba\(112,225,225,.92\)/);
   assert.match(docs,/1 energy every 2 minutes|1 Energie alle 2 Minuten/i);
   assert.match(docs,/Voll in ca\.|vollständige Aufladung/i);
   assert.match(docs,/closed|geschlossen/i);
