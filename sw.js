@@ -12,6 +12,11 @@ self.addEventListener('activate',event=>{
   })());
 });
 
+const offlineReleaseResponse=()=>new Response(OFFLINE_RELEASE_BODY,{
+  status:200,
+  headers:{'Content-Type':'application/json','Cache-Control':'no-store'}
+});
+
 self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
@@ -19,21 +24,26 @@ self.addEventListener('fetch',event=>{
   if(url.origin!==self.location.origin)return;
   const isRelease=url.pathname.endsWith('/release.json');
 
+  if(isRelease){
+    event.respondWith((async()=>{
+      try{
+        return await fetch(url.href,{cache:'no-store',credentials:'same-origin'});
+      }catch{
+        return offlineReleaseResponse();
+      }
+    })());
+    return;
+  }
+
   event.respondWith((async()=>{
     try{
       const response=await fetch(request,{cache:'no-store'});
-      if(response.ok&&!isRelease){
+      if(response.ok){
         const cache=await caches.open(CACHE_NAME);
         await cache.put(request,response.clone());
       }
       return response;
     }catch(error){
-      if(isRelease){
-        return new Response(OFFLINE_RELEASE_BODY,{
-          status:200,
-          headers:{'Content-Type':'application/json','Cache-Control':'no-store'}
-        });
-      }
       const cached=await caches.match(request);
       if(cached)return cached;
       if(request.mode==='navigate'){
