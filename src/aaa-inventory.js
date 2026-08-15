@@ -2,6 +2,7 @@ export const INITIAL_STORAGE_CAPACITY=4;
 export const STORAGE_CAPACITY_STEP=2;
 export const STORAGE_MAX_CAPACITY=8;
 export const STORAGE_UPGRADE_COSTS={4:200,6:450};
+export const RECYCLE_COIN_VALUES={1:3,2:6,3:10,4:16,5:24,6:36};
 
 export function ensureInventoryState(state){
   const current=Array.isArray(state?.storage)?state.storage.filter(item=>item?.kind==='item'):[];
@@ -16,6 +17,11 @@ export function ensureInventoryState(state){
 export function storageUpgradeCost(state){
   const current=ensureInventoryState(state).state.storageCapacity;
   return current>=STORAGE_MAX_CAPACITY?null:STORAGE_UPGRADE_COSTS[current]??null;
+}
+
+export function recycleCoinValue(item){
+  if(item?.kind!=='item')return 0;
+  return RECYCLE_COIN_VALUES[item.level]??Math.max(1,Number(item.level)||1)*3;
 }
 
 export function storeBoardItem(inputState,boardIndex){
@@ -40,6 +46,14 @@ export function restoreStoredItem(inputState,storageIndex,targetIndex=null){
   const state=structuredClone(ensured),item=state.storage[storageIndex];
   state.storage.splice(storageIndex,1);state.board[target]=item;state.updatedAt=Date.now();
   return {state,changed:true,reason:null,item,targetIndex:target};
+}
+
+export function recycleStoredItem(inputState,storageIndex){
+  const ensured=ensureInventoryState(inputState).state;
+  if(!Number.isInteger(storageIndex)||storageIndex<0||storageIndex>=ensured.storage.length)return {state:inputState,changed:false,reason:'invalid-storage-item'};
+  const state=structuredClone(ensured),item=state.storage[storageIndex],coins=recycleCoinValue(item);
+  state.storage.splice(storageIndex,1);state.coins=Math.max(0,Number(state.coins)||0)+coins;state.updatedAt=Date.now();
+  return {state,changed:true,reason:null,item,coins,storageIndex};
 }
 
 export function upgradeStorage(inputState){

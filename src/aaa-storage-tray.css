@@ -47,12 +47,14 @@
   content:"";position:absolute;right:-38px;top:38px;width:120px;height:120px;border-radius:50%;pointer-events:none;
   background:radial-gradient(circle,rgba(105,224,210,.12),transparent 69%)
 }
-.storage-drawer header{position:relative;z-index:1;height:35px;display:flex;align-items:center;gap:8px}
+.storage-drawer.recycle-mode{border-color:rgba(255,161,104,.82);background:radial-gradient(circle at 9% 0,rgba(255,157,100,.25),transparent 31%),radial-gradient(circle at 92% 28%,rgba(255,211,101,.12),transparent 38%),linear-gradient(150deg,rgba(101,65,51,.99),rgba(47,55,61,.995) 49%,rgba(28,43,54,.995))}
+.storage-drawer.recycle-mode::before{background:linear-gradient(90deg,transparent 3%,rgba(255,135,89,.95) 24%,rgba(255,217,105,.9) 64%,transparent 98%)}
+.storage-drawer header{position:relative;z-index:1;height:35px;display:flex;align-items:center;gap:6px}
 .storage-drawer header>div:first-child{display:grid;gap:1px}
 .storage-drawer header small{color:#a8e5dc;font-size:.43rem;font-weight:1000;letter-spacing:.16em}
 .storage-drawer header strong{color:#fffaf0;font-size:.7rem;text-shadow:0 2px 8px rgba(0,0,0,.22)}
 .storage-upgrade{
-  margin-left:auto;height:30px;padding:0 10px;display:flex;align-items:center;gap:7px;
+  margin-left:auto;height:30px;padding:0 9px;display:flex;align-items:center;gap:6px;
   border:1px solid rgba(255,229,135,.72);border-radius:12px;
   background:linear-gradient(180deg,#f0c650,#c48b26);color:#12333b;font-weight:1000;
   box-shadow:0 4px 12px rgba(101,69,7,.2),inset 0 1px 0 rgba(255,255,255,.32)
@@ -63,6 +65,11 @@
 .storage-coin-icon{width:13px;height:13px;display:grid;color:#fff1a0}
 .storage-coin-icon svg{width:100%;height:100%}
 .storage-max{margin-left:auto;padding:5px 8px;border-radius:9px;background:rgba(70,215,105,.2);color:#8cf39b;font-size:.48rem;font-weight:1000}
+.storage-recycle-toggle{height:30px;padding:0 8px;display:flex;align-items:center;gap:4px;border:1px solid rgba(255,163,111,.52);border-radius:11px;background:rgba(74,45,46,.72);color:#ffd7c1;font:inherit;font-weight:1000;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.storage-recycle-toggle i{width:14px;height:14px;display:grid;place-items:center;color:#ffad78}
+.storage-recycle-toggle i svg{width:100%;height:100%}
+.storage-recycle-toggle b{font-size:.46rem}
+.storage-recycle-toggle.active{border-color:#ffbd83;background:linear-gradient(180deg,#d16b42,#9a4835);color:#fff7e8;box-shadow:0 0 0 2px rgba(255,151,91,.12),inset 0 1px 0 rgba(255,255,255,.18)}
 .storage-close{width:30px;height:30px;display:grid;place-items:center;border:1px solid rgba(152,222,214,.28);border-radius:50%;background:rgba(7,49,61,.78);color:#e6f8f4;font-size:1rem;line-height:1;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
 
 .storage-slots{position:relative;z-index:1;height:58px;margin-top:7px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
@@ -83,13 +90,18 @@
     linear-gradient(160deg,#fff6d8,#ded8bb);
   box-shadow:0 5px 14px rgba(0,31,38,.22),0 0 0 2px rgba(255,214,91,.08),inset 0 1px 0 rgba(255,255,255,.78)
 }
+.storage-slot.recycle-ready{border-color:#ff9c6d;background:radial-gradient(circle at 50% 22%,rgba(255,247,218,.96),transparent 42%),linear-gradient(160deg,#ffe1bc,#efb18b);box-shadow:0 0 0 2px rgba(255,120,77,.16),0 6px 15px rgba(42,18,17,.3),inset 0 1px 0 rgba(255,255,255,.82)}
 .storage-slot .item-art,.storage-board-choice .item-art{width:46px;height:46px}
 .storage-slot>span,.storage-board-choice>span{position:absolute;right:2px;bottom:2px;min-width:16px;height:16px;display:grid;place-items:center;border-radius:50%;background:#f8fbf4;color:#143f49;font-size:.4rem;font-weight:1000;box-shadow:0 2px 4px rgba(0,0,0,.14)}
+.storage-slot.recycle-ready>span{top:2px;bottom:auto}
+.storage-recycle-value{position:absolute;left:2px;right:2px;bottom:2px;height:15px;display:flex;align-items:center;justify-content:center;gap:2px;border-radius:999px;background:rgba(105,46,35,.9);color:#fff2d0;font-size:.37rem;font-weight:1000;box-shadow:0 2px 5px rgba(48,19,15,.25)}
+.storage-recycle-value i{width:10px;height:10px;display:grid;color:#ffd866}.storage-recycle-value i svg{width:100%;height:100%}
 
 .storage-source{position:relative;z-index:1;margin-top:6px;display:grid;grid-template-columns:125px minmax(0,1fr);align-items:center;gap:8px}
 .storage-source>div:first-child strong,.storage-source>div:first-child small{display:block}
 .storage-source>div:first-child strong{color:#fffaf3;font-size:.58rem}
 .storage-source>div:first-child small{margin-top:2px;color:#9fc8c3;font-size:.4rem;font-weight:750;line-height:1.15}
+.recycle-mode .storage-source>div:first-child strong{color:#ffd2b8}.recycle-mode .storage-source>div:first-child small{color:#e9b9a4}
 .storage-board-items{height:52px;display:flex;gap:5px;overflow-x:auto;align-items:center;scrollbar-width:none}
 .storage-board-choice{
   position:relative;flex:0 0 47px;height:47px;display:grid;place-items:center;
@@ -102,11 +114,14 @@
 .storage-board-choice:nth-child(3n){border-color:rgba(255,157,192,.34);background:linear-gradient(160deg,rgba(115,65,94,.48),rgba(18,80,88,.9))}
 .storage-board-choice .item-art{width:42px;height:42px}
 .storage-empty-copy{color:#98bcbc;font-size:.48rem;font-weight:800}
+.storage-recycle-help{display:block;padding:6px 8px;border:1px solid rgba(255,171,117,.24);border-radius:10px;background:rgba(104,54,43,.28);color:#ffd5bf;font-size:.42rem;font-weight:850;line-height:1.25}
 .storage-drawer .item-art{pointer-events:none}
 
 @media(max-height:740px){
   .storage-drawer{bottom:5px;min-height:158px;padding:8px}
-  .storage-drawer header{height:30px}
+  .storage-drawer header{height:30px;gap:4px}
+  .storage-recycle-toggle{height:28px;padding-inline:6px}.storage-recycle-toggle b{font-size:.4rem}
+  .storage-upgrade{height:28px;padding-inline:7px}.storage-upgrade b{font-size:.44rem}
   .storage-slots{height:50px;margin-top:5px}
   .storage-slot{flex-basis:45px;height:45px}
   .storage-slot .item-art{width:40px;height:40px}
@@ -115,10 +130,12 @@
   .storage-board-choice{flex-basis:40px;height:40px}
   .storage-board-choice .item-art{width:36px;height:36px}
   .storage-source>div:first-child small{font-size:.36rem}
+  .storage-recycle-help{padding:4px 6px;font-size:.36rem}
 }
 @media(max-width:360px){
   .storage-handle{min-width:70px;padding-inline:6px}
   .storage-handle b{display:none}
   .storage-source{grid-template-columns:96px minmax(0,1fr)}
-  .storage-upgrade b{font-size:.44rem}
+  .storage-upgrade b{display:none}
+  .storage-recycle-toggle b{display:none}
 }

@@ -3,52 +3,53 @@
 Updated: 2026-08-15
 
 ## Live baseline
-Current production baseline on `main` includes:
+Current production `main` is a persistent merge-and-build game with:
 - persistent 7×7 merge Board / Werkbank;
-- Place 01 · Café am Meer and Place 02 · Sonnenkai with six restoration steps each;
-- four six-tier item families and three generators;
+- Place 01 · Café am Meer and Place 02 · Sonnenkai with visible restoration progression;
+- multiple six-tier item families and generators;
 - three simultaneous customer orders with deterministic replacement difficulty bands;
-- Coins, restoration Stars, fair regenerating Energy, Player XP/Levels;
+- Coins, restoration Stars, fair regenerating Energy and Player XP/Levels;
 - Collection/Discovery, persistent Storage + Coin expansion, Daily Goals + Bonus Guest;
 - first Places world-map/revisit slice;
-- Player Milestone shelf behind the existing Level badge;
+- Player milestone/title/reward-preview progression surfaces;
 - local save/resume and migration safety;
 - mandatory CI + Mobile WebKit + screenshot review + canonical Pages release gates.
 
-Start `main` for the current product-automation run: `6e01b1d5b353bc37566068b9663379678c08f97d`.
+Milestone B visual quality remains open globally and continues independently through screenshot-first visual PRs.
 
-Milestone B visual quality remains OPEN globally.
+## Current product-automation slice — guaranteed full-board recovery
+Start `main`: `6874efb534dd5539bb93703b0de4fc196f251328`.
+Branch: `feature/storage-recycling-recovery`.
 
-## Active parallel work
-### PR #55 — dynamic gameplay FX evidence
-Visual/evidence worker scope. Owns dynamic FX capture/workflow/motion files. Product automation must not overlap it.
+Player problem:
+Storage normally relieves Board pressure, but the binding product rules require a fair escape when **both Board and Storage are completely full**. Previously the player could reach a deadlock with no legal way to create a Board vacancy.
 
-### PR #58 — Milestone I Place 03 · Dachgarten
-Manual product scope. Owns Place03 domain/UI/art integration including `src/aaa-session.js`, `src/v2-game.js`, Collection and Place/Map files. Product automation must not start competing Place03 or touch those active files.
+Current implementation contract:
+- Recycling is an explicit Storage mode, never hidden deletion.
+- The player deliberately selects the stored item to recycle.
+- The exact Coin return is visible before removal and deterministic by item tier.
+- Only the selected stored item is removed; Board contents are untouched by recycling itself.
+- Recycling frees one Storage slot; moving a chosen Board item into that slot then creates exactly one playable Board vacancy.
+- The recovered state and Coin reward must persist after reload.
+- No ads, purchase, new currency, random loss, forced item choice or generator recycling.
+- Deterministic domain tests plus real Storage WebKit QA cover the full Board + full Storage path at 390×844 and 390×720.
 
-### PR #60 — Orders service-stage lighting
-Visual scope. Owns Orders service presentation in `src/aaa-service.css`; product automation does not overlap it.
+## Coordination
+GitHub Issue #42 is the durable cross-worker work log.
 
-### Product automation — next-level reward preview
-Branch: `feature/level-reward-preview`.
-Contract: `docs/PLAYER_MILESTONES.md`.
+Current non-overlap facts at this slice start:
+- former Place03 PR #58 is closed and unmerged, so its previous `aaa-session.js`/game ownership is released;
+- visual Collection material work landed independently after this branch was created and does not touch the Storage/session files in this slice;
+- open PR #66 is documentation-only shell-chrome history and does not overlap this work.
 
-Scope:
-- reuse the existing `LV N` progress sheet rather than adding another menu/tab;
-- show next Level, exact XP remaining and the existing deterministic `+100 Coins` Level reward;
-- derive everything from canonical `playerXp` and `LEVEL_REWARD_COINS`;
-- no save migration, claim state, new currency or duplicated reward schedule;
-- deterministic unit coverage and real WebKit fit checks at 390×844 / 390×720;
-- opening/closing remains save-neutral.
+## Place 03
+PR #58 (`Milestone I: Place 03 Dachgarten`) was closed unmerged on 2026-08-15. Place 03 remains future product work; no autonomous worker should assume that draft branch is part of the live baseline.
 
-## Parked / not active
-`feature/board-recovery-recycling` and the earlier misnamed `feature/place-03-moon-garden` have no PR and are not active implementation scopes. Board-recovery remains a valid future reliability task, but it must be rebuilt only after the active `aaa-session.js` owner is clear.
+## Next product priorities
+1. Complete/release guaranteed Board-full + Storage-full recovery if exact-head tests and screenshots accept it.
+2. Re-read current `main` and open ownership after release.
+3. Re-plan Place 03 from then-current `main` rather than reviving the stale closed draft wholesale.
+4. Continue deeper Collection/achievement/economy balancing without disconnected dashboard systems.
 
-## Next product priorities after active PRs land
-1. Finish/release the independent next-level reward preview if exact-head QA accepts it.
-2. Integrate/verify Place 03 through PR #58 without parallel duplication.
-3. Revisit guaranteed Board-full + Storage-full recovery on a fresh post-Place03 branch.
-4. Continue deeper Collection/achievement/economy balancing only after current slices are released.
-
-## Durable coordination
-GitHub Issue #42 is the mandatory cross-worker work log. Every substantial worker run records exact starting main, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visual findings, merge/deploy state, blockers and the next free task.
+## Durable coordination rule
+Every substantial worker run records in Issue #42: exact starting main, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and next free task.
