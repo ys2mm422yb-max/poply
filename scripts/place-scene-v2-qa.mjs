@@ -51,6 +51,15 @@ const inspectLiveStage=async(stage,height)=>{
     const ratio=(box.width*box.height)/(heroBox.width*heroBox.height);
     assert(ratio>.035,`stage ${stage}: latest built authored upgrade is visually too small (${ratio.toFixed(3)})`);
   }
+  if(stage===5){
+    const after=page.locator('.purpose-place-goal .purpose-place-after>strong');
+    assert(await after.count()===1,`stage 5 ${height}: final DANACH teaser missing`);
+    const teaser=await after.evaluate(el=>{const style=getComputedStyle(el),box=el.getBoundingClientRect();return {text:el.textContent?.trim()||'',whiteSpace:style.whiteSpace,textOverflow:style.textOverflow,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,height:box.height,lineHeight:parseFloat(style.lineHeight)||0};});
+    assert(teaser.text.includes('Sonnenkai')&&teaser.text.includes('Tropenbar'),`stage 5 ${height}: final DANACH promise incomplete: ${teaser.text}`);
+    assert(teaser.whiteSpace!=='nowrap'&&teaser.textOverflow!=='ellipsis',`stage 5 ${height}: final DANACH teaser still uses truncation CSS ${JSON.stringify(teaser)}`);
+    assert(teaser.scrollWidth<=teaser.clientWidth+1,`stage 5 ${height}: final DANACH teaser overflows horizontally ${JSON.stringify(teaser)}`);
+    assert(!teaser.lineHeight||teaser.height<=teaser.lineHeight*2.6,`stage 5 ${height}: final DANACH teaser exceeds two readable lines ${JSON.stringify(teaser)}`);
+  }
   await assertNoScroll(`Scene V2 stage ${stage} ${height}`);
 };
 const inspectCompletedRevisit=async height=>{
@@ -84,7 +93,7 @@ try{
     await page.setViewportSize({width:390,height});
     for(let stage=0;stage<=6;stage++)await inspectStage(stage,height);
   }
-  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit'};
+  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit',finalTeaser:'two-line readable'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('scene-v2-failure');}catch{}}
 finally{await writeFile(`${outDir}/place-scene-v2-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
