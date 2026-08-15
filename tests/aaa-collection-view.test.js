@@ -1,8 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { createInitialState } from '../src/v2-game.js';
 import { ensureCollectionState } from '../src/aaa-collection.js';
 import { collectionView, navWithCollection } from '../src/aaa-collection-view.js';
+
+const root=new URL('../',import.meta.url),read=path=>readFile(new URL(path,root),'utf8');
 
 test('Collection Book renders known starting tiers and hides future names',()=>{
   const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'coffee');
@@ -28,4 +31,13 @@ test('Collection world section includes locked Place 03 and Gewächshaus',()=>{
 test('Collection is a real fourth navigation destination',()=>{
   const base='<nav class="main-nav"><button class="nav-tab" data-view="board">Board</button></nav>';
   const html=navWithCollection('collection',base);assert.match(html,/data-view="collection"/);assert.match(html,/nav-collection active/);assert.match(html,/Sammlung/);
+});
+
+test('Collection family material layer gives all five families distinct authored hooks',async()=>{
+  const state=ensureCollectionState(createInitialState()).state;
+  for(const family of ['coffee','bakery','sweet','fruit','herb'])assert.match(collectionView(state,family),new RegExp(`data-collection-family-active="${family}"`));
+  const [css,index]=await Promise.all([read('src/aaa-collection-family-materials.css'),read('index.html')]);
+  for(const family of ['coffee','bakery','sweet','fruit','herb'])assert.ok(css.includes(`data-collection-family-active="${family}"`),family);
+  assert.match(css,/collection-tier\.locked/);assert.match(css,/collection-family\[data-collection-family="coffee"\]/);assert.match(css,/prefers-reduced-motion/);
+  assert.match(index,/aaa-collection-family-materials\.css\?v=20260815-collection1/);
 });
