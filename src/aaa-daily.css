@@ -8,3 +8,42 @@
 .daily-goals{display:grid;gap:8px}.daily-goal{min-height:58px;padding:9px 10px;border-radius:17px;background:rgba(4,42,52,.46);border:1px solid rgba(143,219,205,.13);display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:9px;align-items:center}.daily-goal.complete{border-color:rgba(255,211,91,.36)}.daily-goal.claimed{opacity:.72}.daily-goal-mark{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:#ffd55f;background:rgba(255,213,95,.1)}.daily-goal.claimed .daily-goal-mark{color:#7ee27a;background:rgba(126,226,122,.12)}.daily-goal-copy{min-width:0;display:grid;gap:6px}.daily-goal-copy strong{font-size:13px}.daily-progress{height:6px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}.daily-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#6bdd58,#ffd65f)}.daily-progress-value{font-size:12px;font-weight:900;color:#a8c7c4}.daily-goal button{border:0;border-radius:12px;min-height:36px;padding:0 10px;background:#ffd45c;color:#174955;font-weight:900;font-size:11px}.daily-claimed{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:900;color:#7ee27a}.daily-claimed svg{width:15px;height:15px}
 .daily-bonus{margin-top:12px;padding:12px;border-radius:20px;background:linear-gradient(135deg,rgba(255,219,113,.14),rgba(255,172,77,.08));border:1px solid rgba(255,211,91,.28);display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:11px}.daily-bonus-art{width:58px;height:58px;border-radius:17px;background:#f8edcd;display:grid;place-items:center;color:#1c6264;overflow:hidden}.daily-bonus-art .item-art{width:48px;height:48px}.daily-bonus-copy{min-width:0}.daily-bonus-copy small{display:block;color:#ffd55f;font-size:9px;font-weight:900;letter-spacing:.16em}.daily-bonus-copy strong{display:block;font-size:15px;margin-top:2px}.daily-bonus-copy p{margin:2px 0 6px;font-size:11px;color:#b8d1cd}.daily-bonus-reward{display:flex;gap:10px}.daily-bonus-reward span{display:flex;gap:3px;align-items:center;color:#ffd55f;font-size:11px}.daily-bonus-reward svg{width:14px;height:14px}.daily-bonus button{border:0;border-radius:15px;min-height:44px;padding:0 12px;background:linear-gradient(180deg,#6edc5f,#3db452);color:white;font-weight:900}.daily-bonus button:disabled{background:rgba(255,255,255,.08);color:#7fa6a5}.daily-bonus.served{grid-template-columns:58px 1fr 32px}.daily-bonus.served .daily-bonus-art{background:rgba(126,226,122,.12);color:#7ee27a}.daily-bonus.served p{margin:3px 0 0;font-size:11px;color:#a8c7c4}.daily-bonus-done{color:#7ee27a}
 @media(max-height:760px){.daily-ribbon{min-height:54px;margin-bottom:7px;padding-block:7px}.daily-ribbon-icon{width:34px;height:34px}.daily-sheet{bottom:calc(var(--nav-height,78px) + 8px);max-height:66vh;padding:14px;border-radius:24px}.daily-sheet>header{margin-bottom:11px}.daily-goals{gap:6px}.daily-goal{min-height:50px;padding:7px 9px}.daily-bonus{margin-top:9px;padding:9px}.daily-bonus-art{width:52px;height:52px}.daily-bonus-art .item-art{width:44px;height:44px}}
+
+/* Daily reward identity: the three goals keep one compact geometry, but each row now
+   has its own game-material cue so the sheet reads as authored rewards rather than a
+   stack of interchangeable dashboard cards. */
+.daily-goal:nth-child(1){
+  border-color:rgba(255,205,86,.34);
+  background:linear-gradient(105deg,rgba(112,77,24,.42),rgba(4,42,52,.5) 48%,rgba(4,42,52,.42));
+  box-shadow:inset 3px 0 rgba(255,205,86,.7),inset 0 1px rgba(255,239,185,.05);
+}
+.daily-goal:nth-child(1) .daily-goal-mark{color:#ffd45f;background:linear-gradient(145deg,rgba(255,211,91,.24),rgba(238,161,50,.12))}
+.daily-goal:nth-child(1) .daily-progress i{background:linear-gradient(90deg,#ffb33f,#ffe36e)}
+.daily-goal:nth-child(1) button{background:linear-gradient(180deg,#ffe078,#ffc341);box-shadow:0 5px 12px rgba(112,66,10,.18)}
+.daily-goal:nth-child(2){
+  border-color:rgba(255,128,157,.3);
+  background:linear-gradient(105deg,rgba(105,39,70,.4),rgba(4,42,52,.5) 48%,rgba(4,42,52,.42));
+  box-shadow:inset 3px 0 rgba(255,128,157,.68),inset 0 1px rgba(255,216,226,.04);
+}
+.daily-goal:nth-child(2) .daily-goal-mark{color:#ff9ab2;background:linear-gradient(145deg,rgba(255,134,165,.22),rgba(135,57,101,.12))}
+.daily-goal:nth-child(2) .daily-progress i{background:linear-gradient(90deg,#ff7f9d,#ffb25d)}
+.daily-goal:nth-child(2) button{background:linear-gradient(180deg,#ffb1c1,#ff819e);color:#4b1830;box-shadow:0 5px 12px rgba(91,28,53,.18)}
+.daily-goal:nth-child(3){
+  border-color:rgba(91,221,218,.3);
+  background:linear-gradient(105deg,rgba(20,91,101,.52),rgba(4,42,52,.5) 48%,rgba(4,42,52,.42));
+  box-shadow:inset 3px 0 rgba(91,221,218,.68),inset 0 1px rgba(198,255,252,.04);
+}
+.daily-goal:nth-child(3) .daily-goal-mark{color:#77ece2;background:linear-gradient(145deg,rgba(91,221,218,.2),rgba(41,126,143,.12))}
+.daily-goal:nth-child(3) .daily-progress i{background:linear-gradient(90deg,#56d8d2,#8be969)}
+.daily-goal:nth-child(3) button{background:linear-gradient(180deg,#8af0e5,#4fd2d0);color:#10434a;box-shadow:0 5px 12px rgba(18,85,92,.18)}
+.daily-goal.complete:not(.claimed){filter:saturate(1.08);box-shadow:inset 3px 0 currentColor,0 0 0 1px rgba(255,224,126,.08),0 6px 18px rgba(0,23,31,.14)}
+.daily-goal.claimed{opacity:.86;background:linear-gradient(105deg,rgba(31,104,78,.42),rgba(5,50,53,.48));border-color:rgba(112,226,146,.28);box-shadow:inset 3px 0 rgba(112,226,146,.62)}
+.daily-goal.claimed .daily-progress i{background:linear-gradient(90deg,#63d66f,#93e989)}
+.daily-bonus{
+  background:
+    radial-gradient(circle at 7% 45%,rgba(255,226,139,.13),transparent 34%),
+    linear-gradient(125deg,rgba(255,208,92,.18),rgba(255,126,112,.1) 52%,rgba(48,167,152,.12));
+  box-shadow:inset 0 1px rgba(255,245,206,.07),0 10px 24px rgba(0,24,31,.12);
+}
+.daily-bonus:not(.served) .daily-bonus-art{box-shadow:0 0 0 2px rgba(255,218,111,.12),0 8px 18px rgba(70,40,8,.16)}
+.daily-bonus:not(.served) button{box-shadow:0 7px 16px rgba(32,128,62,.2),inset 0 1px rgba(255,255,255,.2)}
