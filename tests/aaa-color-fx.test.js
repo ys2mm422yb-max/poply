@@ -44,6 +44,16 @@ test('Discovery celebration gives all five families distinct one-shot light with
   assert.match(html,/aaa-discovery-celebration\.css\?v=20260815-discovery2/);
 });
 
+test('Level-up celebration differentiates Coin, Energy and capacity reward colors without new gameplay markup',()=>{
+  const css=read('src/aaa-level-up-celebration.css'),html=read('index.html'),ui=read('src/aaa-player-ui.js');
+  assert.match(css,/linear-gradient\(90deg,#ffd25e[\s\S]*#82e5eb[\s\S]*#a7e98b/);
+  assert.match(css,/poply-level-reward-bloom/);
+  assert.match(css,/poply-level-reward-sparks/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*animation:none!important/);
+  assert.match(html,/aaa-level-up-celebration\.css\?v=20260815-level2/);
+  assert.match(ui,/\+\$\{progression\.bonusCoins\} Coins · Energie voll/);
+});
+
 test('Daily ribbon participates in Orders grid instead of creating a dead flexible row',()=>{
   const source=read('src/aaa-daily-ui.js'),css=read('src/aaa-integration.css');
   assert.match(source,/classList\.add\('has-daily-ribbon'\)/);
