@@ -37,12 +37,12 @@ test('Places have persistent ambient life and reduced-motion safety',()=>{
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*animation:none!important/);
 });
 
-test('PWA shell exposes real app icons including maskable and Apple touch assets',()=>{
-  const manifest=JSON.parse(read('manifest.webmanifest')),html=read('index.html');
-  const sources=manifest.icons?.map(icon=>icon.src)||[];
-  assert.ok(sources.includes('./assets/poply-icon-192.png'));
-  assert.ok(sources.includes('./assets/poply-icon-512.png'));
-  assert.ok(manifest.icons?.some(icon=>icon.src==='./assets/poply-icon-maskable-512.png'&&String(icon.purpose).includes('maskable')));
-  assert.match(html,/rel="icon"[^>]*poply-icon-192\.png/);
-  assert.match(html,/rel="apple-touch-icon"[^>]*apple-touch-icon\.png/);
+test('PWA shell exposes a real authored app icon for install, maskable and touch entry points',()=>{
+  const manifest=JSON.parse(read('manifest.webmanifest')),html=read('index.html'),icon=read('assets/poply-app-icon.svg');
+  assert.ok(manifest.icons?.some(entry=>entry.src==='./assets/poply-app-icon.svg'&&entry.type==='image/svg+xml'&&String(entry.purpose).includes('maskable')));
+  assert.match(html,/rel="icon"[^>]*poply-app-icon\.svg/);
+  assert.match(html,/rel="apple-touch-icon"[^>]*poply-app-icon\.svg/);
+  assert.match(icon,/viewBox="0 0 512 512"/);
+  assert.match(icon,/linearGradient id="bg"/);
+  assert.match(icon,/aria-label="Poply app icon"/);
 });
