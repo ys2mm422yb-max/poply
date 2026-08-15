@@ -35,13 +35,13 @@ test('spending while already below max keeps the running refill timer',()=>{
 test('energy recharge plan gives exact next point and total refill time without mutating state',()=>{
   const now=3_000_000,state={...base(),energy:35,energyUpdatedAt:now-30_000},snapshot=structuredClone(state);
   const plan=energyRechargePlan(state,now);
-  assert.deepEqual(state,snapshot);assert.equal(plan.energy,35);assert.equal(plan.missing,5);assert.equal(plan.nextMs,90_000);assert.equal(plan.fullMs,570_000);assert.equal(plan.fullAt,now+570_000);
+  assert.deepEqual(state,snapshot);assert.equal(plan.energy,35);assert.equal(plan.missing,5);assert.equal(plan.nextMs,90_000);assert.equal(plan.fullMs,570_000);assert.equal(plan.fullAt,now+570_000);assert.equal(plan.reserveCap,5);
   assert.equal(energyFullRechargeLabel(state,now),'Voll in ca. 10 Min');
 });
 
 test('energy recharge plan handles full and long recharge states clearly',()=>{
   const now=4_000_000;
-  assert.deepEqual(energyRechargePlan({...base(),energy:40,energyUpdatedAt:now},now),{energy:40,maxEnergy:40,reserve:0,missing:0,nextMs:0,fullMs:0,fullAt:now});
+  assert.deepEqual(energyRechargePlan({...base(),energy:40,energyUpdatedAt:now},now),{energy:40,maxEnergy:40,reserve:0,reserveCap:5,missing:0,nextMs:0,fullMs:0,fullAt:now});
   assert.equal(energyFullRechargeLabel({...base(),energy:0,energyUpdatedAt:now},now),'Voll in ca. 1 Std 20 Min');
 });
 
