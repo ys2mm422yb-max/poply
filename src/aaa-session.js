@@ -32,7 +32,7 @@ export function generateAt(index){
   if(result.changed){
     result.state=recordEnergySpend(result.state,beforeEnergy);
     const item=result.state.board[result.spawnedIndex],discovery=recordItemDiscovery(result.state,item);
-    result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(item):null;result.progression=discovery.progression||null;
+    result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(item):null;result.progression=discovery.progression||null;result.mastery=discovery.mastery||null;
     const generated=progressDailyEvent(result.state,'generate');result.state=generated.state;
     if(discovery.changed){const discovered=progressDailyEvent(result.state,'discover');result.state=discovered.state;}
     keep(result.state);
@@ -43,7 +43,7 @@ export function moveOrMergeAt(from,to){
   const result=moveOrMerge(getState(),from,to);
   if(result.changed){
     if(result.type==='merge'){
-      const discovery=recordItemDiscovery(result.state,result.item);result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(result.item):null;result.progression=discovery.progression||null;
+      const discovery=recordItemDiscovery(result.state,result.item);result.state=discovery.state;result.discovery=discovery.changed?discovery:null;result.discoveredItem=discovery.changed?structuredClone(result.item):null;result.progression=discovery.progression||null;result.mastery=discovery.mastery||null;
       const merged=progressDailyEvent(result.state,'merge');result.state=merged.state;
       if(discovery.changed){const discovered=progressDailyEvent(result.state,'discover');result.state=discovered.state;}
     }
