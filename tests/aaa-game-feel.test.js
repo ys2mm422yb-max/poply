@@ -17,9 +17,24 @@ test('AAA UI turns fulfilled jobs into delivery and reward travel feedback',asyn
   const ui=await read('src/aaa-ui.js');
   assert.match(ui,/playDelivery\(card\)/);
   assert.match(ui,/querySelectorAll\('\.need \.item-art'\)/);
-  assert.match(ui,/playRewards\(result\.rewards\)/);
-  assert.match(ui,/\.resource\.coin/);
-  assert.match(ui,/\.mission-card/);
+  assert.match(ui,/rewardAnchor=card\?\.querySelector\('\.service-rewards,\.board-job-reward'\)\|\|card/);
+  assert.match(ui,/rewardOrigin=centerPoint\(rewardAnchor\)/);
+  assert.match(ui,/playRewards\(result\.rewards,rewardOrigin\)/);
+  assert.match(ui,/const coinTarget=root\.querySelector\('\.resource\.coin'\),starTarget=root\.querySelector\('\.resource\.star'\)/);
+  assert.match(ui,/rewardOriginBurst\(origin\)/);
+});
+
+test('delivery reward payoff originates at service and lands on real Coin/Star resources',async()=>{
+  const [css,index,ui]=await Promise.all([read('src/aaa-delivery-reward.css'),read('index.html'),read('src/aaa-ui.js')]);
+  assert.match(css,/\.reward-origin-burst/);
+  assert.match(css,/\.delivery-flight\.coin-flight/);
+  assert.match(css,/\.delivery-flight\.star-flight/);
+  assert.match(css,/\.resource\.coin\.fx-reward-arrive/);
+  assert.match(css,/\.resource\.star\.fx-reward-arrive/);
+  assert.match(css,/\.service-purpose\.fx-reward-purpose/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*delivery-flight\.reward-flight/);
+  assert.match(index,/aaa-delivery-reward\.css\?v=20260815-delivery2/);
+  assert.doesNotMatch(ui,/const origin=root\.querySelector\('\.resource\.star'\)/);
 });
 
 test('successful builds switch to Place and resolve named unlock reveals from chapter data',async()=>{
