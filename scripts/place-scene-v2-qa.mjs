@@ -40,18 +40,18 @@ const inspectStage=async(stage,height)=>{
   await seed(stage);
   const hero=page.locator('.view-place .world-hero');
   const scene=hero.locator('.place-scene-v2');
-  const built=scene.locator('.scene-upgrade:not(.scene-upgrade-preview)');
   assert(await scene.count()===1,`stage ${stage}: Scene V2 root missing`);
   assert(await scene.locator('.scene-depth-back').count()===1,`stage ${stage}: back depth missing`);
   assert(await scene.locator('.cafe-side-face').count()===1,`stage ${stage}: volumetric side face missing`);
-  assert(await built.count()===stage,`stage ${stage}: expected ${stage} built authored upgrade groups`);
+  const builtCount=await scene.evaluate(svg=>Array.from(svg.children).filter(node=>node.classList?.contains('scene-upgrade')&&!node.classList.contains('scene-upgrade-preview')).length);
+  assert(builtCount===stage,`stage ${stage}: expected ${stage} built authored upgrade groups, got ${builtCount}`);
   if(stage<6){
-    const preview=scene.locator('.scene-upgrade-preview');
+    const preview=scene.locator(':scope > .scene-upgrade-preview');
     assert(await preview.count()===1,`stage ${stage}: next-upgrade blueprint preview missing`);
     assert(await preview.getAttribute('data-preview-upgrade')===upgrades[stage],`stage ${stage}: blueprint does not match next authored upgrade`);
   }
   if(stage>0){
-    const latest=scene.locator(`.scene-upgrade.${upgrades[stage-1]}:not(.scene-upgrade-preview)`),box=await latest.boundingBox(),heroBox=await hero.boundingBox();
+    const latest=scene.locator(`:scope > .scene-upgrade.${upgrades[stage-1]}:not(.scene-upgrade-preview)`),box=await latest.boundingBox(),heroBox=await hero.boundingBox();
     assert(box&&heroBox,`stage ${stage}: latest built authored upgrade geometry missing`);
     const ratio=(box.width*box.height)/(heroBox.width*heroBox.height);
     assert(ratio>.035,`stage ${stage}: latest built authored upgrade is visually too small (${ratio.toFixed(3)})`);
