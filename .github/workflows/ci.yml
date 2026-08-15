@@ -23,3 +23,6 @@ jobs:
       - run: node --check src/aaa-board-atmosphere.js
       - run: node --test tests/aaa-vibrance.test.js
       - run: node --check scripts/visual-vibrance-qa.mjs
+      - run: node --test tests/aaa-world-life.test.js
+      - run: node --check src/aaa-world-life.js
+      - run: node --check scripts/world-life-qa.mjs
