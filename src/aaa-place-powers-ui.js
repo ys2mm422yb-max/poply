@@ -4,7 +4,7 @@ import { placePowerForUpgrade, placePowerStatus, unlockedPlacePowers } from './a
 
 const swap='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h11l-2.6-2.6M19 17H8l2.6 2.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const unlockToast=power=>({
-  'evening-service':'Abendservice frei · Special → +1 FLOW',
+  'evening-service':'Neue Fähigkeit: Abendservice · +1 FLOW',
   'counter-prep':'Vorbereitung frei · Nächster Drop +1',
   'guest-choice':'Gastwahl frei · 1 Auftrag tauschen',
 }[power?.key]||`${power?.label||'Fähigkeit'} frei`);
