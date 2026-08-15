@@ -46,7 +46,7 @@ try{
   assert(drop?.family==='bakery'&&drop?.level===2,`chosen pantry boost did not create tier-2 bakery ${JSON.stringify(drop)}`);
   assert(((await page.locator('.flow-hud').textContent())||'').includes('0/3'),'Flow HUD did not reset after consuming boost');
   assert(await page.locator('.flow-boost-target').count()===0,'generator boost targets remained after consumption');
-  await assertNoScroll('consumed Flow 390x844');await shot('98-merge-flow-boosted-drop-390x844');
+  await assertNoScroll('consumed Flow 390x844');await page.waitForTimeout(750);await shot('98-merge-flow-boosted-drop-390x844');
 
   await page.setViewportSize({width:390,height:720});await reset();await charge();
   assert(await page.locator('.board-cell.generator.flow-boost-target').count()===2,'short viewport lost generator boost choices');
