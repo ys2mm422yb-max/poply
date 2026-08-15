@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Poply app icon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#48d8ee"/><stop offset=".48" stop-color="#3ba9dc"/><stop offset="1" stop-color="#2464b3"/></linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#38c8c9"/><stop offset="1" stop-color="#15779e"/></linearGradient>
+    <linearGradient id="beak" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffc34c"/><stop offset="1" stop-color="#f17a25"/></linearGradient>
+    <linearGradient id="cup" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#72e5e1"/><stop offset="1" stop-color="#1592b4"/></linearGradient>
+    <radialGradient id="face" cx="50%" cy="34%" r="68%"><stop stop-color="#fffef6"/><stop offset=".7" stop-color="#f5efe0"/><stop offset="1" stop-color="#d9dfdf"/></radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#07395b" flood-opacity=".28"/></filter>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <rect width="512" height="512" fill="#155f78"/>
+  <rect x="18" y="18" width="476" height="476" rx="112" fill="url(#bg)"/>
+  <circle cx="398" cy="101" r="62" fill="#fff4ad" opacity=".92"/>
+  <circle cx="398" cy="101" r="90" fill="#fff4ad" opacity=".18" filter="url(#glow)"/>
+  <path d="M18 273c77-36 146-28 214-8 73 22 153 35 262-13v242H18Z" fill="url(#sea)" opacity=".9"/>
+  <path d="M18 331c90-25 160-5 236 14 73 18 145 19 240-25v174H18Z" fill="#f5d98d" opacity=".96"/>
+  <path d="M388 169c31-27 55-23 76-17-11 5-21 13-29 24 17-6 32-3 45 6-29 6-51 17-68 36Z" fill="#3d9b6e" opacity=".96"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="256" cy="276" rx="151" ry="174" fill="url(#face)"/>
+    <path d="M150 303c-38 25-61 68-58 118 27-4 56 5 83 24l31-92Z" fill="#344d74"/>
+    <path d="M362 303c38 25 61 68 58 118-27-4-56 5-83 24l-31-92Z" fill="#344d74"/>
+    <path d="M199 142c16-37 38-57 57-57 20 0 43 20 57 57-19-12-38-17-57-17s-38 5-57 17Z" fill="#f5f0e6"/>
+    <path d="M218 97c19 2 31 13 38 31 4-26 17-42 38-49-3 26-15 46-38 60-9-21-22-35-38-42Z" fill="#fffaf0"/>
+    <ellipse cx="207" cy="222" rx="48" ry="55" fill="#fff" stroke="#29415d" stroke-width="9"/>
+    <ellipse cx="305" cy="222" rx="48" ry="55" fill="#fff" stroke="#29415d" stroke-width="9"/>
+    <circle cx="214" cy="228" r="23" fill="#14364e"/><circle cx="298" cy="228" r="23" fill="#14364e"/>
+    <circle cx="221" cy="220" r="8" fill="#fff"/><circle cx="305" cy="220" r="8" fill="#fff"/>
+    <path d="M174 165c18-17 39-22 62-13" fill="none" stroke="#b55f31" stroke-width="12" stroke-linecap="round"/>
+    <path d="M338 165c-18-17-39-22-62-13" fill="none" stroke="#b55f31" stroke-width="12" stroke-linecap="round"/>
+    <path d="M256 238c-37 4-66 25-78 53 25 31 51 45 78 45s53-14 78-45c-12-28-41-49-78-53Z" fill="url(#beak)" stroke="#b94e20" stroke-width="7"/>
+    <path d="M194 292c40 19 84 19 124 0-18 26-39 38-62 38s-44-12-62-38Z" fill="#c84b28" opacity=".82"/>
+    <g transform="translate(151 323)">
+      <ellipse cx="105" cy="24" rx="97" ry="28" fill="#fff7e8" stroke="#d8c5a5" stroke-width="7"/>
+      <path d="M17 24h176l-14 119c-3 28-22 43-49 43H80c-27 0-46-15-49-43Z" fill="url(#cup)" stroke="#e8efe9" stroke-width="7"/>
+      <ellipse cx="105" cy="24" rx="80" ry="18" fill="#7f442b"/><ellipse cx="105" cy="20" rx="66" ry="12" fill="#b86e43" opacity=".9"/>
+      <path d="M194 54c56-6 66 67 17 88-17 7-32 2-42-8" fill="none" stroke="#e9eee9" stroke-width="18" stroke-linecap="round"/>
+      <path d="M105 92c-20-24-51-10-51 14 0 24 25 41 51 60 26-19 51-36 51-60 0-24-31-38-51-14Z" fill="#ffd69b" stroke="#fff1d2" stroke-width="5"/>
+    </g>
+  </g>
+  <g fill="#fff7b8"><path d="M91 116l6 17 17 6-17 6-6 17-6-17-17-6 17-6Z"/><path d="M424 265l5 13 13 5-13 5-5 13-5-13-13-5 13-5Z"/></g>
+</svg>

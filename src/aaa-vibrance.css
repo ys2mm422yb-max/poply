@@ -1,0 +1,160 @@
+/* User-driven vibrance pass: family-aware Board feedback + living Places.
+   Loaded last so it can refine presentation without touching gameplay geometry. */
+
+.board-cell.family-coffee{--fx-rgb:240,154,91;--fx-accent:#f09a5b}
+.board-cell.family-bakery{--fx-rgb:243,207,98;--fx-accent:#f3cf62}
+.board-cell.family-sweet{--fx-rgb:239,143,187;--fx-accent:#ef8fbb}
+.board-cell.family-fruit{--fx-rgb:143,220,103;--fx-accent:#8fdc67}
+.board-cell.family-herb{--fx-rgb:92,210,154;--fx-accent:#5cd29a}
+.board-cell.generator-coffee-gen{--fx-rgb:240,154,91;--fx-accent:#f09a5b}
+.board-cell.generator-pantry-gen{--fx-rgb:243,207,98;--fx-accent:#f3cf62}
+.board-cell.generator-sunset-gen{--fx-rgb:255,132,111;--fx-accent:#ff846f}
+.board-cell.generator-garden-gen{--fx-rgb:92,210,154;--fx-accent:#5cd29a}
+
+/* The Board itself should not read as one flat petrol slab. */
+.production-board .board-frame{
+  border-color:rgba(133,213,220,.55)!important;
+  background:
+    radial-gradient(circle at 9% 9%,rgba(255,158,105,.28),transparent 28%),
+    radial-gradient(circle at 91% 12%,rgba(157,124,244,.27),transparent 29%),
+    radial-gradient(circle at 16% 88%,rgba(88,208,202,.22),transparent 31%),
+    radial-gradient(circle at 86% 90%,rgba(130,213,100,.2),transparent 30%),
+    linear-gradient(145deg,#16495d 0,#263651 43%,#183f59 67%,#124d4e 100%)!important;
+  box-shadow:0 18px 38px rgba(19,34,60,.28),0 0 0 1px rgba(255,255,255,.055),inset 0 1px rgba(255,255,255,.16),inset 0 -12px 30px rgba(16,24,52,.18)!important;
+}
+.production-board .board-frame:before{border-color:rgba(176,226,232,.17)!important}
+.production-board .board-cell.empty{box-shadow:inset 0 0 0 1px rgba(210,236,237,.07),inset 0 1px rgba(255,255,255,.025)!important}
+.production-board .board-cell.empty:nth-child(4n+1){background:linear-gradient(145deg,rgba(255,169,117,.075),rgba(255,255,255,.018))!important}
+.production-board .board-cell.empty:nth-child(4n+2){background:linear-gradient(145deg,rgba(106,206,232,.065),rgba(255,255,255,.018))!important}
+.production-board .board-cell.empty:nth-child(4n+3){background:linear-gradient(145deg,rgba(178,132,244,.07),rgba(255,255,255,.018))!important}
+.production-board .board-cell.empty:nth-child(4n){background:linear-gradient(145deg,rgba(143,220,103,.06),rgba(255,255,255,.018))!important}
+
+/* Occupied cells carry the family colour strongly enough to remain visible after a merge. */
+.production-board .board-cell.family-coffee:before{
+  background:radial-gradient(circle at 42% 22%,#fff9e9 0,#ffd0a2 52%,#ed9164 100%)!important;
+  box-shadow:0 6px 11px rgba(68,38,25,.24),0 0 18px rgba(240,154,91,.34),inset 0 1px rgba(255,255,255,.96)!important;
+}
+.production-board .board-cell.family-bakery:before{
+  background:radial-gradient(circle at 42% 22%,#fffde6 0,#f9e597 52%,#e1b74f 100%)!important;
+  box-shadow:0 6px 11px rgba(72,51,17,.22),0 0 18px rgba(243,207,98,.31),inset 0 1px rgba(255,255,255,.96)!important;
+}
+.production-board .board-cell.family-sweet:before{
+  background:radial-gradient(circle at 42% 22%,#fff3fa 0,#f8bed8 52%,#db78aa 100%)!important;
+  box-shadow:0 6px 11px rgba(74,29,52,.22),0 0 20px rgba(239,143,187,.34),inset 0 1px rgba(255,255,255,.96)!important;
+}
+.production-board .board-cell.family-fruit:before{
+  background:radial-gradient(circle at 42% 22%,#f7ffe5 0,#d4efa0 50%,#7ecb62 100%)!important;
+  box-shadow:0 6px 11px rgba(34,70,24,.22),0 0 20px rgba(143,220,103,.34),inset 0 1px rgba(255,255,255,.96)!important;
+}
+.production-board .board-cell.family-herb:before{
+  background:radial-gradient(circle at 42% 22%,#effff4 0,#aee8c5 52%,#55b986 100%)!important;
+  box-shadow:0 6px 11px rgba(25,70,51,.22),0 0 20px rgba(92,210,154,.34),inset 0 1px rgba(255,255,255,.96)!important;
+}
+.production-board .board-cell.merge-ready:before{
+  box-shadow:0 5px 10px rgba(0,19,25,.18),0 0 0 2px rgba(var(--fx-rgb,102,215,208),.7),0 0 21px rgba(var(--fx-rgb,102,215,208),.4),inset 0 1px rgba(255,255,255,.96)!important;
+}
+.production-board .board-cell.drop-merge:before{
+  transform:scale(1.09);
+  box-shadow:0 0 0 3px rgba(var(--fx-rgb,105,215,74),.92),0 0 28px rgba(var(--fx-rgb,105,215,74),.68),inset 0 1px rgba(255,255,255,.96)!important;
+}
+
+/* Real merge impact: target ring and afterglow inherit the merged family instead of generic cyan/blue. */
+.board-cell.fx-merge{animation:poply-family-merge-snap .66s cubic-bezier(.16,.9,.2,1)!important}
+.board-cell.fx-merge::before{
+  border-color:rgba(var(--fx-rgb,255,220,105),.98)!important;
+  box-shadow:0 0 0 5px rgba(var(--fx-rgb,255,220,105),.17),0 0 30px rgba(var(--fx-rgb,255,194,75),.58),inset 0 1px rgba(255,255,255,.96)!important;
+  animation:poply-family-tier-ring .66s ease-out both!important;
+}
+.board-cell.fx-merge::after{
+  inset:-24%!important;
+  background:
+    radial-gradient(circle,rgba(255,255,240,.96) 0,rgba(var(--fx-rgb,255,215,95),.48) 24%,rgba(var(--fx-rgb,255,215,95),.18) 42%,transparent 63%),
+    repeating-conic-gradient(from 5deg,transparent 0 8deg,rgba(var(--fx-rgb,255,220,105),.8) 9deg 11deg,transparent 12deg 28deg)!important;
+  filter:drop-shadow(0 0 8px rgba(var(--fx-rgb,255,194,75),.64));
+  animation:poply-family-tier-flash .64s ease-out both!important;
+}
+.board-cell.fx-tier-up .item-art{animation:poply-family-art-reveal .64s cubic-bezier(.16,.9,.2,1) both!important}
+@keyframes poply-family-merge-snap{
+  0%{transform:scale(.9);filter:brightness(1.7) saturate(1.45)}
+  31%{transform:scale(1.1);filter:brightness(1.38) saturate(1.36);box-shadow:0 0 0 8px rgba(var(--fx-rgb,255,210,90),.19),0 0 34px rgba(var(--fx-rgb,255,190,70),.55)}
+  66%{transform:scale(1.17);filter:brightness(1.18) saturate(1.24);box-shadow:0 0 0 4px rgba(var(--fx-rgb,255,210,90),.1),0 0 22px rgba(var(--fx-rgb,255,190,70),.35)}
+  100%{transform:scale(1);filter:none;box-shadow:none}
+}
+@keyframes poply-family-tier-ring{0%{opacity:1;transform:scale(.52) rotate(-8deg)}67%{opacity:.68;transform:scale(1.23) rotate(3deg)}100%{opacity:0;transform:scale(1.62) rotate(8deg)}}
+@keyframes poply-family-tier-flash{0%{opacity:.98;transform:scale(.68) rotate(-7deg)}50%{opacity:.8;transform:scale(1.04) rotate(2deg)}100%{opacity:0;transform:scale(1.4) rotate(10deg)}}
+@keyframes poply-family-art-reveal{0%{transform:scale(.88) rotate(-4deg);filter:brightness(1.95) saturate(1.5)}44%{transform:scale(1.22) rotate(2deg);filter:brightness(1.3) saturate(1.32)}100%{transform:scale(1.04);filter:drop-shadow(0 4px 2px rgba(0,20,25,.18)) saturate(1.14)}}
+
+/* Orders: keep contrast, but stop reading as one continuous green-teal dashboard. */
+.service-orders{
+  background:
+    radial-gradient(circle at 9% 7%,rgba(255,139,104,.24),transparent 29%),
+    radial-gradient(circle at 92% 14%,rgba(160,125,244,.24),transparent 31%),
+    radial-gradient(circle at 48% 63%,rgba(83,210,202,.18),transparent 40%),
+    linear-gradient(160deg,#173f5b 0,#174b5b 48%,#29365d 100%)!important;
+}
+.service-hero{
+  background:radial-gradient(circle at 12% 18%,rgba(255,196,96,.23),transparent 34%),radial-gradient(circle at 91% 16%,rgba(239,143,187,.2),transparent 36%),linear-gradient(135deg,#28727b,#315f7f 58%,#654a70)!important;
+  border-color:rgba(182,226,220,.34)!important;
+}
+.customer-choice:nth-child(1){background:linear-gradient(145deg,#337b79,#175368)!important}
+.customer-choice:nth-child(2){background:linear-gradient(145deg,#416f98,#254d72)!important}
+.customer-choice:nth-child(3){background:linear-gradient(145deg,#76597d,#3e496b)!important}
+.customer-choice.selected{background:radial-gradient(circle at 18% 10%,rgba(255,214,105,.25),transparent 44%),linear-gradient(145deg,#3c8380,#2b5f7a 62%,#6b526f)!important}
+.service-card{
+  border-color:rgba(166,222,216,.32)!important;
+  background:
+    radial-gradient(circle at 10% 13%,rgba(255,202,96,.22),transparent 28%),
+    radial-gradient(circle at 91% 17%,rgba(239,143,187,.18),transparent 32%),
+    radial-gradient(circle at 55% 95%,rgba(105,188,243,.17),transparent 38%),
+    linear-gradient(145deg,#286d76,#285773 58%,#4b466b)!important;
+}
+.service-purpose{background:linear-gradient(90deg,rgba(255,221,127,.18),rgba(239,143,187,.09),rgba(102,215,208,.11))!important}
+
+/* Places: the art continues to live between upgrades instead of freezing like a static illustration. */
+.production-place{
+  background:
+    radial-gradient(circle at 8% 4%,rgba(98,219,211,.22),transparent 32%),
+    radial-gradient(circle at 93% 11%,rgba(164,127,244,.2),transparent 35%),
+    linear-gradient(160deg,#123e58,#173c55 55%,#273355)!important;
+}
+.world-hero{border-color:rgba(184,229,220,.34)!important;box-shadow:0 22px 48px rgba(12,24,48,.34),0 0 28px rgba(95,205,203,.08),inset 0 1px rgba(255,255,255,.18)!important}
+.world-art{overflow:hidden}
+.world-art::after{content:'';position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.74}
+.place-coast .world-art::after{
+  background:
+    radial-gradient(ellipse at 22% 42%,rgba(105,239,236,.2),transparent 24%),
+    radial-gradient(ellipse at 72% 37%,rgba(255,226,137,.21),transparent 27%),
+    linear-gradient(100deg,transparent 10%,rgba(255,255,255,.11) 31%,transparent 47% 67%,rgba(98,219,211,.09) 78%,transparent 91%);
+  animation:poply-coast-light 6.8s ease-in-out infinite alternate;
+}
+.place-sunset .world-art::after{
+  background:
+    radial-gradient(ellipse at 77% 33%,rgba(255,205,104,.28),transparent 25%),
+    radial-gradient(ellipse at 22% 48%,rgba(229,112,159,.18),transparent 28%),
+    linear-gradient(103deg,transparent 7%,rgba(255,236,171,.12) 29%,transparent 48% 65%,rgba(179,132,244,.11) 78%,transparent 94%);
+  animation:poply-sunset-light 5.9s ease-in-out infinite alternate;
+}
+.place-coast .place-command{
+  border-color:rgba(112,223,215,.35)!important;
+  background:radial-gradient(circle at 9% 3%,rgba(102,215,208,.24),transparent 34%),radial-gradient(circle at 92% 13%,rgba(255,201,105,.18),transparent 35%),linear-gradient(150deg,#1d6d75,#1b596d 56%,#315367)!important;
+}
+.place-sunset .place-command{
+  border-color:rgba(255,183,126,.32)!important;
+  background:radial-gradient(circle at 9% 3%,rgba(255,148,105,.23),transparent 34%),radial-gradient(circle at 92% 13%,rgba(196,137,244,.2),transparent 35%),linear-gradient(150deg,#6d4c68,#3c5573 56%,#265e70)!important;
+}
+.place-coast .journey-step>span{background:linear-gradient(145deg,#18586c,#244a6a)!important}
+.place-sunset .journey-step>span{background:linear-gradient(145deg,#65465f,#334d6d)!important}
+.scene-upgrade.lights circle,.scene-upgrade.sunset-lanterns circle{transform-box:fill-box;transform-origin:center;animation:poply-place-lamp-glow 2.4s ease-in-out infinite alternate}
+.scene-upgrade.lights circle:nth-child(4n+2),.scene-upgrade.sunset-lanterns circle:nth-child(4n+2){animation-delay:-.8s}
+.sunset-palms{transform-box:fill-box;transform-origin:50% 100%;animation:poply-palms-sway 4.6s ease-in-out infinite alternate}
+.scene-upgrade.sunset-fire path{transform-box:fill-box;transform-origin:50% 100%;animation:poply-fire-breathe .82s ease-in-out infinite alternate}
+@keyframes poply-coast-light{from{transform:translate3d(-12px,2px,0);opacity:.55}to{transform:translate3d(14px,-3px,0);opacity:.86}}
+@keyframes poply-sunset-light{from{transform:translate3d(-10px,2px,0);opacity:.56}to{transform:translate3d(13px,-2px,0);opacity:.88}}
+@keyframes poply-place-lamp-glow{from{filter:brightness(.92);opacity:.78}to{filter:brightness(1.32);opacity:1}}
+@keyframes poply-palms-sway{from{transform:rotate(-.65deg)}to{transform:rotate(.7deg)}}
+@keyframes poply-fire-breathe{from{transform:scale(.94) translateY(1px);filter:brightness(.95)}to{transform:scale(1.06) translateY(-1px);filter:brightness(1.22)}}
+
+@media(prefers-reduced-motion:reduce){
+  .board-cell.fx-merge,.board-cell.fx-merge::before,.board-cell.fx-merge::after,.board-cell.fx-tier-up .item-art,
+  .place-coast .world-art::after,.place-sunset .world-art::after,.scene-upgrade.lights circle,.scene-upgrade.sunset-lanterns circle,.sunset-palms,.scene-upgrade.sunset-fire path{animation:none!important;transform:none!important}
+}
