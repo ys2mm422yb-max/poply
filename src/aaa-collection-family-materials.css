@@ -1,0 +1,59 @@
+/* Collection family materials — give each discovery chain its own authored color identity
+   without changing discovery logic, touch targets, layout, or motion behavior. */
+
+.view-collection[data-collection-family-active="coffee"]{
+  --collection-accent:#ffd166;--collection-accent-soft:rgba(255,191,77,.24);--collection-accent-border:rgba(255,209,102,.42);
+  --collection-glow-a:rgba(229,153,64,.17);--collection-glow-b:rgba(85,206,185,.10);--collection-lock-a:#28585a;--collection-lock-b:#173e49;
+}
+.view-collection[data-collection-family-active="bakery"]{
+  --collection-accent:#f5aa6b;--collection-accent-soft:rgba(238,137,79,.23);--collection-accent-border:rgba(245,170,107,.42);
+  --collection-glow-a:rgba(229,126,78,.18);--collection-glow-b:rgba(245,199,110,.10);--collection-lock-a:#5a5149;--collection-lock-b:#34424a;
+}
+.view-collection[data-collection-family-active="sweet"]{
+  --collection-accent:#f39ac2;--collection-accent-soft:rgba(235,116,172,.23);--collection-accent-border:rgba(243,154,194,.42);
+  --collection-glow-a:rgba(226,105,167,.18);--collection-glow-b:rgba(125,170,239,.11);--collection-lock-a:#534a61;--collection-lock-b:#293e54;
+}
+.view-collection[data-collection-family-active="fruit"]{
+  --collection-accent:#ffb268;--collection-accent-soft:rgba(255,154,87,.23);--collection-accent-border:rgba(255,178,104,.44);
+  --collection-glow-a:rgba(244,123,83,.18);--collection-glow-b:rgba(100,211,160,.13);--collection-lock-a:#4f5e4f;--collection-lock-b:#244a50;
+}
+.view-collection[data-collection-family-active="herb"]{
+  --collection-accent:#a9df79;--collection-accent-soft:rgba(137,211,111,.24);--collection-accent-border:rgba(169,223,121,.44);
+  --collection-glow-a:rgba(111,198,103,.18);--collection-glow-b:rgba(241,210,102,.10);--collection-lock-a:#3d6250;--collection-lock-b:#21474a;
+}
+
+.view-collection[data-collection-family-active]{
+  background:
+    radial-gradient(circle at 13% 10%,var(--collection-glow-a),transparent 31%),
+    radial-gradient(circle at 92% 55%,var(--collection-glow-b),transparent 37%),
+    linear-gradient(180deg,#073744,#062b39);
+}
+.collection-hero{position:relative;overflow:hidden}
+.collection-hero:before{content:"";position:absolute;left:18px;right:92px;top:0;height:2px;border-radius:0 0 999px 999px;background:linear-gradient(90deg,transparent,var(--collection-accent),transparent);opacity:.7;pointer-events:none}
+.collection-total{border-color:var(--collection-accent-border);box-shadow:0 9px 20px rgba(0,15,25,.25),0 0 22px var(--collection-accent-soft)}
+.collection-total strong,.collection-focus header>strong{color:var(--collection-accent)}
+
+.collection-family{position:relative;overflow:hidden;transition:border-color .16s ease,background .16s ease,box-shadow .16s ease,color .16s ease}
+.collection-family:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.62;background:radial-gradient(circle at 50% -25%,var(--family-glow,rgba(120,203,194,.12)),transparent 64%)}
+.collection-family[data-collection-family="coffee"]{--family-glow:rgba(255,199,83,.34);border-color:rgba(236,190,83,.24)}
+.collection-family[data-collection-family="bakery"]{--family-glow:rgba(241,145,88,.32);border-color:rgba(230,137,85,.23)}
+.collection-family[data-collection-family="sweet"]{--family-glow:rgba(235,124,180,.31);border-color:rgba(224,116,171,.22)}
+.collection-family[data-collection-family="fruit"]{--family-glow:rgba(255,145,83,.31);border-color:rgba(246,148,83,.23)}
+.collection-family[data-collection-family="herb"]{--family-glow:rgba(133,211,111,.32);border-color:rgba(128,201,109,.24)}
+.collection-family.active{border-color:var(--collection-accent-border);background:linear-gradient(160deg,var(--collection-accent-soft),rgba(9,63,68,.94));box-shadow:0 6px 16px rgba(0,20,28,.22),0 0 18px var(--collection-accent-soft),inset 0 1px 0 rgba(255,255,255,.12)}
+.collection-family.active small{color:var(--collection-accent)}
+.collection-family[data-collection-family="herb"].active{border-color:var(--collection-accent-border);background:linear-gradient(160deg,var(--collection-accent-soft),rgba(17,77,66,.94))}
+
+.collection-focus{border-color:var(--collection-accent-border);background:radial-gradient(circle at 12% 0,var(--collection-accent-soft),transparent 33%),linear-gradient(165deg,rgba(8,67,75,.95),rgba(4,41,54,.97));box-shadow:0 13px 28px rgba(0,17,27,.22),0 0 28px color-mix(in srgb,var(--collection-accent) 9%,transparent),inset 0 1px 0 rgba(255,255,255,.065)}
+.collection-focus header small{color:color-mix(in srgb,var(--collection-accent) 68%,#b6d7d1)}
+.collection-tier.discovered{border-color:var(--collection-accent-border);box-shadow:0 6px 14px rgba(0,16,23,.22),0 0 15px color-mix(in srgb,var(--collection-accent) 12%,transparent),inset 0 1px 0 rgba(255,255,255,.72)}
+.collection-tier.locked{background:linear-gradient(160deg,var(--collection-lock-a),var(--collection-lock-b));border-color:color-mix(in srgb,var(--collection-accent) 18%,rgba(120,190,184,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 10px rgba(0,18,25,.12)}
+.collection-art.silhouette .item-art{filter:grayscale(.88) brightness(.24) opacity(.42);transform:scale(.86)}
+.collection-tier.locked .collection-tier-copy span{color:color-mix(in srgb,var(--collection-accent) 34%,#71999a)}
+.collection-tier.locked .collection-tier-copy small{color:#6f9291}
+
+.collection-world{padding-top:1px}
+.world-discovery{background:linear-gradient(165deg,rgba(9,58,67,.82),rgba(5,44,56,.8));box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.world-discovery.known{border-color:rgba(92,205,151,.2);background:linear-gradient(165deg,rgba(21,76,72,.84),rgba(6,48,59,.84))}
+
+@media(prefers-reduced-motion:reduce){.collection-family{transition:none}}
