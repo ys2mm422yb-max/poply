@@ -47,7 +47,7 @@ try{
   await page.waitForTimeout(1050);
   await page.locator('.nav-tab[data-view="collection"]').click();await page.waitForSelector('.view-collection');
   await assertFits('390x844 collection');
-  assert((await page.locator('.collection-total strong').textContent())==='4/24','collection total does not include the new tier');
+  assert((await page.locator('.collection-total strong').textContent())==='4/30','collection total does not include all five six-tier families');
   const coffee2=page.locator('[data-discovery-key="item:coffee:2"]');assert(await coffee2.evaluate(el=>el.classList.contains('discovered')),'coffee tier 2 is not shown discovered');
   assert((await coffee2.textContent())?.includes('Kaffeetasse'),'discovered tier does not show its real name');
   await shot('31-collection-coffee');
