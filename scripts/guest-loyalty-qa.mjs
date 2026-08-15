@@ -22,6 +22,13 @@ const assertInside=async(locator,label)=>{
   const box=await locator.boundingBox(),height=await page.evaluate(()=>window.visualViewport?.height||innerHeight);
   assert(box&&box.x>=-1&&box.y>=-1&&box.x+box.width<=391&&box.y+box.height<=height+1,`${label} outside viewport ${JSON.stringify(box)}`);
 };
+const assertChoiceTitlesFit=async label=>{
+  const titles=page.locator('.customer-choice strong');
+  for(let index=0;index<await titles.count();index+=1){
+    const metrics=await titles.nth(index).evaluate(node=>({text:node.textContent,scrollWidth:node.scrollWidth,clientWidth:node.clientWidth}));
+    assert(metrics.scrollWidth<=metrics.clientWidth+1,`${label}: guest choice title clips ${JSON.stringify(metrics)}`);
+  }
+};
 const seedReadyOpening=()=>page.evaluate(async()=>{
   const game=await import('./src/v2-game.js');
   const state=game.createInitialState();
@@ -46,6 +53,7 @@ try{
   assert(choiceTexts[0].includes('Mika')&&choiceTexts[0].includes('0/1'),`Mika fresh loyalty not visible: ${choiceTexts[0]}`);
   assert(choiceTexts[1].includes('Nora')&&choiceTexts[1].includes('0/1'),`Nora fresh loyalty not visible: ${choiceTexts[1]}`);
   assert(choiceTexts[2].includes('Sam')&&choiceTexts[2].includes('0/1'),`Sam fresh loyalty not visible: ${choiceTexts[2]}`);
+  await assertChoiceTitlesFit('fresh 390x844');
   const freshService=(await page.locator('.service-card[data-service-order="order-0"] .service-customer>span').textContent())||'';
   assert(freshService.includes('MIKA')&&freshService.includes('NEU'),`fresh selected guest rank missing: ${freshService}`);
   await assertInside(page.locator('.service-card[data-service-order="order-0"]'),'fresh Mika service card');
@@ -70,6 +78,7 @@ try{
   const knownService=(await page.locator('.service-card[data-service-order="order-3"] .service-customer>span').textContent())||'';
   assert(knownChoice.includes('Mika')&&knownChoice.includes('1/5'),`Mika next milestone progress missing: ${knownChoice}`);
   assert(knownService.includes('MIKA')&&knownService.includes('BEKANNT'),`Mika rank did not advance visibly: ${knownService}`);
+  await assertChoiceTitlesFit('known 390x844');
   await assertInside(page.locator('.service-card[data-service-order="order-3"]'),'known Mika service card');
   await assertNoScroll('guest loyalty known orders 390x844');
   await shot('92-guest-loyalty-known-390x844');
@@ -85,6 +94,7 @@ try{
 
   await page.setViewportSize({width:390,height:720});
   await page.waitForTimeout(100);
+  await assertChoiceTitlesFit('known 390x720');
   await assertInside(page.locator('.service-card[data-service-order="order-3"]'),'known Mika service card 390x720');
   await assertNoScroll('guest loyalty known orders 390x720');
   await shot('93-guest-loyalty-known-390x720');
@@ -100,6 +110,7 @@ try{
     reloadGuestVisits:reloaded.guestVisits,
     reloadCoins:reloaded.coins,
     noDuplicateReward:true,
+    choiceTitlesFit:true,
     viewports:['390x844','390x720'],
   };
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
