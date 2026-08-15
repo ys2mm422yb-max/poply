@@ -9,6 +9,8 @@
   "background_color": "#eaf6f2",
   "theme_color": "#155f78",
   "icons": [
-    {"src":"./assets/poply-app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {"src":"./assets/poply-app-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./assets/poply-app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
+    {"src":"./assets/poply-app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
   ]
 }
