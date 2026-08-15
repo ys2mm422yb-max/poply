@@ -24,12 +24,18 @@ export const ITEM_FAMILIES = {
     stages: ['Limette', 'Fruchtmix', 'Smoothie', 'Tropen-Drink', 'Sunset-Bowl', 'Poply Paradise'],
     art: ['fruit-1','fruit-2','fruit-3','fruit-4','fruit-5','fruit-6'],
   },
+  herb: {
+    key: 'herb', label: 'Dachgarten',
+    stages: ['Minze', 'Kräuterbund', 'Kräutersirup', 'Garten-Spritz', 'Blüten-Glas', 'Poply Gartenfest'],
+    art: ['herb-1','herb-2','herb-3','herb-4','herb-5','herb-6'],
+  },
 };
 
 export const GENERATORS = {
   'coffee-gen': { key: 'coffee-gen', label: 'Kaffeemaschine', art: 'generator-coffee', families: ['coffee'], energyCost: 1 },
   'pantry-gen': { key: 'pantry-gen', label: 'Vorratskiste', art: 'generator-pantry', families: ['bakery','sweet'], energyCost: 1 },
   'sunset-gen': { key: 'sunset-gen', label: 'Tropenbar', art: 'generator-sunset', families: ['fruit'], energyCost: 1 },
+  'garden-gen': { key: 'garden-gen', label: 'Gewächshaus', art: 'generator-garden', families: ['herb'], energyCost: 1, bonusEvery: 4, bonusLevel: 2, bonusLabel: 'Erntebonus' },
 };
 
 export const PLACE_01_UPGRADES = [
@@ -50,11 +56,21 @@ export const PLACE_02_UPGRADES = [
   { id: 'sunset-sign', label: 'Sonnenkai-Schild', cost: 18, copy: 'Das leuchtende Schild vollendet deinen zweiten Poply Place.' },
 ];
 
+export const PLACE_03_UPGRADES = [
+  { id: 'garden-glass', label: 'Glasdach', cost: 12, copy: 'Ein helles Glasdach macht aus der leeren Dachfläche ein echtes Gewächshaus.' },
+  { id: 'garden-beds', label: 'Pflanzbeete', cost: 14, copy: 'Neue Beete bringen Minze, Kräuter und Blüten mitten in die Stadt.' },
+  { id: 'garden-bar', label: 'Gartenbar', cost: 16, copy: 'Die Gartenbar macht die frische Ernte direkt für Gäste erlebbar.' },
+  { id: 'garden-seating', label: 'Sitzinseln', cost: 18, copy: 'Grüne Sitzinseln geben dem Dachgarten ruhige Plätze zwischen den Beeten.' },
+  { id: 'garden-lights', label: 'Lichterbogen', cost: 21, copy: 'Ein heller Lichterbogen hält den Dachgarten auch nach Sonnenuntergang lebendig.' },
+  { id: 'garden-sign', label: 'Dachgarten-Schild', cost: 24, copy: 'Das neue Schild vollendet Poplys ersten Garten über den Dächern.' },
+];
+
 export const PLACE_CHAPTERS = [
   { id:'coast', number:1, label:'Café am Meer', kicker:'KÜSTE', upgrades:PLACE_01_UPGRADES },
   { id:'sunset', number:2, label:'Sonnenkai', kicker:'ABENDKÜSTE', upgrades:PLACE_02_UPGRADES },
+  { id:'garden', number:3, label:'Dachgarten', kicker:'STADTGARTEN', upgrades:PLACE_03_UPGRADES },
 ];
-export const PLACE_UPGRADES = [...PLACE_01_UPGRADES, ...PLACE_02_UPGRADES];
+export const PLACE_UPGRADES = [...PLACE_01_UPGRADES, ...PLACE_02_UPGRADES, ...PLACE_03_UPGRADES];
 
 const COAST_ORDER_TEMPLATES = [
   { title:'Morgenkaffee', requirements:[{family:'coffee',level:2,qty:1}], rewards:{coins:45,stars:2} },
@@ -77,6 +93,16 @@ const SUNSET_ORDER_TEMPLATES = [
   { title:'Poply Paradise', requirements:[{family:'fruit',level:6,qty:1},{family:'coffee',level:5,qty:1},{family:'bakery',level:4,qty:1}], rewards:{coins:520,stars:10} },
 ];
 
+const GARDEN_ORDER_TEMPLATES = [
+  { title:'Minzgruß', requirements:[{family:'herb',level:2,qty:1}], rewards:{coins:105,stars:3} },
+  { title:'Grüne Pause', requirements:[{family:'herb',level:3,qty:1},{family:'bakery',level:2,qty:1}], rewards:{coins:160,stars:4} },
+  { title:'Dachgarten-Spritz', requirements:[{family:'herb',level:4,qty:1},{family:'fruit',level:2,qty:1}], rewards:{coins:220,stars:5} },
+  { title:'Blütenkaffee', requirements:[{family:'herb',level:4,qty:1},{family:'coffee',level:4,qty:1}], rewards:{coins:285,stars:6} },
+  { title:'Gartenabend', requirements:[{family:'herb',level:5,qty:1},{family:'sweet',level:4,qty:1}], rewards:{coins:380,stars:8} },
+  { title:'Poply Gartenfest', requirements:[{family:'herb',level:6,qty:1},{family:'fruit',level:5,qty:1},{family:'bakery',level:4,qty:1}], rewards:{coins:620,stars:11} },
+];
+
+const ORDER_TEMPLATES = { coast:COAST_ORDER_TEMPLATES, sunset:SUNSET_ORDER_TEMPLATES, garden:GARDEN_ORDER_TEMPLATES };
 const ORDER_DIFFICULTY_BANDS = {
   coast:[
     {key:'starter',minCompleted:0,maxCompleted:1,indexes:[0,1,2]},
@@ -88,6 +114,11 @@ const ORDER_DIFFICULTY_BANDS = {
     {key:'growing',minCompleted:2,maxCompleted:3,indexes:[1,2,3]},
     {key:'established',minCompleted:4,maxCompleted:6,indexes:[2,3,4,5]},
   ],
+  garden:[
+    {key:'starter',minCompleted:0,maxCompleted:1,indexes:[0,1]},
+    {key:'growing',minCompleted:2,maxCompleted:3,indexes:[1,2,3]},
+    {key:'established',minCompleted:4,maxCompleted:6,indexes:[2,3,4,5]},
+  ],
 };
 
 const clone = value => structuredClone(value);
@@ -95,7 +126,13 @@ function nextId(state,prefix='item'){ state.nextId += 1; return `${prefix}-${sta
 const completedUpgradeCount=(state,upgrades)=>upgrades.reduce((count,upgrade)=>count+(state.placeUpgrades.includes(upgrade.id)?1:0),0);
 
 export function isPlace01Complete(state){ return PLACE_01_UPGRADES.every(upgrade=>state.placeUpgrades.includes(upgrade.id)); }
-export function activePlaceChapter(state){ return isPlace01Complete(state)?PLACE_CHAPTERS[1]:PLACE_CHAPTERS[0]; }
+export function isPlace02Complete(state){ return PLACE_02_UPGRADES.every(upgrade=>state.placeUpgrades.includes(upgrade.id)); }
+export function isPlace03Complete(state){ return PLACE_03_UPGRADES.every(upgrade=>state.placeUpgrades.includes(upgrade.id)); }
+export function activePlaceChapter(state){
+  if(!isPlace01Complete(state))return PLACE_CHAPTERS[0];
+  if(!isPlace02Complete(state))return PLACE_CHAPTERS[1];
+  return PLACE_CHAPTERS[2];
+}
 export function currentChapterProgress(state){
   const chapter=activePlaceChapter(state);
   return {chapter,completed:completedUpgradeCount(state,chapter.upgrades),total:chapter.upgrades.length};
@@ -114,8 +151,17 @@ export function itemDefinition(item){
   const def=ITEM_FAMILIES[item.family];
   return {...def,name:def.stages[item.level-1],art:def.art[item.level-1],maxLevel:def.stages.length};
 }
+export function generatorProductionStatus(generator){
+  if(!generator||generator.kind!=='generator')return null;
+  const def=GENERATORS[generator.generator];
+  if(!def?.bonusEvery)return null;
+  const taps=Number.isInteger(generator.taps)&&generator.taps>=0?generator.taps:0;
+  const progress=taps%def.bonusEvery;
+  const nextStep=progress+1;
+  return {progress,total:def.bonusEvery,nextStep,bonusNext:nextStep===def.bonusEvery,bonusLevel:def.bonusLevel||2,label:def.bonusLabel||'Bonus'};
+}
 export function createOrder(sequence,chapterId='coast'){
-  const templates=chapterId==='sunset'?SUNSET_ORDER_TEMPLATES:COAST_ORDER_TEMPLATES;
+  const templates=ORDER_TEMPLATES[chapterId]??COAST_ORDER_TEMPLATES;
   const template=templates[sequence%templates.length];
   return {id:`order-${sequence}`,sequence,chapter:chapterId,title:template.title,requirements:clone(template.requirements),rewards:{...template.rewards}};
 }
@@ -128,7 +174,7 @@ export function orderDifficultyBand(state,chapterId=activePlaceChapter(state).id
 }
 
 export function createProgressionOrder(state,sequence=state.orderSequence,chapterId=activePlaceChapter(state).id){
-  const templates=chapterId==='sunset'?SUNSET_ORDER_TEMPLATES:COAST_ORDER_TEMPLATES;
+  const templates=ORDER_TEMPLATES[chapterId]??COAST_ORDER_TEMPLATES;
   const band=orderDifficultyBand(state,chapterId);
   const index=band.indexes[sequence%band.indexes.length];
   const template=templates[index];
@@ -146,11 +192,13 @@ export function createInitialState(){
 }
 
 export const firstEmptySlot = state => state.board.findIndex(slot=>slot===null);
+const ensureUnlockedGenerator=(state,unlocked,generator,id)=>{
+  if(!unlocked||state.board.some(item=>item?.kind==='generator'&&item.generator===generator))return;
+  const empty=firstEmptySlot(state);if(empty>=0)state.board[empty]=makeGenerator(generator,id);
+};
 export function syncProgressionContent(state){
-  if(!isPlace01Complete(state))return state;
-  if(state.board.some(item=>item?.kind==='generator'&&item.generator==='sunset-gen'))return state;
-  const empty=firstEmptySlot(state);
-  if(empty>=0)state.board[empty]=makeGenerator('sunset-gen','generator-sunset');
+  ensureUnlockedGenerator(state,isPlace01Complete(state),'sunset-gen','generator-sunset');
+  ensureUnlockedGenerator(state,isPlace02Complete(state),'garden-gen','generator-garden');
   return state;
 }
 
@@ -163,6 +211,7 @@ export function normalizeState(input){
   state.currentOrders=Array.isArray(state.currentOrders)&&state.currentOrders.length?state.currentOrders:[createOrder(0),createOrder(1),createOrder(2)];
   state.orderSequence=Number.isInteger(state.orderSequence)?state.orderSequence:3; state.nextId=Number.isInteger(state.nextId)?state.nextId:20;
   state.stats=state.stats??{merges:0,generated:0,orders:0};
+  state.board=state.board.map(item=>item?.kind==='generator'?{...item,taps:Number.isInteger(item.taps)&&item.taps>=0?item.taps:0}:item);
   syncProgressionContent(state);
   state.updatedAt=Date.now(); return state;
 }
@@ -172,9 +221,12 @@ export function generateFromSlot(inputState,index){
   if(!generator||generator.kind!=='generator') return {state:inputState,changed:false,reason:'not-generator'};
   const def=GENERATORS[generator.generator]; if(state.energy<def.energyCost) return {state:inputState,changed:false,reason:'no-energy'};
   const empty=firstEmptySlot(state); if(empty<0) return {state:inputState,changed:false,reason:'board-full'};
-  const family=def.families[generator.taps%def.families.length]; state.board[index]={...generator,taps:generator.taps+1};
-  state.board[empty]=makeItem(family,1,nextId(state,family)); state.energy-=def.energyCost; state.stats.generated+=1; state.updatedAt=Date.now();
-  return {state,changed:true,reason:null,spawnedIndex:empty,family};
+  const taps=Number.isInteger(generator.taps)&&generator.taps>=0?generator.taps:0;
+  const family=def.families[taps%def.families.length];
+  const nextTap=taps+1,bonus=!!(def.bonusEvery&&nextTap%def.bonusEvery===0),level=bonus?(def.bonusLevel||2):1;
+  state.board[index]={...generator,taps:nextTap};
+  state.board[empty]=makeItem(family,level,nextId(state,family)); state.energy-=def.energyCost; state.stats.generated+=1; state.updatedAt=Date.now();
+  return {state,changed:true,reason:null,spawnedIndex:empty,family,level,bonus,production:generatorProductionStatus(state.board[index])};
 }
 export function canMerge(a,b){ return !!(a&&b&&a.kind==='item'&&b.kind==='item'&&a.family===b.family&&a.level===b.level&&a.level<ITEM_FAMILIES[a.family].stages.length); }
 export function moveOrMerge(inputState,from,to){
@@ -208,7 +260,7 @@ export function buildNextUpgrade(inputState){
   const upgrade=nextPlaceUpgrade(inputState); if(!upgrade) return {state:inputState,changed:false,reason:'place-complete'};
   if(inputState.stars<upgrade.cost) return {state:inputState,changed:false,reason:'not-enough-stars',upgrade};
   const state=clone(inputState); state.stars-=upgrade.cost; state.placeUpgrades.push(upgrade.id);
-  const unlockedPlace=upgrade.id==='sign'?'sunset':null; syncProgressionContent(state); state.updatedAt=Date.now();
+  const unlockedPlace=upgrade.id==='sign'?'sunset':upgrade.id==='sunset-sign'?'garden':null; syncProgressionContent(state); state.updatedAt=Date.now();
   return {state,changed:true,reason:null,upgrade,unlockedPlace};
 }
 export function addEnergy(inputState,amount){ const state=clone(inputState); state.energy=Math.min(state.maxEnergy,state.energy+Math.max(0,amount)); state.updatedAt=Date.now(); return state; }

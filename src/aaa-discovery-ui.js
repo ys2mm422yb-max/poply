@@ -1,8 +1,9 @@
 import { itemDefinition } from './v2-game.js';
 import { artMarkup } from './aaa-art.js';
 import { canRenderSunsetArt, sunsetArtMarkup } from './aaa-sunset-art.js';
+import { canRenderGardenArt, gardenArtMarkup } from './aaa-garden-art.js';
 
-const renderArt=art=>canRenderSunsetArt(art)?sunsetArtMarkup(art):artMarkup(art);
+const renderArt=art=>canRenderGardenArt(art)?gardenArtMarkup(art):canRenderSunsetArt(art)?sunsetArtMarkup(art):artMarkup(art);
 
 export function installDiscoveryUI(root){
   let leaveTimer=0,removeTimer=0;

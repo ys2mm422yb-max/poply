@@ -1,6 +1,7 @@
 import { COPY, headerMarkup, navMarkup, boardView, placeView, ordersView } from './aaa-view.js';
 import { collectionView, navWithCollection } from './aaa-collection-view.js';
 import { getState, resetSession, generateAt, deliverOrder, buildUpgrade } from './aaa-session.js';
+import { PLACE_CHAPTERS } from './v2-game.js';
 import { playFeedback } from './aaa-feedback.js';
 
 export function createUI(root,toast){
@@ -44,8 +45,9 @@ export function createUI(root,toast){
     const scene=root.querySelector('.world-hero,.scene-card');if(!scene)return;
     scene.classList.add('fx-restoration-reveal');
     const reveal=document.createElement('div');reveal.className=`restoration-reveal${unlockedPlace?' place-unlock-reveal':''}`;reveal.setAttribute('aria-live','polite');
-    reveal.innerHTML=unlockedPlace?`<span>02</span><small>NEUER PLACE FREIGESCHALTET</small><strong>Sonnenkai</strong>`:`<span>✓</span><small>AUSBAU FERTIG</small><strong>${upgrade.label}</strong>`;
-    scene.append(reveal);setTimeout(()=>reveal.remove(),unlockedPlace?2200:1700);
+    const chapter=unlockedPlace?PLACE_CHAPTERS.find(entry=>entry.id===unlockedPlace):null;
+    reveal.innerHTML=chapter?`<span>0${chapter.number}</span><small>NEUER PLACE FREIGESCHALTET</small><strong>${chapter.label}</strong>`:`<span>✓</span><small>AUSBAU FERTIG</small><strong>${upgrade.label}</strong>`;
+    scene.append(reveal);setTimeout(()=>reveal.remove(),chapter?2200:1700);
   });
   const render=()=>{
     const state=getState();root.dataset.view=view;
@@ -68,7 +70,8 @@ export function createUI(root,toast){
       if(!result.changed){playFeedback('invalid');message('Für dieses Ziel fehlen noch Sterne.','bad');}
       else{
         playFeedback('restoration');view='place';menuOpen=false;render();playRestorationReveal(result.upgrade,result.unlockedPlace);emitProgression(result,'restoration');
-        message(result.unlockedPlace==='sunset'?'Place 02 freigeschaltet: Sonnenkai':`Ausbau geschafft: ${result.upgrade.label}`);
+        const unlocked=PLACE_CHAPTERS.find(entry=>entry.id===result.unlockedPlace);
+        message(unlocked?`Place 0${unlocked.number} freigeschaltet: ${unlocked.label}`:`Ausbau geschafft: ${result.upgrade.label}`);
       }
       return;
     }
@@ -88,7 +91,7 @@ export function createUI(root,toast){
   const spawn=index=>{
     const result=generateAt(index);
     if(!result.changed){playFeedback('invalid');message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
-    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};playFeedback('spawn');message(result.discovery?'Neue Entdeckung!':'Neues Item');render();emitDiscovery(result);
+    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};playFeedback('spawn');message(result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item');render();emitDiscovery(result);
   };
   return {render,message,spawn,getView:()=>view,getSelectedOrder:()=>selectedOrderId,feedback:playFeedback,setFx:fx=>{lastFx=fx;},discovery:emitDiscovery,progression:emitProgression};
 }
