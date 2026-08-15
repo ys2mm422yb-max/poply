@@ -17,7 +17,7 @@ function previewLayer(goal){
 function decorateBoard(root,goal){
   const card=root.querySelector('.mission-card.compact');if(!card)return;
   card.classList.add('purpose-card');
-  const small=card.querySelector('.mission-copy small'),strong=card.querySelector('.mission-copy strong'),value=card.querySelector('.mission-copy span');
+  const copy=card.querySelector('.mission-copy'),small=copy?.querySelector('small'),strong=copy?.querySelector('strong'),value=copy?.querySelector('span');
   if(goal.complete){
     if(small)small.textContent='DEINE POPLY-WELT';if(strong)strong.textContent='Alle Places aufgebaut';if(value)value.textContent='Alles sichtbar restauriert';
     return;
@@ -25,8 +25,8 @@ function decorateBoard(root,goal){
   if(small)small.textContent=`NÄCHSTES ZIEL · ${goal.step}/${goal.total}`;
   if(strong)strong.textContent=goal.label;
   if(value)value.textContent=goal.ready?`★ ${goal.cost}/${goal.cost} · BEREIT`:`★ ${goal.current}/${goal.cost} · noch ${goal.missing}`;
-  let after=card.querySelector('.purpose-after');
-  if(!after){after=document.createElement('small');after.className='purpose-after';card.querySelector('.mission-progress')?.after(after);}
+  let after=copy?.querySelector('.purpose-after');
+  if(copy&&!after){after=document.createElement('small');after.className='purpose-after purpose-board-after';copy.append(after);}
   if(after)after.textContent=`Danach: ${goal.after?.label??'weiter ausbauen'}`;
   const button=card.querySelector('button');
   if(button){button.disabled=false;button.removeAttribute('data-action');button.dataset.purposeGoPlace='';button.textContent=goal.ready?'Jetzt im Place bauen':'Zum Place';}
@@ -56,6 +56,13 @@ function decorateOrders(root,state,goal){
   }
 }
 
+function afterLabel(goal){
+  const after=goal.after;if(!after)return 'weiter ausbauen';
+  if(after.kind!=='place')return after.label;
+  const detail=String(after.detail||'').replace(/^Neuer Place \+ /,'').replaceAll(' + ',' · ');
+  return detail?`${after.label} · ${detail}`:after.label;
+}
+
 function decoratePlace(root,goal){
   const hero=root.querySelector('.world-hero'),svg=hero?.querySelector('.place-scene-svg');
   if(!hero||!svg)return;
@@ -70,7 +77,7 @@ function decoratePlace(root,goal){
     current.classList.add('purpose-place-goal');
     const small=current.querySelector('.goal-copy > small');if(small)small.textContent=`NÄCHSTES ZIEL · SCHRITT ${goal.step}/${goal.total}`;
     let after=current.querySelector('.purpose-after');if(!after){after=document.createElement('div');after.className='purpose-after purpose-place-after';current.querySelector('.goal-copy')?.append(after);}
-    if(after)after.innerHTML=`<span>DANACH</span><strong>${goal.after?.label??'weiter ausbauen'}</strong><small>${goal.after?.detail??''}</small>`;
+    if(after)after.innerHTML=`<span>DANACH</span><strong>${afterLabel(goal)}</strong>`;
   }
 }
 
