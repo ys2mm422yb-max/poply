@@ -26,11 +26,21 @@ export const PLACE_COMPLETION_BADGES=[
 
 export function milestoneProgress(state,definition){
   const raw=Math.max(0,Number(definition.measure(state))||0),current=Math.min(definition.target,raw);
-  return {...definition,current,raw,complete:raw>=definition.target,ratio:definition.target?current/definition.target:1};
+  return {...definition,current,raw,complete:raw>=definition.target,ratio:definition.target?current/definition.target:1,remaining:Math.max(0,definition.target-current)};
 }
 
 export function playerMilestones(state){return PLAYER_MILESTONES.map(definition=>milestoneProgress(state,definition));}
 export function completedMilestoneCount(state){return playerMilestones(state).filter(entry=>entry.complete).length;}
+export function nextPlayerMilestone(state){
+  const incomplete=playerMilestones(state).filter(entry=>!entry.complete);
+  if(!incomplete.length)return null;
+  return incomplete.reduce((best,entry)=>{
+    if(!best)return entry;
+    if(entry.ratio>best.ratio)return entry;
+    if(entry.ratio===best.ratio&&entry.remaining<best.remaining)return entry;
+    return best;
+  },null);
+}
 export function playerTitleProgress(state){
   const completed=completedMilestoneCount(state),rank=Math.min(completed,PLAYER_TITLES.length-1);
   return {current:PLAYER_TITLES[rank],next:PLAYER_TITLES[rank+1]||null,completed,total:PLAYER_MILESTONES.length,remaining:Math.max(0,PLAYER_MILESTONES.length-completed)};

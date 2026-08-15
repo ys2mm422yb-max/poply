@@ -28,3 +28,4 @@ jobs:
       - run: node --test tests/aaa-world-life.test.js
       - run: node --check src/aaa-world-life.js
       - run: node --check scripts/world-life-qa.mjs
+      - run: node --check scripts/milestone-focus-qa.mjs
