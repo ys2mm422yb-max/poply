@@ -3,6 +3,12 @@
   grid-template-rows:auto auto auto minmax(0,1fr) auto;
 }
 
+/* WebKit can transiently report a stale visualViewport height after an in-page phone-height
+   resize while innerHeight has already changed. Never let that stale custom property push
+   the fixed game shell past the real layout viewport. This only constrains an oversized value;
+   the normal visualViewport-driven height remains authoritative. */
+.app-shell{max-height:100vh}
+
 /* Global game-shell chrome: keep the fixed mobile geometry, but let the surrounding
    controls reflect Poply's authored world instead of reading as flat dark app chrome. */
 .topbar{
