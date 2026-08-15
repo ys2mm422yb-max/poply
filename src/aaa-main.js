@@ -9,6 +9,7 @@ import { installDiscoveryUI } from './aaa-discovery-ui.js';
 import { installStorageUI } from './aaa-storage-ui.js';
 import { installDailyUI } from './aaa-daily-ui.js';
 import { installPlaceMapUI } from './aaa-place-map.js';
+import { installPurposeUI } from './aaa-purpose-ui.js';
 import { installWorldLife } from './aaa-world-life.js';
 import { installAppUpdates } from './aaa-updates.js';
 
@@ -34,5 +35,6 @@ installDiscoveryUI(root);
 installStorageUI(root,ui);
 installDailyUI(root,ui);
 installPlaceMapUI(root);
+installPurposeUI(root,ui);
 installWorldLife(root);
 installAppUpdates().catch(()=>{});
