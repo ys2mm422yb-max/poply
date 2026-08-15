@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, createOrder } from '../src/v2-game.js';
-import { LEVEL_REWARD_COINS, xpNeededForLevel, playerProgress, nextLevelRewardPreview, legacyXpForState, ensurePlayerProgress, xpForOrder, xpForRestoration, awardPlayerXp } from '../src/aaa-progression.js';
+import { LEVEL_REWARD_COINS, LEVEL_REWARD_ENERGY, xpNeededForLevel, playerProgress, nextLevelRewardPreview, legacyXpForState, ensurePlayerProgress, xpForOrder, xpForRestoration, awardPlayerXp } from '../src/aaa-progression.js';
 import { PLAYER_MILESTONES, PLAYER_TITLES, PLACE_COMPLETION_BADGES, playerMilestones, completedMilestoneCount, playerTitleProgress, placeCompletionBadges, completedPlaceBadgeCount } from '../src/aaa-milestones.js';
 
 test('level curve grows predictably and derives progress from total XP',()=>{
@@ -10,10 +10,10 @@ test('level curve grows predictably and derives progress from total XP',()=>{
   const p=playerProgress(150);assert.equal(p.level,2);assert.equal(p.current,30);assert.equal(p.next,180);assert.equal(p.ratio,1/6);
 });
 
-test('next-level preview exposes only deterministic canonical XP progress and reward',()=>{
-  assert.deepEqual(nextLevelRewardPreview(0),{level:2,remainingXp:120,rewardCoins:LEVEL_REWARD_COINS,currentXp:0,requiredXp:120,ratio:0});
+test('next-level preview exposes deterministic XP, Coin and energy rewards',()=>{
+  assert.deepEqual(nextLevelRewardPreview(0),{level:2,remainingXp:120,rewardCoins:LEVEL_REWARD_COINS,rewardEnergy:LEVEL_REWARD_ENERGY,currentXp:0,requiredXp:120,ratio:0});
   const preview=nextLevelRewardPreview(150);
-  assert.equal(preview.level,3);assert.equal(preview.remainingXp,150);assert.equal(preview.rewardCoins,100);assert.equal(preview.currentXp,30);assert.equal(preview.requiredXp,180);assert.equal(preview.ratio,1/6);
+  assert.equal(preview.level,3);assert.equal(preview.remainingXp,150);assert.equal(preview.rewardCoins,100);assert.equal(preview.rewardEnergy,'full');assert.equal(preview.currentXp,30);assert.equal(preview.requiredXp,180);assert.equal(preview.ratio,1/6);
 });
 
 test('legacy progress seeds XP without deleting existing value',()=>{
@@ -32,16 +32,23 @@ test('restoration XP pays a bonus when a new Place unlocks',()=>{
   assert.equal(xpForRestoration({unlockedPlace:'sunset'}),240);
 });
 
-test('level-up awards coins exactly once per crossed level',()=>{
-  const state=createInitialState();state.playerXp=110;state.coins=100;
-  const result=awardPlayerXp(state,20);
+test('level-up awards coins and refills energy exactly once per crossed level event',()=>{
+  const state=createInitialState();state.playerXp=110;state.coins=100;state.energy=7;state.maxEnergy=40;state.energyUpdatedAt=123;
+  const result=awardPlayerXp(state,20,999);
   assert.equal(result.after.level,2);assert.equal(result.levelsGained,1);assert.equal(result.bonusCoins,LEVEL_REWARD_COINS);assert.equal(result.state.coins,200);assert.equal(result.state.playerXp,130);
+  assert.equal(result.bonusEnergy,33);assert.equal(result.state.energy,40);assert.equal(result.state.energyUpdatedAt,999);
 });
 
-test('large XP grants can cross multiple levels and pay each reward',()=>{
-  const state=createInitialState();state.playerXp=0;state.coins=0;
-  const result=awardPlayerXp(state,310);
-  assert.equal(result.after.level,3);assert.equal(result.levelsGained,2);assert.equal(result.state.coins,2*LEVEL_REWARD_COINS);
+test('XP without a level-up does not alter energy or its regen clock',()=>{
+  const state=createInitialState();state.playerXp=10;state.energy=9;state.maxEnergy=40;state.energyUpdatedAt=456;
+  const result=awardPlayerXp(state,20,999);
+  assert.equal(result.levelsGained,0);assert.equal(result.bonusEnergy,0);assert.equal(result.state.energy,9);assert.equal(result.state.energyUpdatedAt,456);
+});
+
+test('large XP grants can cross multiple levels and pay each Coin reward while energy caps at max',()=>{
+  const state=createInitialState();state.playerXp=0;state.coins=0;state.energy=3;state.maxEnergy=40;
+  const result=awardPlayerXp(state,310,2000);
+  assert.equal(result.after.level,3);assert.equal(result.levelsGained,2);assert.equal(result.state.coins,2*LEVEL_REWARD_COINS);assert.equal(result.bonusEnergy,37);assert.equal(result.state.energy,40);assert.equal(result.state.energyUpdatedAt,2000);
 });
 
 test('milestones derive only from existing persistent player progress',()=>{
