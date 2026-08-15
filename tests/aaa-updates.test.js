@@ -19,7 +19,7 @@ test('release marker reader requires a non-empty SHA',async()=>{
   assert.equal(await fetchReleaseSha(async()=>({ok:false,json:async()=>({sha:'abc'})})),null);
 });
 
-test('installed Poply app uses stable identity and network-first automatic updates',async()=>{
+test('installed Poply app uses stable identity, direct release freshness and network-first assets',async()=>{
   const [manifest,main,updates,worker,pages,release]=await Promise.all([
     read('manifest.webmanifest'),read('src/aaa-main.js'),read('src/aaa-updates.js'),read('sw.js'),read('.github/workflows/pages.yml'),read('release.json')
   ]);
@@ -29,13 +29,12 @@ test('installed Poply app uses stable identity and network-first automatic updat
   assert.match(updates,/visibilitychange/);
   assert.match(updates,/windowObj\.location\.reload\(\)/);
   assert.doesNotMatch(updates,/localStorage\.(?:clear|removeItem)/);
+  assert.match(worker,/const isRelease=url\.pathname\.endsWith\('\/release\.json'\)/);
+  assert.match(worker,/if\(isRelease\)return/);
   assert.match(worker,/await fetch\(request,\{cache:'no-store'\}\)/);
   assert.match(worker,/await caches\.match\(request\)/);
   assert.match(worker,/clients\.claim\(\)/);
-  assert.match(worker,/OFFLINE_RELEASE_BODY/);
-  assert.match(worker,/if\(isRelease\)/);
-  assert.match(worker,/status:200/);
-  assert.match(worker,/'Cache-Control':'no-store'/);
+  assert.doesNotMatch(worker,/OFFLINE_RELEASE_BODY/);
   assert.match(pages,/Stamp canonical release/);
   assert.match(pages,/GITHUB_SHA/);
   assert.equal(JSON.parse(release).sha,'development');
