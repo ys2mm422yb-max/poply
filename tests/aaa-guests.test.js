@@ -35,10 +35,11 @@ test('legacy saves get zero guest history and no retroactive reward',()=>{
   assert.equal(ensureGuestState(result.state).changed,false);
 });
 
-test('malformed guest counters migrate to safe non-negative integers',()=>{
+test('malformed guest counters migrate to safe non-negative integers while preserving numeric progress',()=>{
   const source={...createInitialState(),guestVisits:{mika:-4,nora:'3',sam:2,ghost:9}};
   const result=ensureGuestState(source);
-  assert.deepEqual(result.state.guestVisits,{mika:0,nora:0,sam:2});
+  assert.deepEqual(result.state.guestVisits,{mika:0,nora:3,sam:2});
+  assert.equal(typeof result.state.guestVisits.nora,'number');
 });
 
 test('Mika loyalty pays exact automatic one-time rewards at 1, 5 and 12 visits',()=>{
