@@ -1,0 +1,133 @@
+/* Restoration payoff — connect the authored Place scene to its progression meta and make
+   the actual world-hero receive the existing restoration reveal hook on every Place.
+   Presentation only: no build costs, progression state, timing or save behavior changes. */
+.place-coast{
+  --place-payoff-rgb:93,218,209;
+  --place-payoff:#75ddd1;
+  --place-payoff-warm:#ffd176;
+  --place-payoff-deep:#0a4852;
+  --place-payoff-deeper:#073743;
+}
+.place-sunset{
+  --place-payoff-rgb:244,132,94;
+  --place-payoff:#f48a62;
+  --place-payoff-warm:#ffd06f;
+  --place-payoff-deep:#5c3f59;
+  --place-payoff-deeper:#183b4c;
+}
+.place-garden{
+  --place-payoff-rgb:132,211,112;
+  --place-payoff:#8bd777;
+  --place-payoff-warm:#f1dc72;
+  --place-payoff-deep:#2f6655;
+  --place-payoff-deeper:#17484a;
+}
+
+.production-place.place-coast .place-command,
+.production-place.place-sunset .place-command,
+.production-place.place-garden .place-command{
+  position:relative;
+  overflow:hidden;
+  border-color:color-mix(in srgb,var(--place-payoff) 31%,transparent)!important;
+  background:
+    radial-gradient(circle at 9% 0,rgba(var(--place-payoff-rgb),.22),transparent 31%),
+    radial-gradient(circle at 91% 6%,color-mix(in srgb,var(--place-payoff-warm) 14%,transparent),transparent 34%),
+    linear-gradient(154deg,var(--place-payoff-deep),var(--place-payoff-deeper))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.105),0 15px 30px rgba(0,20,28,.23),0 0 24px rgba(var(--place-payoff-rgb),.055)!important;
+}
+.production-place.place-coast .place-command::before,
+.production-place.place-sunset .place-command::before,
+.production-place.place-garden .place-command::before{
+  content:"";position:absolute;z-index:0;left:18px;right:18px;top:0;height:2px;border-radius:0 0 999px 999px;
+  background:linear-gradient(90deg,transparent,var(--place-payoff),var(--place-payoff-warm),transparent);opacity:.72;pointer-events:none;
+}
+.production-place.place-coast .place-command>* ,
+.production-place.place-sunset .place-command>* ,
+.production-place.place-garden .place-command>* {position:relative;z-index:1}
+
+.production-place.place-coast .journey-wrap,
+.production-place.place-sunset .journey-wrap,
+.production-place.place-garden .journey-wrap{
+  border:1px solid color-mix(in srgb,var(--place-payoff) 15%,transparent);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 10% 0,rgba(var(--place-payoff-rgb),.12),transparent 38%),
+    linear-gradient(145deg,rgba(5,43,53,.34),rgba(5,34,45,.18));
+  box-shadow:inset 0 1px rgba(255,255,255,.035);
+  padding:8px 9px 6px;
+}
+.production-place.place-coast .journey-head strong,
+.production-place.place-sunset .journey-head strong,
+.production-place.place-garden .journey-head strong{color:color-mix(in srgb,var(--place-payoff) 52%,#eaf7f3)}
+.production-place.place-coast .journey-head span,
+.production-place.place-sunset .journey-head span,
+.production-place.place-garden .journey-head span{color:var(--place-payoff-warm)!important;text-shadow:0 0 9px color-mix(in srgb,var(--place-payoff-warm) 18%,transparent)}
+.production-place.place-coast .journey-line,
+.production-place.place-sunset .journey-line,
+.production-place.place-garden .journey-line{background:rgba(255,255,255,.065);box-shadow:inset 0 1px rgba(0,0,0,.12)}
+.production-place.place-coast .journey-line i,
+.production-place.place-sunset .journey-line i,
+.production-place.place-garden .journey-line i{
+  background:linear-gradient(90deg,var(--place-payoff),color-mix(in srgb,var(--place-payoff) 58%,var(--place-payoff-warm)),var(--place-payoff-warm))!important;
+  box-shadow:0 0 14px rgba(var(--place-payoff-rgb),.32)!important;
+}
+.production-place.place-coast .journey-step.done>span,
+.production-place.place-sunset .journey-step.done>span,
+.production-place.place-garden .journey-step.done>span{
+  border-color:color-mix(in srgb,var(--place-payoff) 58%,transparent)!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--place-payoff) 86%,#fff 14%),color-mix(in srgb,var(--place-payoff) 64%,#175d55))!important;
+  box-shadow:0 0 0 3px rgba(var(--place-payoff-rgb),.08),0 6px 13px rgba(0,24,27,.22)!important;
+}
+.production-place.place-coast .journey-step.current>span,
+.production-place.place-sunset .journey-step.current>span,
+.production-place.place-garden .journey-step.current>span{
+  border-color:var(--place-payoff-warm)!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--place-payoff-warm) 82%,#fff),color-mix(in srgb,var(--place-payoff) 52%,var(--place-payoff-warm)))!important;
+  color:#214044!important;
+  box-shadow:0 0 0 5px color-mix(in srgb,var(--place-payoff) 11%,transparent),0 0 19px rgba(var(--place-payoff-rgb),.22),0 7px 15px rgba(0,20,25,.22)!important;
+}
+.production-place.place-coast .journey-step.done small,
+.production-place.place-sunset .journey-step.done small,
+.production-place.place-garden .journey-step.done small{color:color-mix(in srgb,var(--place-payoff) 62%,#dceee9)}
+.production-place.place-coast .journey-step.current small,
+.production-place.place-sunset .journey-step.current small,
+.production-place.place-garden .journey-step.current small{color:var(--place-payoff-warm)}
+
+/* Current UI adds fx-restoration-reveal to .world-hero. The old base motion file targets
+   .scene-card; this general hook makes the world-first Place architecture receive the reveal. */
+.production-place .world-hero.fx-restoration-reveal{
+  animation:restoration-scene-reveal 1.05s cubic-bezier(.16,.9,.2,1) both;
+}
+.production-place .world-hero.fx-restoration-reveal::after{
+  content:"";position:absolute;inset:0;z-index:6;pointer-events:none;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(var(--place-payoff-rgb),.13),transparent 38%),
+    linear-gradient(112deg,transparent 15%,color-mix(in srgb,var(--place-payoff-warm) 30%,transparent) 48%,transparent 76%);
+  mix-blend-mode:screen;
+  animation:restoration-sweep .9s ease-out both;
+}
+.production-place .restoration-reveal:not(.place-unlock-reveal){
+  border-color:color-mix(in srgb,var(--place-payoff-warm) 75%,#fff)!important;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(var(--place-payoff-rgb),.25),transparent 34%),
+    linear-gradient(155deg,var(--place-payoff-deep),var(--place-payoff-deeper))!important;
+  box-shadow:0 18px 42px rgba(0,20,28,.38),0 0 30px rgba(var(--place-payoff-rgb),.17),inset 0 1px rgba(255,255,255,.16)!important;
+}
+.production-place .restoration-reveal:not(.place-unlock-reveal) span{
+  background:linear-gradient(145deg,var(--place-payoff-warm),color-mix(in srgb,var(--place-payoff) 58%,var(--place-payoff-warm)))!important;
+  box-shadow:0 0 0 5px rgba(var(--place-payoff-rgb),.11),0 7px 18px rgba(24,47,33,.24)!important;
+}
+.production-place .restoration-reveal:not(.place-unlock-reveal) small{color:var(--place-payoff-warm)!important}
+
+@media(max-height:760px) and (max-width:520px){
+  .production-place.place-coast .journey-wrap,
+  .production-place.place-sunset .journey-wrap,
+  .production-place.place-garden .journey-wrap{padding:5px 7px 3px;border-radius:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  .production-place .world-hero.fx-restoration-reveal,
+  .production-place .world-hero.fx-restoration-reveal::after,
+  .production-place .restoration-reveal{animation:none!important;transition:none!important}
+  .production-place .world-hero.fx-restoration-reveal::after,
+  .production-place .restoration-reveal{display:none!important}
+}
