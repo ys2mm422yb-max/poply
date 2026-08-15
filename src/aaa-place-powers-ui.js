@@ -46,7 +46,7 @@ function decorateOrders(root,state){
 }
 
 export function installPlacePowersUI(root,ui){
-  let decorating=false,lastSignature='';
+  let decorating=false,lastSignature='',lastViewNode=null;
   let knownUpgrades=new Set(getState().placeUpgrades||[]);
   let knownPreps=placePowerStatus(getState()).prepsUsed;
   const announceChanges=state=>{
@@ -59,9 +59,9 @@ export function installPlacePowersUI(root,ui){
   };
   const decorate=()=>{
     if(decorating)return;
-    const state=getState(),status=placePowerStatus(state),goal=purposeGoal(state);
+    const state=getState(),status=placePowerStatus(state),goal=purposeGoal(state),viewNode=root.querySelector('.game-view');
     const signature=`${root.dataset.view}|${state.placeUpgrades.join(',')}|${status.prepReady?'1':'0'}|${status.menuChoiceReady?'1':'0'}|${status.prepsUsed}|${status.rerollsUsed}|${state.currentOrders.map(order=>order.id).join(',')}|${goal.upgrade?.id||'-'}`;
-    if(signature===lastSignature)return;lastSignature=signature;decorating=true;
+    if(viewNode===lastViewNode&&signature===lastSignature)return;lastViewNode=viewNode;lastSignature=signature;decorating=true;
     try{
       announceChanges(state);
       if(root.dataset.view==='place')decoratePlace(root,state);
@@ -74,9 +74,9 @@ export function installPlacePowersUI(root,ui){
     event.preventDefault();event.stopPropagation();
     const result=replaceOrder(button.dataset.placePowerReroll);
     if(!result.changed){ui?.message?.(result.reason==='not-ready'?'Gastwahl lädt nach der nächsten Lieferung.':'Gastwahl ist noch gesperrt.','bad');return;}
-    lastSignature='';ui?.render?.();ui?.message?.(`Gastwahl: „${result.previous.title}“ → „${result.replacement.title}“`);
+    lastSignature='';lastViewNode=null;ui?.render?.();ui?.message?.(`Gastwahl: „${result.previous.title}“ → „${result.replacement.title}“`);
     requestAnimationFrame(()=>root.querySelector(`.customer-choice[data-select-order="${result.replacement.id}"]`)?.click());
   });
   const observer=new MutationObserver(()=>queueMicrotask(decorate));observer.observe(root,{childList:true,subtree:true});decorate();
-  return {refresh:()=>{lastSignature='';decorate();},disconnect:()=>observer.disconnect(),powers:()=>unlockedPlacePowers(getState())};
+  return {refresh:()=>{lastSignature='';lastViewNode=null;decorate();},disconnect:()=>observer.disconnect(),powers:()=>unlockedPlacePowers(getState())};
 }
