@@ -48,6 +48,25 @@ export function energyMsUntilNext(state,now=Date.now()){
   return remainder===0?ENERGY_REGEN_MS:ENERGY_REGEN_MS-remainder;
 }
 
+export function energyRechargePlan(state,now=Date.now()){
+  const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
+  const energy=Math.max(0,Math.min(maxEnergy,Number(state.energy)||0));
+  const missing=Math.max(0,maxEnergy-energy);
+  if(missing===0)return {energy,maxEnergy,missing:0,nextMs:0,fullMs:0,fullAt:now};
+  const nextMs=energyMsUntilNext({...state,energy,maxEnergy},now);
+  const fullMs=nextMs+(missing-1)*ENERGY_REGEN_MS;
+  return {energy,maxEnergy,missing,nextMs,fullMs,fullAt:now+fullMs};
+}
+
+export function energyFullRechargeLabel(state,now=Date.now()){
+  const plan=energyRechargePlan(state,now);
+  if(plan.missing===0)return 'Voll geladen';
+  const totalMinutes=Math.max(1,Math.ceil(plan.fullMs/60_000));
+  if(totalMinutes<60)return `Voll in ca. ${totalMinutes} Min`;
+  const hours=Math.floor(totalMinutes/60),minutes=totalMinutes%60;
+  return `Voll in ca. ${hours} Std${minutes?` ${minutes} Min`:''}`;
+}
+
 export function energyStatusLabel(state,now=Date.now()){
   const maxEnergy=Math.max(1,Number(state.maxEnergy)||40);
   if(Number(state.energy)>=maxEnergy)return `Auto · ${ENERGY_REGEN_MINUTES} Min`;
