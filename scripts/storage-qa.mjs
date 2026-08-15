@@ -49,7 +49,31 @@ try{
 
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);if(!(await page.locator('.storage-drawer').isVisible()))await page.locator('.storage-handle').click();await assertFits('390x720 storage');await shot('42-storage-short-safari');
   await page.reload({waitUntil:'networkidle'});const persisted=await readSave();assert(persisted.storageCapacity===6&&persisted.coins===100,'storage capacity/Coin spend was lost after reload');
-  report={storedId,storageCapacity:persisted.storageCapacity,coins:persisted.coins};
+
+  await page.setViewportSize({width:390,height:844});
+  await page.evaluate(async()=>{
+    const game=await import('./src/v2-game.js');const state=game.createInitialState();
+    const filler=game.makeItem('sweet',1,'deadlock-fill');state.board=state.board.map((item,index)=>item??{...filler,id:`deadlock-board-${index}`});
+    state.storage=[game.makeItem('coffee',1,'deadlock-recycle'),game.makeItem('bakery',2,'deadlock-keep-1'),game.makeItem('sweet',1,'deadlock-keep-2'),game.makeItem('coffee',2,'deadlock-keep-3')];
+    state.storageCapacity=4;state.coins=11;localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
+  });
+  await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board');
+  let deadlocked=await readSave();assert(deadlocked.board.every(Boolean),'deadlock fixture board is not full');assert(deadlocked.storage.length===deadlocked.storageCapacity,'deadlock fixture storage is not full');
+  const boardItemId=deadlocked.board[9].id,recycledId=deadlocked.storage[0].id,coinsBefore=deadlocked.coins;
+  await page.locator('.storage-handle').click();await page.waitForSelector('.storage-drawer');await page.locator('[data-storage-recycle-toggle]').click();await page.waitForTimeout(100);
+  assert(await page.locator('.storage-drawer.recycle-mode').count()===1,'recycling mode did not become visible');assert(await page.locator('[data-storage-recycle="0"]').count()===1,'stored item is not explicitly selectable for recycling');
+  assert((await page.locator('[data-storage-recycle="0"]').textContent())?.includes('3'),'tier-1 recycle value is not visible');
+  await assertFits('390x844 deadlock recycle mode');await shot('43-storage-deadlock-recycle-mode');
+  await page.locator('[data-storage-recycle="0"]').click();await page.waitForTimeout(140);
+  const recycled=await readSave();assert(recycled.storage.length===3,'recycling did not free exactly one storage slot');assert(recycled.coins===coinsBefore+3,`recycling reward mismatch: ${recycled.coins}`);assert(recycled.board.every(Boolean),'recycling unexpectedly changed the full board');assert(!recycled.storage.some(item=>item.id===recycledId),'explicitly recycled item still exists');
+  assert((await page.locator('.storage-handle').textContent())?.includes('3/4'),'storage handle did not show the recovered slot');
+  await page.locator(`[data-storage-store="9"]`).click();await page.waitForTimeout(140);
+  const recovered=await readSave();assert(recovered.board[9]===null,'recovery did not create a free board slot');assert(recovered.storage.length===4,'recovery did not use the newly freed storage slot');assert(recovered.storage.some(item=>item.id===boardItemId),'chosen board item was not preserved in storage');assert(!recovered.storage.some(item=>item.id===recycledId),'recycled item reappeared');assert(recovered.board.filter(slot=>slot===null).length===1,'recovery must create exactly one board vacancy');
+  await shot('44-storage-deadlock-recovered');
+  await page.reload({waitUntil:'networkidle'});const recoveredReload=await readSave();assert(recoveredReload.board[9]===null,'recovered board slot was lost after reload');assert(recoveredReload.storage.length===4&&recoveredReload.storage.some(item=>item.id===boardItemId),'recovery storage state was lost after reload');assert(recoveredReload.coins===coinsBefore+3,'recycling Coins were lost after reload');
+  await page.locator('.storage-handle').click();await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertFits('390x720 recovered storage');await shot('45-storage-deadlock-short-safari');
+
+  report={storedId,storageCapacity:persisted.storageCapacity,coins:persisted.coins,deadlockRecovery:{recycledId,storedBoardItemId:boardItemId,coinsBefore,coinsAfter:recoveredReload.coins,freeBoardSlots:recoveredReload.board.filter(slot=>slot===null).length,storageUsed:recoveredReload.storage.length}};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('49-storage-failure');}catch{}}
 finally{await writeFile(`${outDir}/storage-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
