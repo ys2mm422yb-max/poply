@@ -32,8 +32,11 @@ export async function installAppUpdates({
 }={}){
   if(!navigatorObj?.serviceWorker||!documentObj||!windowObj||typeof fetchImpl!=='function')return {supported:false};
 
+  const documentBase=documentObj.baseURI||windowObj.location?.href;
+  const workerUrl=new URL('./sw.js',documentBase).href;
+  const workerScope=new URL('./',documentBase).href;
   const hadController=Boolean(navigatorObj.serviceWorker.controller);
-  const registration=await navigatorObj.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'});
+  const registration=await navigatorObj.serviceWorker.register(workerUrl,{scope:workerScope,updateViaCache:'none'});
   registration.update().catch(()=>{});
 
   let bootRelease=null;
