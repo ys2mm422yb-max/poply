@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, createOrder } from '../src/v2-game.js';
 import { LEVEL_REWARD_COINS, xpNeededForLevel, playerProgress, nextLevelRewardPreview, legacyXpForState, ensurePlayerProgress, xpForOrder, xpForRestoration, awardPlayerXp } from '../src/aaa-progression.js';
-import { PLAYER_MILESTONES, PLAYER_TITLES, playerMilestones, completedMilestoneCount, playerTitleProgress } from '../src/aaa-milestones.js';
+import { PLAYER_MILESTONES, PLAYER_TITLES, PLACE_COMPLETION_BADGES, playerMilestones, completedMilestoneCount, playerTitleProgress, placeCompletionBadges, completedPlaceBadgeCount } from '../src/aaa-milestones.js';
 
 test('level curve grows predictably and derives progress from total XP',()=>{
   assert.equal(xpNeededForLevel(1),120);assert.equal(xpNeededForLevel(2),180);
@@ -64,4 +64,18 @@ test('player title is a cosmetic reward derived only from completed milestones',
   const mid=playerTitleProgress(fresh);assert.equal(mid.current.label,'Merge-Kenner');assert.equal(mid.next.label,'Place-Macher');assert.equal(mid.completed,2);assert.equal(mid.remaining,3);
   fresh.placeUpgrades=['lights','counter','menu','seating','terrace','sign'];fresh.playerXp=840;fresh.discoveries=Array.from({length:12},(_,i)=>`item:coffee:${i+1}`);
   const max=playerTitleProgress(fresh);assert.equal(max.current.label,'Poply-Profi');assert.equal(max.next,null);assert.equal(max.completed,5);assert.equal(max.remaining,0);
+});
+
+test('Place badges are earned only from canonical restoration steps and never need new save state',()=>{
+  const state=createInitialState();
+  assert.equal(PLACE_COMPLETION_BADGES.length,2);
+  let badges=placeCompletionBadges(state);
+  assert.equal(completedPlaceBadgeCount(state),0);assert.equal(badges[0].unlocked,true);assert.equal(badges[0].completedSteps,0);assert.equal(badges[1].unlocked,false);
+  state.placeUpgrades=['lights','counter','menu','seating','terrace','sign'];
+  badges=placeCompletionBadges(state);
+  assert.equal(badges[0].complete,true);assert.equal(badges[0].ratio,1);assert.equal(badges[1].unlocked,true);assert.equal(completedPlaceBadgeCount(state),1);
+  state.placeUpgrades.push('sunset-lanterns','sunset-bar','sunset-lounge','sunset-fire','sunset-stage','sunset-sign');
+  badges=placeCompletionBadges(state);
+  assert.equal(badges[1].complete,true);assert.equal(badges[1].completedSteps,6);assert.equal(completedPlaceBadgeCount(state),2);
+  assert.equal('placeBadges' in state,false);
 });
