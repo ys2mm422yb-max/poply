@@ -15,8 +15,9 @@ test('Board atmosphere stays decorative and geometry-neutral',()=>{
 });
 
 test('Board atmosphere carries warm cool and green reflected light',()=>{
-  assert.match(BOARD_ATMOSPHERE_CSS,/255,191,105/);
-  assert.match(BOARD_ATMOSPHERE_CSS,/93,198,238/);
+  assert.match(BOARD_ATMOSPHERE_CSS,/255,190,104/);
+  assert.match(BOARD_ATMOSPHERE_CSS,/92,198,239/);
   assert.match(BOARD_ATMOSPHERE_CSS,/111,218,164/);
+  assert.match(BOARD_ATMOSPHERE_CSS,/height:clamp\(132px,26vh,220px\)/);
   assert.match(BOARD_ATMOSPHERE_CSS,/poply-board-ambient-drift/);
 });
