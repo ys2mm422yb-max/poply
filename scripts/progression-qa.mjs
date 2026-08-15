@@ -31,7 +31,6 @@ try{
   const badge=await page.locator('.player-level-badge').boundingBox(),resources=await page.locator('.resources').boundingBox();
   assert(badge&&resources&&badge.x+badge.width<=resources.x+1,`player level badge overlaps resources ${JSON.stringify({badge,resources})}`);
 
-  // Energy planning is interactive, deterministic and state-neutral.
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();state.energy=35;state.maxEnergy=40;state.energyUpdatedAt=Date.now()-30_000;
@@ -51,7 +50,6 @@ try{
   report.energy={energy:energyAfter.energy,maxEnergy:energyAfter.maxEnergy,next:'live countdown',full:'Voll in ca. 10 Min',stateNeutral:true};
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(120);
 
-  // Real order delivery crosses Level 1 -> 2 and must persist the reward.
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
@@ -82,7 +80,6 @@ try{
   assert(reloadedOrder.playerXp===170,'player XP was lost after reload');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 2'),'reloaded HUD lost player level');
 
-  // Real restoration crosses Level 2 -> 3 through the build action.
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();state.playerXp=170;state.stars=10;state.coins=100;
@@ -102,27 +99,32 @@ try{
   await shot('21-player-level-up-restoration');
   report.restoration={xp:afterBuild.playerXp,coins:afterBuild.coins,upgrades:afterBuild.placeUpgrades};
 
-  // Milestone shelf is derived from existing progress: no duplicate save currency/state.
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
-    const state=game.createInitialState();state.playerXp=840;state.stats.orders=4;state.stats.merges=31;state.placeUpgrades=['lights','counter','menu','seating','terrace','sign'];
+    const state=game.createInitialState();state.playerXp=840;state.stats.orders=4;state.stats.merges=31;
+    state.placeUpgrades=['lights','counter','menu','seating','terrace','sign','sunset-lanterns','sunset-bar','sunset-lounge','sunset-fire','sunset-stage','sunset-sign'];
     state.discoveries=['item:coffee:1','item:coffee:2','item:coffee:3','item:coffee:4','item:coffee:5','item:coffee:6','item:bakery:1','item:bakery:2','item:bakery:3','item:bakery:4','item:bakery:5','item:bakery:6'];
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
   });
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.player-level-badge');
   assert((await page.locator('.player-level-badge').textContent())?.includes('LV 5'),'seeded milestone player is not LV 5');
-  assert((await page.locator('.player-level-badge').getAttribute('aria-label'))?.includes('Poply-Profi'),'completed milestone title is not exposed from the level badge');
+  const levelLabel=await page.locator('.player-level-badge').getAttribute('aria-label');
+  assert(levelLabel?.includes('Poply-Profi'),'completed milestone title is not exposed from the level badge');
+  assert(levelLabel?.includes('2 Place-Abzeichen'),`completed Place badges are not exposed from the level badge: ${levelLabel}`);
   await page.locator('.player-level-badge').click();await page.waitForSelector('.player-progress-sheet');
   const sheetText=await page.locator('.player-progress-sheet').textContent();
   assert(sheetText?.includes('5/5 Meilensteine'),'completed milestone summary is wrong');assert(await page.locator('.milestone-row.complete').count()===5,'not all seeded milestones render complete');
   assert(sheetText?.includes('Poply-Profi')&&sheetText?.includes('Höchster Titel erreicht'),`earned player title is missing: ${sheetText}`);
+  assert(sheetText?.includes('DEINE PLACES')&&sheetText?.includes('2/2'),`Place badge summary is missing: ${sheetText}`);
+  assert(await page.locator('.place-badge.complete').count()===2,'not all completed Places render as earned badges');
+  assert(sheetText?.includes('Café')&&sheetText?.includes('Sonnenkai')&&sheetText?.includes('Abzeichen verdient'),`earned Place badge copy is missing: ${sheetText}`);
   assert(sheetText?.includes('NÄCHSTES LEVEL')&&sheetText?.includes('360 XP fehlen'),`next level preview is wrong: ${sheetText}`);
   assert(sheetText?.includes('+100')&&sheetText?.includes('Coins'),`next level reward is missing: ${sheetText}`);
   await assertSheetFits('390x844 milestones');await shot('22-player-milestones-390x844');
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertSheetFits('390x720 milestones');await shot('23-player-milestones-short-safari');
   await page.locator('[data-player-progress-close]').click();assert(!(await page.locator('.player-progress-sheet').isVisible().catch(()=>false)),'milestone sheet did not close');
-  const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');
-  report.milestones={completed:5,total:5,title:'Poply-Profi',playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,nextLevel:6,remainingXp:360,rewardCoins:100};
+  const milestoneSave=await readSave();assert(milestoneSave.playerXp===840&&milestoneSave.stats.merges===31,'opening milestones mutated player progress');assert(!('placeBadges' in milestoneSave),'Place badge UI persisted duplicate badge state');
+  report.milestones={completed:5,total:5,title:'Poply-Profi',placeBadges:2,playerXp:milestoneSave.playerXp,merges:milestoneSave.stats.merges,nextLevel:6,remainingXp:360,rewardCoins:100,stateNeutral:true};
 
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('29-progression-failure');}catch{}}
