@@ -10,7 +10,7 @@ export function createUI(root,toast){
   const emitProgression=(result,source)=>{if(result?.progression)document.dispatchEvent(new CustomEvent('poply:progression',{detail:{...result.progression,source}}));};
   const emitDiscovery=result=>{
     if(!result?.discovery||!result.discoveredItem)return;
-    document.dispatchEvent(new CustomEvent('poply:discovery',{detail:{item:result.discoveredItem,progression:result.progression}}));
+    document.dispatchEvent(new CustomEvent('poply:discovery',{detail:{item:result.discoveredItem,progression:result.progression,mastery:result.mastery||result.discovery?.mastery||null}}));
     emitProgression(result,'discovery');
   };
   const applyFx=fx=>{
@@ -91,7 +91,7 @@ export function createUI(root,toast){
   const spawn=index=>{
     const result=generateAt(index);
     if(!result.changed){playFeedback('invalid');message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
-    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};playFeedback('spawn');message(result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item');render();emitDiscovery(result);
+    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};playFeedback('spawn');message(result.mastery?`Familie gemeistert! +${result.mastery.rewardCoins} Coins`:result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item');render();emitDiscovery(result);
   };
   return {render,message,spawn,getView:()=>view,getSelectedOrder:()=>selectedOrderId,feedback:playFeedback,setFx:fx=>{lastFx=fx;},discovery:emitDiscovery,progression:emitProgression};
 }
