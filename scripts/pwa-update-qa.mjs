@@ -38,6 +38,12 @@ const waitForController=()=>page.evaluate(async()=>{
   }
   return {supported:true,scope:registration.scope,scriptURL:navigator.serviceWorker.controller?.scriptURL||null,controlled:Boolean(navigator.serviceWorker.controller)};
 });
+const installReleaseQa=()=>page.evaluate(async()=>{
+  const updates=await import('./src/aaa-updates.js');
+  const result=await updates.installAppUpdates({releasePolling:true});
+  window.__poplyPwaQaCheck=result.check;
+  return {releasePolling:result.releasePolling,bootRelease:result.bootRelease};
+});
 const stopStaticServer=async()=>{
   const raw=(await readFile(serverPidFile,'utf8')).trim();
   const pid=Number(raw);
@@ -61,6 +67,13 @@ try{
   assert(report.install.controlled,`installed page is not service-worker controlled: ${JSON.stringify(report.install)}`);
   assert(report.install.scriptURL?.endsWith('/sw.js'),`unexpected controller script: ${report.install.scriptURL}`);
 
+  // Normal local gameplay deliberately does not poll release.json. The dedicated PWA
+  // suite opts into the production release-polling path explicitly so update behavior
+  // remains fully exercised without contaminating unrelated local WebKit flows.
+  report.releasePolling=await installReleaseQa();
+  assert(report.releasePolling.releasePolling===true,'dedicated PWA QA did not enable release polling');
+  assert(report.releasePolling.bootRelease===releaseA.sha,`dedicated PWA QA boot release mismatch: ${JSON.stringify(report.releasePolling)}`);
+
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
@@ -74,9 +87,14 @@ try{
   assert(onlineSave.coins===777,`online app update path mutated game save: ${onlineSave.coins}`);
   report.online={coins:onlineSave.coins,controlled:true};
 
+  // The explicit QA update instance was destroyed by the reload, so install a fresh
+  // production-equivalent polling instance with release A as its baseline.
+  report.releasePollingAfterReload=await installReleaseQa();
+  assert(report.releasePollingAfterReload.bootRelease===releaseA.sha,`release baseline after reload mismatch: ${JSON.stringify(report.releasePollingAfterReload)}`);
+
   await writeFile(releasePath,`${JSON.stringify(releaseB,null,2)}\n`);
   const navigation=page.waitForNavigation({waitUntil:'networkidle',timeout:8000});
-  await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+  await page.evaluate(()=>window.__poplyPwaQaCheck({force:true}));
   await navigation;
   await page.waitForSelector('.game-view');
   const latestRelease=await page.evaluate(()=>fetch('./release.json',{cache:'no-store'}).then(response=>response.json()));
@@ -88,6 +106,9 @@ try{
   assert((await waitForController()).controlled,'service worker lost control after automatic update');
   report.update={from:releaseA.sha,to:latestRelease.sha,navigationType,coins:updatedSave.coins};
 
+  // After the update reload the ordinary local app is back in development mode with
+  // release polling disabled. Offline fallback therefore tests only cached-app behavior,
+  // while production polling was already proven explicitly above.
   networkLossExpected=true;
   const stoppedServerPid=await stopStaticServer();
   await page.reload({waitUntil:'domcontentloaded',timeout:10000});
