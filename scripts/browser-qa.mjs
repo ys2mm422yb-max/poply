@@ -60,7 +60,7 @@ try{
   viewportReports.orders720=await assertShellFits('390x720 orders');
   await shot('06-orders-short-safari');
 
-  // Existing real service regression.
+  // Existing real service regression, including first real Guest-loyalty milestone.
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
@@ -88,7 +88,9 @@ try{
   clickTrace=await page.evaluate(()=>window.__qaClickTrace||[]);toastState=await page.evaluate(()=>{const el=document.querySelector('#toast');return {text:el?.textContent||'',show:el?.classList.contains('show')||false,tone:el?.dataset?.tone||null};});
   await page.waitForTimeout(1020);const after=await readSave();await shot('08-after-serve-short-safari');
   if(after.coins===before.coins){await page.evaluate(()=>document.querySelector('button[data-order="order-0"]')?.click());await page.waitForTimeout(100);afterProgrammatic=await readSave();}
-  assert(after.coins===before.coins+45,`coins did not increase by 45 (${before.coins} -> ${after.coins}); trace=${JSON.stringify(clickTrace)} toast=${JSON.stringify(toastState)} programmaticCoins=${afterProgrammatic?.coins??'n/a'}`);
+  assert(after.coins===before.coins+70,`coins did not increase by 70 (45 order + 25 first guest milestone) (${before.coins} -> ${after.coins}); trace=${JSON.stringify(clickTrace)} toast=${JSON.stringify(toastState)} programmaticCoins=${afterProgrammatic?.coins??'n/a'}`);
+  assert(after.guestVisits?.mika===1&&after.guestVisits?.nora===0&&after.guestVisits?.sam===0,`first service did not record Mika exactly once: ${JSON.stringify(after.guestVisits)}`);
+  assert(toastState?.text?.includes('Mika: Bekannt +25'),`guest milestone reward is not explained in delivery feedback: ${JSON.stringify(toastState)}`);
   assert(after.stars===before.stars+2,`stars did not increase by 2 (${before.stars} -> ${after.stars})`);
   assert(!after.currentOrders.some(order=>order.id==='order-0'),'served order still exists');
   assert(after.currentOrders.some(order=>order.id==='order-3'),'replacement order was not created');
