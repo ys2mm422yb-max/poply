@@ -1,0 +1,54 @@
+/* Delivery reward payoff — rewards originate at the served order, then travel to the real
+   Coin/Star resources. Presentation only; reward values and timing stay deterministic. */
+.reward-origin-burst{
+  position:fixed;z-index:9998;width:96px;height:64px;margin:-32px 0 0 -48px;border-radius:50%;pointer-events:none;
+  background:
+    radial-gradient(circle at 34% 50%,rgba(255,214,88,.88) 0 5%,rgba(255,214,88,.30) 7% 22%,transparent 42%),
+    radial-gradient(circle at 66% 48%,rgba(245,131,184,.84) 0 5%,rgba(245,131,184,.27) 7% 23%,transparent 44%),
+    radial-gradient(ellipse,rgba(105,229,209,.16),transparent 65%);
+  filter:drop-shadow(0 0 13px rgba(255,213,92,.25));
+  animation:poply-reward-origin-burst .78s cubic-bezier(.16,.9,.2,1) both;
+}
+.delivery-flight.reward-flight{
+  z-index:10001!important;
+  border:1px solid rgba(255,255,255,.64)!important;
+  box-shadow:0 8px 18px rgba(0,22,29,.32),0 0 18px var(--reward-flight-glow,rgba(255,220,100,.28)),inset 0 1px rgba(255,255,255,.62)!important;
+  letter-spacing:.01em;
+}
+.delivery-flight.coin-flight{
+  --reward-flight-glow:rgba(255,209,73,.45);
+  background:linear-gradient(145deg,#fff2a1,#ffc84f)!important;color:#61410a!important;
+}
+.delivery-flight.star-flight{
+  --reward-flight-glow:rgba(244,131,185,.45);
+  background:linear-gradient(145deg,#ffd3e9,#f18bbd)!important;color:#5d2443!important;
+}
+.resource.coin.fx-reward-arrive{animation:poply-coin-reward-arrive .72s cubic-bezier(.16,.9,.2,1)!important}
+.resource.star.fx-reward-arrive{animation:poply-star-reward-arrive .72s .07s cubic-bezier(.16,.9,.2,1)!important}
+.service-purpose.fx-reward-purpose,.mission-card.fx-reward-purpose,.service-goal.fx-reward-purpose{animation:poply-reward-purpose-echo .82s .12s ease-out both}
+
+@keyframes poply-reward-origin-burst{
+  0%{opacity:0;transform:scale(.35) rotate(-8deg)}
+  25%{opacity:1}
+  100%{opacity:0;transform:scale(1.42) rotate(6deg)}
+}
+@keyframes poply-coin-reward-arrive{
+  0%{transform:scale(1);box-shadow:0 4px 14px rgba(0,20,28,.16)}
+  35%{transform:scale(1.14);box-shadow:0 0 0 4px rgba(255,210,76,.14),0 0 28px rgba(255,210,76,.52),inset 0 1px rgba(255,255,255,.22)}
+  100%{transform:scale(1);box-shadow:0 4px 14px rgba(0,20,28,.16)}
+}
+@keyframes poply-star-reward-arrive{
+  0%{transform:scale(1);box-shadow:0 4px 14px rgba(0,20,28,.16)}
+  35%{transform:scale(1.14);box-shadow:0 0 0 4px rgba(242,135,187,.13),0 0 28px rgba(242,135,187,.48),inset 0 1px rgba(255,255,255,.22)}
+  100%{transform:scale(1);box-shadow:0 4px 14px rgba(0,20,28,.16)}
+}
+@keyframes poply-reward-purpose-echo{
+  0%{filter:brightness(1);box-shadow:inherit}
+  42%{filter:brightness(1.14);box-shadow:0 0 0 2px rgba(255,211,90,.17),0 0 22px rgba(255,211,90,.18)}
+  100%{filter:brightness(1);box-shadow:inherit}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .reward-origin-burst,.delivery-flight.reward-flight{display:none!important;animation:none!important}
+  .resource.coin.fx-reward-arrive,.resource.star.fx-reward-arrive,.service-purpose.fx-reward-purpose,.mission-card.fx-reward-purpose,.service-goal.fx-reward-purpose{animation:none!important;transition:none!important}
+}
