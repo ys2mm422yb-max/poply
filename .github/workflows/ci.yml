@@ -19,3 +19,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: node --test tests/aaa-board-atmosphere.test.js
+      - run: node --check src/aaa-board-atmosphere.js
