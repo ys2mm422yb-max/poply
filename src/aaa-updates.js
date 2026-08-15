@@ -1,5 +1,12 @@
-const RELEASE_URL='./release.json';
 const UPDATE_INTERVAL_MS=5*60*1000;
+
+export function releaseUrl(moduleUrl=import.meta.url){
+  return new URL('../release.json',moduleUrl).href;
+}
+
+export function releasePollingForWindow(windowObj=globalThis.window){
+  return windowObj?.location?.protocol==='https:';
+}
 
 export function shouldReloadForRelease(bootRelease,latestRelease){
   if(!bootRelease||!latestRelease)return false;
@@ -7,8 +14,8 @@ export function shouldReloadForRelease(bootRelease,latestRelease){
   return bootRelease!==latestRelease;
 }
 
-export async function fetchReleaseSha(fetchImpl=globalThis.fetch){
-  const response=await fetchImpl(RELEASE_URL,{cache:'no-store',credentials:'same-origin'});
+export async function fetchReleaseSha(fetchImpl=globalThis.fetch,moduleUrl=import.meta.url){
+  const response=await fetchImpl(releaseUrl(moduleUrl),{cache:'no-store',credentials:'same-origin'});
   if(!response.ok)return null;
   const payload=await response.json();
   return typeof payload?.sha==='string'&&payload.sha.trim()?payload.sha.trim():null;
@@ -21,6 +28,7 @@ export async function installAppUpdates({
   fetchImpl=globalThis.fetch,
   now=()=>Date.now(),
   intervalMs=UPDATE_INTERVAL_MS,
+  releasePolling=releasePollingForWindow(windowObj),
 }={}){
   if(!navigatorObj?.serviceWorker||!documentObj||!windowObj||typeof fetchImpl!=='function')return {supported:false};
 
@@ -29,7 +37,9 @@ export async function installAppUpdates({
   registration.update().catch(()=>{});
 
   let bootRelease=null;
-  try{bootRelease=await fetchReleaseSha(fetchImpl);}catch{}
+  if(releasePolling){
+    try{bootRelease=await fetchReleaseSha(fetchImpl);}catch{}
+  }
 
   let checking=false;
   let reloading=false;
@@ -41,7 +51,7 @@ export async function installAppUpdates({
     return true;
   };
   const check=async({force=false}={})=>{
-    if(checking||reloading)return false;
+    if(!releasePolling||checking||reloading)return false;
     const stamp=now();
     if(!force&&stamp-lastCheck<intervalMs)return false;
     checking=true;lastCheck=stamp;
@@ -54,11 +64,14 @@ export async function installAppUpdates({
     finally{checking=false;}
   };
 
-  const checkWhenVisible=()=>{if(documentObj.visibilityState==='visible')void check({force:true});};
-  documentObj.addEventListener('visibilitychange',checkWhenVisible);
-  windowObj.addEventListener('pageshow',checkWhenVisible);
-  windowObj.addEventListener('focus',checkWhenVisible);
-  const timer=windowObj.setInterval(()=>{if(documentObj.visibilityState==='visible')void check();},intervalMs);
+  let timer=null;
+  if(releasePolling){
+    const checkWhenVisible=()=>{if(documentObj.visibilityState==='visible')void check({force:true});};
+    documentObj.addEventListener('visibilitychange',checkWhenVisible);
+    windowObj.addEventListener('pageshow',checkWhenVisible);
+    windowObj.addEventListener('focus',checkWhenVisible);
+    timer=windowObj.setInterval(()=>{if(documentObj.visibilityState==='visible')void check();},intervalMs);
+  }
 
   navigatorObj.serviceWorker.addEventListener('controllerchange',()=>{
     // First install claims the page without forcing a disruptive reload. A later worker
@@ -66,5 +79,5 @@ export async function installAppUpdates({
     if(hadController)reload();
   });
 
-  return {supported:true,registration,bootRelease,check,timer};
+  return {supported:true,registration,bootRelease,check,timer,releasePolling};
 }
