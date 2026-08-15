@@ -14,14 +14,15 @@ const assert=(value,message)=>{if(!value)throw new Error(message);};
 const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
 const seedFresh=()=>page.evaluate(async()=>{const game=await import('./src/v2-game.js');const state=game.createInitialState();state.playerXp=0;delete state.discoveries;localStorage.setItem('poply-v2-state-1',JSON.stringify(state));});
+const seedCoffeeMasteryReady=()=>page.evaluate(async()=>{const game=await import('./src/v2-game.js');const state=game.createInitialState();state.board[9]=game.makeItem('coffee',5,'mastery-coffee-a');state.board[10]=game.makeItem('coffee',5,'mastery-coffee-b');state.playerXp=0;state.coins=100;delete state.discoveries;localStorage.setItem('poply-v2-state-1',JSON.stringify(state));});
 const realCoffeeMerge=async()=>{
   const from=await page.locator('.board-cell[data-index="9"]').boundingBox(),to=await page.locator('.board-cell[data-index="10"]').boundingBox();
   assert(from&&to,'merge-ready coffee cells missing');
   await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();await page.mouse.move(to.x+to.width/2,to.y+to.height/2,{steps:8});await page.mouse.up();
-  await page.waitForFunction(()=>{try{return JSON.parse(localStorage.getItem('poply-v2-state-1')||'null')?.discoveries?.includes('item:coffee:2')===true;}catch{return false;}},null,{timeout:1200});
 };
+const waitForDiscovery=key=>page.waitForFunction(key=>{try{return JSON.parse(localStorage.getItem('poply-v2-state-1')||'null')?.discoveries?.includes(key)===true;}catch{return false;}},key,{timeout:1400});
 const revealMetrics=async()=>{
-  const reveal=page.locator('.discovery-reveal');await reveal.waitFor({state:'visible',timeout:1200});
+  const reveal=page.locator('.discovery-reveal');await reveal.waitFor({state:'visible',timeout:1400});
   await page.waitForFunction(()=>{const el=document.querySelector('.discovery-reveal');if(!el)return false;const opacity=Number(getComputedStyle(el).opacity);return el.classList.contains('is-visible')&&!el.classList.contains('is-leaving')&&opacity>=.95;},null,{timeout:1000});
   return reveal.evaluate(el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);return {width:box.width,height:box.height,top:box.top,bottom:box.bottom,opacity:Number(style.opacity),position:style.position,zIndex:style.zIndex};});
 };
@@ -38,7 +39,7 @@ try{
   assert(await page.locator('.nav-tab[data-view="collection"]').isVisible(),'Collection tab is not visible');
   const before=await readSave();assert(before.discoveries.includes('item:coffee:1'),'starting coffee tier 1 not backfilled');assert(!before.discoveries.includes('item:coffee:2'),'future coffee tier leaked into collection');
 
-  await realCoffeeMerge();
+  await realCoffeeMerge();await waitForDiscovery('item:coffee:2');
   const discoveryReveal=page.locator('.discovery-reveal'),discovered=await readSave();
   const revealVisual=await revealMetrics();
   assert(discovered.discoveries.includes('item:coffee:2'),'real merge did not persist coffee tier 2 discovery');
@@ -55,12 +56,14 @@ try{
   await page.locator('.nav-tab[data-view="collection"]').click();await page.waitForSelector('.view-collection');
   await assertFits('390x844 collection');
   assert((await page.locator('.collection-total strong').textContent())==='4/30','collection total does not include all five six-tier families');
+  assert((await page.locator('[data-mastery-family="coffee"] strong').textContent())==='Kenner','two discovered coffee tiers should show Kenner mastery');
   const coffee2=page.locator('[data-discovery-key="item:coffee:2"]');assert(await coffee2.evaluate(el=>el.classList.contains('discovered')),'coffee tier 2 is not shown discovered');
   assert((await coffee2.textContent())?.includes('Kaffeetasse'),'discovered tier does not show its real name');
   await shot('31-collection-coffee');
 
   await page.locator('[data-collection-family="fruit"]').click();
   assert((await page.locator('.collection-focus h2').textContent())?.includes('Sonnenfrüchte'),'fruit family did not open');
+  assert((await page.locator('[data-mastery-family="fruit"] strong').textContent())==='Unentdeckt','locked fruit family mastery leaks progress');
   assert(await page.locator('.collection-tier.locked').count()===6,'undiscovered fruit tiers should all remain silhouettes');
   await shot('32-collection-locked-fruit');
 
@@ -71,14 +74,34 @@ try{
   /* A second real merge at the short-Safari viewport proves the celebration itself fits,
      rather than inferring that from the Collection layout after the reveal has disappeared. */
   await seedFresh();await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board');await assertFits('390x720 discovery board');
-  await realCoffeeMerge();
+  await realCoffeeMerge();await waitForDiscovery('item:coffee:2');
   const shortRevealVisual=await revealMetrics();
   assert(shortRevealVisual.position==='fixed',`390x720 discovery is not viewport anchored: ${JSON.stringify(shortRevealVisual)}`);
   assert(shortRevealVisual.top>=48&&shortRevealVisual.bottom<=360,`390x720 discovery is outside useful upper game area: ${JSON.stringify(shortRevealVisual)}`);
   assert(shortRevealVisual.opacity>=0.8,`390x720 discovery is too transparent: ${JSON.stringify(shortRevealVisual)}`);
   await shot('34-item-discovery-short-safari');
 
-  report={discoveries:reloaded.discoveries,playerXp:reloaded.playerXp,revealVisual,shortRevealVisual};
+  /* Mastery is earned by a real final merge, not a synthetic claim. The board contains two
+     tier-5 coffee items; Collection backfill knows tiers 1-5 and the pointer merge discovers tier 6. */
+  await page.setViewportSize({width:390,height:844});await seedCoffeeMasteryReady();await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board');
+  const masteryBefore=await readSave();assert(masteryBefore.coins===100,`mastery fixture coins changed before merge: ${masteryBefore.coins}`);assert(masteryBefore.discoveries.filter(key=>key.startsWith('item:coffee:')).length===5,'mastery fixture should know exactly coffee tiers 1-5');
+  await realCoffeeMerge();await waitForDiscovery('item:coffee:6');
+  const masteryRevealVisual=await revealMetrics(),masteryReveal=page.locator('.discovery-reveal');
+  const masteryAfter=await readSave();
+  assert(masteryAfter.coins===350,`final-tier mastery should grant exactly +250 Coins, got ${masteryAfter.coins}`);
+  assert(masteryAfter.playerXp===80,`coffee tier 6 discovery should grant 80 XP without an extra level reward, got ${masteryAfter.playerXp}`);
+  const masteryCopy=await masteryReveal.textContent();assert(masteryCopy?.includes('Goldene Kanne')&&masteryCopy?.includes('FAMILIE GEMEISTERT')&&masteryCopy?.includes('+250'),`mastery reveal copy incorrect: ${masteryCopy}`);
+  assert(masteryRevealVisual.bottom<=440,`mastery reveal is outside useful mobile area: ${JSON.stringify(masteryRevealVisual)}`);
+  await shot('35-family-mastery-reveal');
+
+  await page.waitForTimeout(1550);await page.locator('.nav-tab[data-view="collection"]').click();await page.waitForSelector('.view-collection');await assertFits('390x844 mastered collection');
+  assert((await page.locator('[data-mastery-family="coffee"] strong').textContent())==='Meister','completed coffee family does not show Meister');
+  assert((await page.locator('[data-mastery-family="coffee"]').textContent())?.includes('+250 ● verdient'),'completed mastery reward is not visibly recorded');
+  await shot('36-collection-coffee-mastered');
+  await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertFits('390x720 mastered collection');await shot('37-collection-mastery-short-safari');
+  await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="collection"]').click();const masteryReloaded=await readSave();assert(masteryReloaded.coins===350,'mastery Coin reward was lost or duplicated after reload');assert((await page.locator('[data-mastery-family="coffee"] strong').textContent())==='Meister','mastery status was lost after reload');
+
+  report={discoveries:reloaded.discoveries,playerXp:reloaded.playerXp,revealVisual,shortRevealVisual,mastery:{coinsBefore:masteryBefore.coins,coinsAfter:masteryAfter.coins,playerXp:masteryAfter.playerXp,reveal:masteryRevealVisual,reloadCoins:masteryReloaded.coins}};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('39-collection-failure');}catch{}}
 finally{await writeFile(`${outDir}/collection-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}

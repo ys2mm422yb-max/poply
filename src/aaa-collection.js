@@ -2,6 +2,7 @@ import { ITEM_FAMILIES, PLACE_01_UPGRADES, PLACE_02_UPGRADES } from './v2-game.j
 import { awardPlayerXp } from './aaa-progression.js';
 
 export const DISCOVERY_XP_BASE=20;
+export const FAMILY_MASTERY_REWARD_COINS=250;
 export const discoveryItemKey=(family,level)=>`item:${family}:${level}`;
 export const discoveryGeneratorKey=generator=>`generator:${generator}`;
 export const discoveryPlaceKey=place=>`place:${place}`;
@@ -42,6 +43,11 @@ export function familyDiscoveryCount(state,family){
   let found=0;for(let level=1;level<=total;level+=1)if(isDiscovered(state,discoveryItemKey(family,level)))found+=1;
   return {found,total};
 }
+export function familyMastery(state,family){
+  const count=familyDiscoveryCount(state,family),completed=count.total>0&&count.found===count.total;
+  const title=completed?'Meister':count.found>=4?'Profi':count.found>=2?'Kenner':count.found>=1?'Entdecker':'Unentdeckt';
+  return {family,...count,completed,title,rewardCoins:FAMILY_MASTERY_REWARD_COINS,nextLevel:completed?null:count.found+1};
+}
 export function totalItemDiscoveryCount(state){
   let found=0,total=0;for(const family of Object.keys(ITEM_FAMILIES)){const count=familyDiscoveryCount(state,family);found+=count.found;total+=count.total;}return {found,total};
 }
@@ -55,8 +61,15 @@ export function recordDiscovery(state,key,{xp=0}={}){
 }
 
 export function recordItemDiscovery(state,item){
-  if(item?.kind!=='item'||!ITEM_FAMILIES[item.family])return {state,changed:false,key:null,progression:null};
-  return recordDiscovery(state,discoveryItemKey(item.family,item.level),{xp:discoveryXpForItem(item.level)});
+  if(item?.kind!=='item'||!ITEM_FAMILIES[item.family])return {state,changed:false,key:null,progression:null,mastery:null};
+  const before=familyMastery(state,item.family),result=recordDiscovery(state,discoveryItemKey(item.family,item.level),{xp:discoveryXpForItem(item.level)});
+  if(!result.changed)return {...result,mastery:null};
+  const after=familyMastery(result.state,item.family);
+  if(!before.completed&&after.completed){
+    const rewarded=structuredClone(result.state);rewarded.coins=Math.max(0,Number(rewarded.coins)||0)+FAMILY_MASTERY_REWARD_COINS;rewarded.updatedAt=Date.now();
+    return {...result,state:rewarded,mastery:{...after,rewardCoins:FAMILY_MASTERY_REWARD_COINS}};
+  }
+  return {...result,mastery:null};
 }
 
 export function recordGeneratorDiscovery(state,generator){return recordDiscovery(state,discoveryGeneratorKey(generator));}
