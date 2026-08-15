@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState, makeItem } from '../src/v2-game.js';
-import { INITIAL_STORAGE_CAPACITY, STORAGE_MAX_CAPACITY, ensureInventoryState, storageUpgradeCost, storeBoardItem, restoreStoredItem, upgradeStorage } from '../src/aaa-inventory.js';
+import { INITIAL_STORAGE_CAPACITY, STORAGE_MAX_CAPACITY, ensureInventoryState, recycleCoinValue, recycleStoredItem, storageUpgradeCost, storeBoardItem, restoreStoredItem, upgradeStorage } from '../src/aaa-inventory.js';
 
 test('existing saves gain four empty storage slots without losing player value',()=>{
   const state=createInitialState();state.coins=777;delete state.storage;delete state.storageCapacity;
@@ -38,6 +38,29 @@ test('full board blocks restore without losing the stored item',()=>{
   const filler=makeItem('sweet',1,'fill');state.board=state.board.map((item,index)=>item??{...filler,id:`fill-${index}`});
   const result=restoreStoredItem(state,0);
   assert.equal(result.changed,false);assert.equal(result.reason,'board-full');assert.equal(result.state.storage[0].id,'safe-storage-item');
+});
+
+test('recycling removes only the explicitly selected stored item and pays deterministic Coins',()=>{
+  const state=ensureInventoryState(createInitialState()).state;state.coins=17;state.storage=[makeItem('coffee',1,'keep-me'),makeItem('bakery',3,'recycle-me'),makeItem('sweet',2,'also-keep')];
+  const value=recycleCoinValue(state.storage[1]),beforeBoard=structuredClone(state.board);
+  const result=recycleStoredItem(state,1);
+  assert.equal(result.changed,true);assert.equal(result.item.id,'recycle-me');assert.equal(result.coins,value);assert.equal(value,10);assert.equal(result.state.coins,27);assert.deepEqual(result.state.storage.map(item=>item.id),['keep-me','also-keep']);assert.deepEqual(result.state.board,beforeBoard);
+});
+
+test('invalid recycling never changes Coins, storage or board',()=>{
+  const state=ensureInventoryState(createInitialState()).state;state.coins=31;state.storage=[makeItem('coffee',2,'safe')];const snapshot=structuredClone(state);
+  const result=recycleStoredItem(state,9);
+  assert.equal(result.changed,false);assert.equal(result.reason,'invalid-storage-item');assert.deepEqual(result.state,snapshot);
+});
+
+test('full board plus full storage has a fair deterministic recovery path',()=>{
+  let state=ensureInventoryState(createInitialState()).state;state.coins=0;state.storage=Array.from({length:4},(_,i)=>makeItem('bakery',i===0?2:1,`stored-${i}`));
+  const filler=makeItem('sweet',1,'fill');state.board=state.board.map((item,index)=>item??{...filler,id:`fill-${index}`});
+  assert.equal(state.board.every(Boolean),true);assert.equal(state.storage.length,state.storageCapacity);
+  const boardItemId=state.board[9].id,recycledId=state.storage[0].id,recycle=recycleStoredItem(state,0);
+  assert.equal(recycle.changed,true);assert.equal(recycle.item.id,recycledId);assert.equal(recycle.state.storage.length,3);assert.equal(recycle.state.coins,6);assert.equal(recycle.state.board.every(Boolean),true);
+  const stored=storeBoardItem(recycle.state,9);
+  assert.equal(stored.changed,true);assert.equal(stored.item.id,boardItemId);assert.equal(stored.state.storage.length,4);assert.equal(stored.state.board[9],null);assert.equal(stored.state.board.filter(slot=>slot===null).length,1);assert.equal(stored.state.storage.some(item=>item.id===boardItemId),true);assert.equal(stored.state.storage.some(item=>item.id===recycledId),false);
 });
 
 test('Coins buy permanent capacity and cannot overspend or exceed max',()=>{
