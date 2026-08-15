@@ -34,10 +34,14 @@ try{
 
   await page.locator('.purpose-card button').click();
   await page.waitForSelector('.view-orders .service-card');
+  await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
   assert((await page.locator('.service-hero h2').textContent())?.includes('Wähle'),'orders hero still explains instead of offering a choice');
+  assert((await page.locator('.daily-ribbon').textContent())?.includes('Tagesziele & Gast'),'Daily ribbon rendered as an empty surface');
   const choices=page.locator('.customer-choice');assert(await choices.count()===3,'opening does not expose three guest choices');
   await page.locator('[data-select-order="order-1"]').click();
+  await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
   assert((await page.locator('.service-card[data-service-order="order-1"] .service-strategy').textContent())?.includes('KOMBI'),'combo strategy not visible');
+  assert(await page.locator('.service-card[data-service-order="order-1"] .service-status').isHidden(),'redundant service status pill is still visible/clippable');
   await assertVisibleWithin(page.locator('.service-card[data-service-order="order-1"]'),'opening combo service card');
   await assertNoScroll('opening orders 390x844');
   await shot('81-first-session-orders-390x844');
@@ -46,6 +50,7 @@ try{
   await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="orders"]').click();await page.locator('[data-select-order="order-0"]').click();
   await page.locator('button[data-order="order-0"]').click();
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').stars===4);
+  await page.waitForFunction(()=>document.querySelector('.service-hero h2')?.textContent?.includes('baubereit'));
   const served=await readSave(),postTitles=served.currentOrders.map(order=>order.title);
   assert(!postTitles.includes('Erster Kaffee'),`served opening title repeated immediately ${JSON.stringify(postTitles)}`);
   assert(new Set(postTitles).size===3,`replacement duplicated a visible title ${JSON.stringify(postTitles)}`);
@@ -92,11 +97,11 @@ try{
   await page.setViewportSize({width:390,height:720});
   await seed(()=>{});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board .purpose-card');
   await assertNoScroll('fresh board 390x720');await shot('88-first-session-board-390x720');
-  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
+  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.cafe-guest');
   await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
 
-  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true};
+  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('98-first-session-failure');}catch{}}
 finally{await writeFile(`${outDir}/first-session-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
