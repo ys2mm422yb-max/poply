@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createInitialState } from '../src/v2-game.js';
+import { createInitialState, createOrder } from '../src/v2-game.js';
 import { migrateState } from '../src/aaa-state.js';
 import { loadSavedState, saveGameState, freshState } from '../src/aaa-storage.js';
 
@@ -20,10 +20,41 @@ function withStorage(run){
   try{return run(storage);}finally{if(previous===undefined)delete globalThis.window;else globalThis.window=previous;}
 }
 
+const legacyStarterOrders=()=>[createOrder(0),createOrder(1),createOrder(2)];
+
 test('clean domain start remains the deterministic eight-object start',()=>{
   const state=migrateState(createInitialState());
   assert.equal(state.board.filter(Boolean).length,8);
   assert.equal(state.board.filter(item=>item?.kind==='generator').length,2);
+});
+
+test('legacy untouched starter orders migrate into rebuilt opening even after board activity',()=>{
+  const state=createInitialState();
+  state.currentOrders=legacyStarterOrders();
+  state.orderSequence=3;
+  state.stats={merges:2,generated:6,orders:0};
+  const migrated=migrateState(state);
+  assert.deepEqual(migrated.currentOrders.map(order=>order.title),['Erster Kaffee','Frühstück am Fenster','Süße Begrüßung']);
+  assert.deepEqual(migrated.currentOrders.map(order=>order.requirements.length),[1,2,2]);
+  assert.equal(migrated.currentOrders[0].rewards.stars,4);
+  assert.equal(migrated.orderSequence,3);
+});
+
+test('legacy-looking starter orders are preserved once an order was already completed',()=>{
+  const state=createInitialState();
+  state.currentOrders=legacyStarterOrders();
+  state.orderSequence=3;
+  state.stats={merges:2,generated:6,orders:1};
+  const migrated=migrateState(state);
+  assert.deepEqual(migrated.currentOrders.map(order=>order.title),['Morgenkaffee','Frisches Gebäck','Kleine Pause']);
+});
+
+test('legacy-looking starter orders are preserved when the order sequence already advanced',()=>{
+  const state=createInitialState();
+  state.currentOrders=legacyStarterOrders();
+  state.orderSequence=4;
+  const migrated=migrateState(state);
+  assert.deepEqual(migrated.currentOrders.map(order=>order.title),['Morgenkaffee','Frisches Gebäck','Kleine Pause']);
 });
 
 test('legacy starter-plus objects are removed before real progress',()=>{
