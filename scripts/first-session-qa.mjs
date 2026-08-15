@@ -60,6 +60,9 @@ try{
   assert(new Set(postTitles).size===3,`replacement duplicated a visible title ${JSON.stringify(postTitles)}`);
   assert(served.stars===4,'first real service did not reach first build exactly');
   assert((await page.locator('.service-hero h2').textContent())?.includes('baubereit'),'orders did not acknowledge build readiness');
+  const readyPurpose=(await page.locator('.service-purpose p').textContent())||'';
+  assert(readyPurpose.includes('bleiben dir für danach'),`ready order does not explain surplus Stars correctly: ${readyPurpose}`);
+  assert(!readyPurpose.includes('macht „Lichter“ baubereit'),`ready order falsely claims Lichter still needs to become ready: ${readyPurpose}`);
   await assertNoEllipsisStyle(page.locator('.service-hero p'),'ready Orders purpose line');
   await assertNotClipped(page.locator('.service-hero p'),'ready Orders purpose line');
   await shot('82-first-service-payoff-390x844');
@@ -110,7 +113,7 @@ try{
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.cafe-guest');
   await assertNotClipped(page.locator('.purpose-place-unlock strong'),'short mid-stage unlock copy');await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
 
-  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true};
+  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,readyPurposeSurplus:true,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('98-first-session-failure');}catch{}}
 finally{await writeFile(`${outDir}/first-session-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
