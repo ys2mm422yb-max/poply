@@ -73,6 +73,7 @@ test('combined shell release cache key is explicit',()=>{
   assert.match(html,/aaa-flow\.css\?v=20260815-flow1/);
   assert.match(html,/aaa-specials\.css\?v=20260815-specials1/);
   assert.match(html,/aaa-place-powers\.css\?v=20260815-powers1/);
-  assert.match(html,/aaa-main\.js\?v=20260815-powers1/);
-  assert.match(html,/data-build="aaa-foundation-20260815-powers1"/);
+  assert.match(html,/aaa-place-scene-v2\.css\?v=20260816-scenev2/);
+  assert.match(html,/aaa-main\.js\?v=20260816-scenev2/);
+  assert.match(html,/data-build="aaa-foundation-20260816-scenev2"/);
 });

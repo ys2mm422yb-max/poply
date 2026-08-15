@@ -68,6 +68,9 @@ jobs:
       - name: Run Cafe Place Powers WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/place-powers-qa.mjs
+      - name: Run Café Scene V2 WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/place-scene-v2-qa.mjs
       - name: Run legacy opening-order migration WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/legacy-opening-migration-qa.mjs
