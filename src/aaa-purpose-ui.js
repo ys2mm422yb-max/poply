@@ -1,4 +1,5 @@
 import { getState } from './aaa-session.js';
+import { PLACE_UPGRADES } from './v2-game.js';
 import { purposeGoal, purposeLine, purposeRewardLine } from './aaa-purpose.js';
 import { placeSceneMarkup } from './aaa-place-art.js';
 import { sunsetPlaceSceneMarkup } from './aaa-sunset-place.js';
@@ -6,6 +7,7 @@ import { gardenPlaceSceneMarkup } from './aaa-garden-place.js';
 
 const sceneMarkup=(chapter,stage)=>chapter.id==='garden'?gardenPlaceSceneMarkup(stage):chapter.id==='sunset'?sunsetPlaceSceneMarkup(stage):placeSceneMarkup(stage);
 const safeText=value=>String(value??'').replace(/\s+/g,' ').trim();
+const upgradeById=id=>PLACE_UPGRADES.find(upgrade=>upgrade.id===id)??null;
 
 function previewLayer(goal){
   if(goal.complete||!goal.upgrade)return null;
@@ -29,31 +31,45 @@ function decorateBoard(root,goal){
   if(copy&&!after){after=document.createElement('small');after.className='purpose-after purpose-board-after';copy.append(after);}
   if(after)after.textContent=`Danach: ${goal.after?.label??'weiter ausbauen'}`;
   const button=card.querySelector('button');
-  if(button){button.disabled=false;button.removeAttribute('data-action');button.dataset.purposeGoPlace='';button.textContent=goal.ready?'Jetzt im Place bauen':'Zum Place';}
+  if(button){
+    button.disabled=false;button.removeAttribute('data-action');delete button.dataset.purposeGoPlace;delete button.dataset.purposeGoOrders;
+    if(goal.ready){button.dataset.purposeGoPlace='';button.textContent='Jetzt bauen';}
+    else{button.dataset.purposeGoOrders='';button.textContent=goal.current===0?'Auftrag spielen':`${goal.missing} ★ holen`;}
+  }
+}
+
+function strategyLabel(order){
+  if(order.opening&&order.sequence===0)return 'SCHNELLER START';
+  if(order.requirements.length>=2)return 'KOMBI';
+  if((Number(order.rewards?.stars)||0)>=4)return 'AUSBAU';
+  return 'SCHNELL';
 }
 
 function decorateOrders(root,state,goal){
   if(goal.complete)return;
   const hero=root.querySelector('.service-hero');
+  const heading=hero?.querySelector('h2'),intro=hero?.querySelector('p');
+  if(heading)heading.textContent=goal.ready?'Das Café ist baubereit.':'Wähle deinen nächsten Auftrag.';
+  if(intro)intro.textContent=goal.ready?`Genug Sterne für „${goal.label}“ – jetzt im Place bauen.`:`Noch ${goal.missing} ★ bis „${goal.label}“. Kombi-Aufträge zahlen stärker auf den Ausbau ein.`;
   const goalNode=hero?.querySelector('.service-goal');
   if(goalNode){
-    goalNode.classList.add('purpose-service-goal');goalNode.dataset.purposeGoPlace='';goalNode.setAttribute('role','button');goalNode.setAttribute('tabindex','0');goalNode.setAttribute('aria-label',`${goal.label}: ${goal.current} von ${goal.cost} Sterne. Place öffnen.`);
+    goalNode.classList.add('purpose-service-goal');delete goalNode.dataset.purposeGoOrders;goalNode.dataset.purposeGoPlace='';goalNode.setAttribute('role','button');goalNode.setAttribute('tabindex','0');goalNode.setAttribute('aria-label',`${goal.label}: ${goal.current} von ${goal.cost} Sterne. Place öffnen.`);
     const copy=goalNode.querySelector('div');if(copy){const small=copy.querySelector('small'),strong=copy.querySelector('strong');if(small)small.textContent=`Ziel ${goal.step}/${goal.total}`;if(strong)strong.textContent=goal.ready?'BAUBEREIT':`${goal.current}/${goal.cost} ★`;}
   }
   let after=hero?.querySelector('.purpose-after');
   if(hero&&!after){after=document.createElement('small');after.className='purpose-after purpose-orders-after';hero.firstElementChild?.append(after);}
   if(after)after.textContent=`Danach: ${goal.after?.label??'weiter ausbauen'}`;
-  const service=root.querySelector('.service-card[data-service-order]');
-  if(service){
-    const order=state.currentOrders.find(entry=>entry.id===service.dataset.serviceOrder);
+  root.querySelectorAll('.service-card[data-service-order]').forEach(service=>{
+    const order=state.currentOrders.find(entry=>entry.id===service.dataset.serviceOrder);if(!order)return;
+    let badge=service.querySelector('.service-strategy');if(!badge){badge=document.createElement('span');badge.className='service-strategy';service.querySelector('.service-heading')?.prepend(badge);}if(badge)badge.textContent=strategyLabel(order);
     const purpose=service.querySelector('.service-purpose p');
-    if(order&&purpose){
+    if(purpose){
       const stars=Number(order.rewards?.stars)||0,projected=Math.max(0,goal.missing-stars);
       purpose.innerHTML=projected===0
         ?`<strong>+${stars} ★</strong> macht „${goal.label}“ baubereit.`
         :`<strong>+${stars} ★</strong> für „${goal.label}“ · danach noch ${projected} ★.`;
     }
-  }
+  });
 }
 
 function afterLabel(goal){
@@ -75,8 +91,10 @@ function decoratePlace(root,goal){
   const current=root.querySelector('.place-current-goal');
   if(current){
     current.classList.add('purpose-place-goal');
-    const small=current.querySelector('.goal-copy > small');if(small)small.textContent=`NÄCHSTES ZIEL · SCHRITT ${goal.step}/${goal.total}`;
-    let after=current.querySelector('.purpose-after');if(!after){after=document.createElement('div');after.className='purpose-after purpose-place-after';current.querySelector('.goal-copy')?.append(after);}
+    const copy=current.querySelector('.goal-copy');
+    const small=copy?.querySelector(':scope > small');if(small)small.textContent=`NÄCHSTES ZIEL · SCHRITT ${goal.step}/${goal.total}`;
+    let unlock=current.querySelector('.purpose-place-unlock');if(goal.upgrade?.unlock&&!unlock){unlock=document.createElement('div');unlock.className='purpose-place-unlock';copy?.append(unlock);}if(unlock)unlock.innerHTML=`<span>🔓</span><strong>Schaltet frei: ${goal.upgrade.unlock}</strong>`;
+    let after=current.querySelector('.purpose-after');if(!after){after=document.createElement('div');after.className='purpose-after purpose-place-after';copy?.append(after);}
     if(after)after.innerHTML=`<span>DANACH</span><strong>${afterLabel(goal)}</strong>`;
   }
 }
@@ -85,6 +103,7 @@ export function installPurposeUI(root,ui){
   let decorating=false,pulseTimer=0,lastViewNode=null,lastSignature='';
   let knownUpgrades=new Set(getState().placeUpgrades);
   const navigateToPlace=()=>root.querySelector('.nav-tab[data-view="place"]')?.click();
+  const navigateToOrders=()=>root.querySelector('.nav-tab[data-view="orders"]')?.click();
   const pulse=(text,tone='progress')=>{
     clearTimeout(pulseTimer);root.querySelector('.purpose-reward-link')?.remove();
     const target=root.querySelector('.purpose-card,.purpose-service-goal,.purpose-place-goal');if(!target)return;
@@ -94,13 +113,14 @@ export function installPurposeUI(root,ui){
     const fresh=state.placeUpgrades.filter(id=>!knownUpgrades.has(id));
     knownUpgrades=new Set(state.placeUpgrades);
     if(!fresh.length||root.dataset.view!=='place')return;
-    const id=fresh.at(-1),layer=root.querySelector(`.scene-upgrade.${id}:not(.scene-upgrade-preview)`);
+    const id=fresh.at(-1),layer=root.querySelector(`.scene-upgrade.${id}:not(.scene-upgrade-preview)`),upgrade=upgradeById(id);
     if(layer){layer.classList.add('fx-purpose-built');setTimeout(()=>layer.classList.remove('fx-purpose-built'),1900);}
+    if(upgrade?.unlock)setTimeout(()=>pulse(`Freigeschaltet: ${upgrade.unlock}`,'level'),260);
   };
   const decorate=()=>{
     if(decorating)return;
     const state=getState(),viewNode=root.querySelector('.game-view');
-    const signature=`${root.dataset.view}|${state.stars}|${state.placeUpgrades.join(',')}|${state.currentOrders.map(order=>order.id).join(',')}`;
+    const signature=`${root.dataset.view}|${state.stars}|${state.placeUpgrades.join(',')}|${state.currentOrders.map(order=>`${order.id}:${order.title}`).join(',')}`;
     if(viewNode===lastViewNode&&signature===lastSignature)return;
     decorating=true;lastViewNode=viewNode;lastSignature=signature;
     try{
@@ -113,10 +133,13 @@ export function installPurposeUI(root,ui){
   };
   root.addEventListener('click',event=>{
     const target=event.target instanceof Element?event.target:event.target?.parentElement;if(!target)return;
+    if(target.closest('[data-purpose-go-orders]')){event.preventDefault();event.stopPropagation();navigateToOrders();return;}
     if(target.closest('[data-purpose-go-place]')){event.preventDefault();event.stopPropagation();navigateToPlace();}
   },true);
   root.addEventListener('keydown',event=>{
-    if((event.key==='Enter'||event.key===' ')&&event.target instanceof Element&&event.target.closest('[data-purpose-go-place]')){event.preventDefault();navigateToPlace();}
+    if(!(event.key==='Enter'||event.key===' ')||!(event.target instanceof Element))return;
+    if(event.target.closest('[data-purpose-go-orders]')){event.preventDefault();navigateToOrders();return;}
+    if(event.target.closest('[data-purpose-go-place]')){event.preventDefault();navigateToPlace();}
   });
   document.addEventListener('poply:progression',event=>{
     const detail=event.detail??{},source=detail.source;
