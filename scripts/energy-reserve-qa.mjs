@@ -22,20 +22,20 @@ try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
-    const state=game.createInitialState();state.energy=state.maxEnergy;state.energyReserve=0;state.energyUpdatedAt=Date.now()-6*60*1000;
+    const state=game.createInitialState();state.maxEnergy=55;state.energy=55;state.energyReserve=0;state.energyUpdatedAt=Date.now()-6*60*1000;
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
   });
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.resource.energy');await page.waitForTimeout(200);
   const banked=await readSave();
-  assert(banked.energy===banked.maxEnergy,`full Energy changed while banking reserve: ${banked.energy}/${banked.maxEnergy}`);
+  assert(banked.energy===55&&banked.maxEnergy===55,`earned Max Energy changed while banking reserve: ${banked.energy}/${banked.maxEnergy}`);
   assert(banked.energyReserve===3,`expected 3 reserve points after six minutes at full Energy, got ${banked.energyReserve}`);
-  assert((await page.locator('.resource.energy').textContent())?.includes('Reserve 3/5'),'HUD does not expose banked reserve');
+  assert((await page.locator('.resource.energy').textContent())?.includes('Reserve 3/8'),'HUD does not expose earned Reserve capacity');
   await page.locator('.resource.energy').click();await page.waitForSelector('[data-energy-plan]');
   const planText=await page.locator('[data-energy-plan]').textContent();
-  assert(planText?.includes('ENERGIE-RESERVE')&&planText?.includes('3/5 gespeichert'),`reserve detail missing: ${planText}`);
-  assert(planText?.includes('automatisch zuerst genutzt'),`reserve usage rule missing: ${planText}`);
-  await assertPlanFits('390x844 reserve');await shot('27-energy-reserve-390x844');
-  await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertPlanFits('390x720 reserve');await shot('28-energy-reserve-short-safari');
+  assert(planText?.includes('ENERGIE-RESERVE')&&planText?.includes('3/8 gespeichert'),`reserve detail missing earned cap: ${planText}`);
+  assert(planText?.includes('wächst mit Max-Energie')&&planText?.includes('automatisch zuerst genutzt'),`earned reserve rule missing: ${planText}`);
+  await assertPlanFits('390x844 earned reserve');await shot('27-energy-reserve-390x844');
+  await page.setViewportSize({width:390,height:720});await page.waitForTimeout(120);await assertPlanFits('390x720 earned reserve');await shot('28-energy-reserve-short-safari');
   await page.locator('.resource.energy').click();
 
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(80);
@@ -43,11 +43,11 @@ try{
   await page.locator('.board-cell.generator').first().click();await page.waitForTimeout(350);
   const afterSpend=await readSave(),afterFilled=afterSpend.board.filter(Boolean).length;
   assert(afterFilled===beforeFilled+1,`real generator tap did not create one item: ${beforeFilled} -> ${afterFilled}`);
-  assert(afterSpend.energy===afterSpend.maxEnergy,`reserve did not automatically cover generator spend: ${afterSpend.energy}/${afterSpend.maxEnergy}`);
+  assert(afterSpend.energy===55&&afterSpend.maxEnergy===55,`reserve did not automatically cover generator spend: ${afterSpend.energy}/${afterSpend.maxEnergy}`);
   assert(afterSpend.energyReserve===2,`reserve was not consumed exactly once: 3 -> ${afterSpend.energyReserve}`);
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.resource.energy');
   const reloaded=await readSave();assert(reloaded.energyReserve===2,'Energy reserve was not persisted through reload');
-  report={banked:{energy:banked.energy,maxEnergy:banked.maxEnergy,reserve:banked.energyReserve},afterGenerator:{energy:afterSpend.energy,maxEnergy:afterSpend.maxEnergy,reserve:afterSpend.energyReserve,boardItems:afterFilled},reloadedReserve:reloaded.energyReserve,problems};
+  report={banked:{energy:banked.energy,maxEnergy:banked.maxEnergy,reserve:banked.energyReserve,reserveCap:8},afterGenerator:{energy:afterSpend.energy,maxEnergy:afterSpend.maxEnergy,reserve:afterSpend.energyReserve,boardItems:afterFilled},reloadedReserve:reloaded.energyReserve,problems};
 }catch(error){failure=error.stack||String(error);report={...report,problems};}
 await writeFile(`${outDir}/energy-reserve-report.json`,JSON.stringify({...report,failure},null,2));
 await browser.close();
