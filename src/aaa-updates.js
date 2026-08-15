@@ -1,5 +1,8 @@
-const RELEASE_URL='./release.json';
 const UPDATE_INTERVAL_MS=5*60*1000;
+
+export function releaseUrl(moduleUrl=import.meta.url){
+  return new URL('../release.json',moduleUrl).href;
+}
 
 export function shouldReloadForRelease(bootRelease,latestRelease){
   if(!bootRelease||!latestRelease)return false;
@@ -7,8 +10,8 @@ export function shouldReloadForRelease(bootRelease,latestRelease){
   return bootRelease!==latestRelease;
 }
 
-export async function fetchReleaseSha(fetchImpl=globalThis.fetch){
-  const response=await fetchImpl(RELEASE_URL,{cache:'no-store',credentials:'same-origin'});
+export async function fetchReleaseSha(fetchImpl=globalThis.fetch,moduleUrl=import.meta.url){
+  const response=await fetchImpl(releaseUrl(moduleUrl),{cache:'no-store',credentials:'same-origin'});
   if(!response.ok)return null;
   const payload=await response.json();
   return typeof payload?.sha==='string'&&payload.sha.trim()?payload.sha.trim():null;
