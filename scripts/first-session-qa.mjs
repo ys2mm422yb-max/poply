@@ -15,6 +15,7 @@ const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertVisibleWithin=async(locator,label)=>{const box=await locator.boundingBox();assert(box&&box.y>=-1&&box.y+box.height<=await page.evaluate(()=>window.visualViewport?.height||innerHeight)+1,`${label} outside viewport ${JSON.stringify(box)}`);};
+const assertNotClipped=async(locator,label)=>{const m=await locator.evaluate(node=>({scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,text:node.textContent}));assert(m.scrollWidth<=m.clientWidth+1&&m.scrollHeight<=m.clientHeight+1,`${label} visually clipped ${JSON.stringify(m)}`);};
 const seed=async mutate=>page.evaluate(async source=>{const game=await import('./src/v2-game.js');const state=game.createInitialState();const fn=(0,eval)(`(${source})`);fn(state,game);localStorage.setItem('poply-v2-state-1',JSON.stringify(state));},mutate.toString());
 
 let report={},failure=null;
@@ -37,6 +38,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
   assert((await page.locator('.service-hero h2').textContent())?.includes('Wähle'),'orders hero still explains instead of offering a choice');
   assert((await page.locator('.daily-ribbon').textContent())?.includes('Tagesziele & Gast'),'Daily ribbon rendered as an empty surface');
+  await assertNotClipped(page.locator('.service-hero p'),'opening Orders purpose line');
   const choices=page.locator('.customer-choice');assert(await choices.count()===3,'opening does not expose three guest choices');
   await page.locator('[data-select-order="order-1"]').click();
   await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
@@ -56,6 +58,7 @@ try{
   assert(new Set(postTitles).size===3,`replacement duplicated a visible title ${JSON.stringify(postTitles)}`);
   assert(served.stars===4,'first real service did not reach first build exactly');
   assert((await page.locator('.service-hero h2').textContent())?.includes('baubereit'),'orders did not acknowledge build readiness');
+  await assertNotClipped(page.locator('.service-hero p'),'ready Orders purpose line');
   await shot('82-first-service-payoff-390x844');
 
   await page.locator('.nav-tab[data-view="board"]').click();await page.waitForSelector('.purpose-card [data-purpose-go-place]');
@@ -63,6 +66,7 @@ try{
   await shot('83-first-build-ready-board-390x844');
   await page.locator('.purpose-card button').click();await page.waitForSelector('.view-place .scene-upgrade-preview.lights');
   assert((await page.locator('.purpose-place-unlock').textContent())?.includes('Kombi-Aufträge'),'first build gameplay unlock not visible');
+  await assertNotClipped(page.locator('.purpose-place-unlock strong'),'first build unlock copy');
   assert(await page.locator('.place-progress-dial').isHidden(),'duplicate Place progress dial still visible');
   assert(await page.locator('.world-progress').isHidden(),'duplicate hero progress still visible');
   await assertNoScroll('first build preview 390x844');
@@ -70,6 +74,7 @@ try{
   await page.locator('.place-current-goal [data-action="build"]').click();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').placeUpgrades?.includes('lights'));
   await page.waitForSelector('.scene-upgrade.lights:not(.scene-upgrade-preview)');
   assert(await page.locator('.cafe-evening-wash').count()===1,'Lichter do not materially warm the scene');
+  await assertNotClipped(page.locator('.purpose-place-unlock strong'),'post-build unlock copy');
   await shot('85-first-build-complete-390x844');
 
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);state.stars=0;});
@@ -79,6 +84,7 @@ try{
   assert(await page.locator('.cafe-steam').count()===1,'mid-stage counter has no steam detail');
   const motion=await page.locator('.cafe-guest').first().evaluate(node=>getComputedStyle(node).animationName);
   assert(motion&&motion!=='none','authored Café guests are static');
+  await assertNotClipped(page.locator('.purpose-place-unlock strong'),'mid-stage unlock copy');
   await assertNoScroll('living coast stage4 390x844');
   await shot('86-living-cafe-stage4-390x844');
 
@@ -97,11 +103,11 @@ try{
   await page.setViewportSize({width:390,height:720});
   await seed(()=>{});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board .purpose-card');
   await assertNoScroll('fresh board 390x720');await shot('88-first-session-board-390x720');
-  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
+  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNotClipped(page.locator('.service-hero p'),'short Orders purpose line');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.cafe-guest');
-  await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
+  await assertNotClipped(page.locator('.purpose-place-unlock strong'),'short mid-stage unlock copy');await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
 
-  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true};
+  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('98-first-session-failure');}catch{}}
 finally{await writeFile(`${outDir}/first-session-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
