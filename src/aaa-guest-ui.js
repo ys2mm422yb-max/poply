@@ -4,16 +4,13 @@ import { serviceSpecialProgressText } from './aaa-specials.js';
 
 const visitTarget=loyalty=>loyalty.next?.visits??GUEST_LOYALTY_MILESTONES.at(-1).visits;
 const choiceProgress=loyalty=>`${loyalty.visits}/${visitTarget(loyalty)}`;
-const specialChoiceCopy=(special,guest)=>special
-  ?`<b>${special.completed?'✓ Fertig':`${special.tag} ${serviceSpecialProgressText(special)}`}</b><span> · ${guest.name}</span>`
-  :`${guest.name} · ${choiceProgress(guest.loyalty)}`;
+const specialChoiceCopy=(special,guest)=>`<b>${special.completed?'✓ Fertig':`${special.tag} ${serviceSpecialProgressText(special)}`}</b><span> · ${guest.name}</span>`;
 
 function decorateOrders(root,state){
   root.querySelectorAll('.customer-choice[data-select-order]').forEach(choice=>{
     const order=state.currentOrders.find(entry=>entry.id===choice.dataset.selectOrder);
     if(!order)return;
     const guest=guestForSequence(order.sequence),loyalty=guestLoyalty(state,guest.id),special=order.special||null;
-    guest.loyalty=loyalty;
     choice.dataset.guestId=guest.id;
     choice.dataset.loyaltyTitle=loyalty.title;
     const specialLabel=special?`, Bonusziel ${special.label}, ${serviceSpecialProgressText(special)}, +${special.rewardCoins} Coins`:'';
