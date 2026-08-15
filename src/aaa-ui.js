@@ -19,7 +19,10 @@ export function createUI(root,toast){
       const target=fx.index==null?null:root.querySelector(`[data-index="${fx.index}"]`);
       const source=fx.sourceIndex==null?null:root.querySelector(`[data-index="${fx.sourceIndex}"]`);
       if(fx.type==='merge')target?.classList.add('fx-merge','fx-tier-up');
-      if(fx.type==='spawn'){source?.classList.add('fx-generator-dispense');target?.classList.add('fx-spawn','fx-dispensed-item');}
+      if(fx.type==='spawn'){
+        source?.classList.add('fx-generator-dispense');target?.classList.add('fx-spawn','fx-dispensed-item');
+        if(fx.boosted){source?.classList.add('fx-flow-boost-source');target?.classList.add('fx-flow-boost-spawn');}
+      }
     });
   };
   const flyNode=(source,target,className,delay=0)=>{
@@ -98,7 +101,9 @@ export function createUI(root,toast){
   const spawn=index=>{
     const result=generateAt(index);
     if(!result.changed){playFeedback('invalid');message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
-    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex};playFeedback('spawn');message(result.mastery?`Familie gemeistert! +${result.mastery.rewardCoins} Coins`:result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item');render();emitDiscovery(result);
+    lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex,boosted:result.flowBoosted};playFeedback(result.flowBoosted?'reward':'spawn');
+    message(result.flowBoosted?'FLOW-BOOST! Stärkerer Drop.':result.mastery?`Familie gemeistert! +${result.mastery.rewardCoins} Coins`:result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item');
+    render();emitDiscovery(result);
   };
   return {render,message,spawn,getView:()=>view,getSelectedOrder:()=>selectedOrderId,feedback:playFeedback,setFx:fx=>{lastFx=fx;},discovery:emitDiscovery,progression:emitProgression};
 }
