@@ -4,7 +4,7 @@ import { serviceSpecialProgressText } from './aaa-specials.js';
 
 const visitTarget=loyalty=>loyalty.next?.visits??GUEST_LOYALTY_MILESTONES.at(-1).visits;
 const choiceProgress=loyalty=>`${loyalty.visits}/${visitTarget(loyalty)}`;
-const specialChoiceCopy=(special,guest)=>`<b>${special.completed?'✓ Fertig':`${special.tag} ${serviceSpecialProgressText(special)}`}</b><span> · ${guest.name}</span>`;
+const specialChoiceCopy=(special,guest,loyalty)=>`<b>${special.completed?'✓ Fertig':`${special.tag} ${serviceSpecialProgressText(special)}`}</b><span> · ${guest.name} ${choiceProgress(loyalty)}</span>`;
 
 function decorateOrders(root,state){
   root.querySelectorAll('.customer-choice[data-select-order]').forEach(choice=>{
@@ -18,7 +18,7 @@ function decorateOrders(root,state){
     const title=choice.querySelector('strong'),status=choice.querySelector('small');
     if(title)title.textContent=order.title;
     if(status){
-      if(special){status.classList.add('service-special-choice-line');status.innerHTML=specialChoiceCopy(special,guest);}
+      if(special){status.classList.add('service-special-choice-line');status.innerHTML=specialChoiceCopy(special,guest,loyalty);}
       else{status.classList.remove('service-special-choice-line');status.textContent=`${guest.name} · ${choiceProgress(loyalty)}`;}
       status.title=loyalty.next
         ?`${loyalty.title} · noch ${loyalty.visitsUntilNext} bis ${loyalty.next.title} (+${loyalty.next.rewardCoins} Coins)`
