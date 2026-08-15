@@ -2,6 +2,23 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInitialState } from '../src/v2-game.js';
 import { migrateState } from '../src/aaa-state.js';
+import { loadSavedState, saveGameState, freshState } from '../src/aaa-storage.js';
+
+class MemoryStorage{
+  constructor(){this.data=new Map();}
+  getItem(key){return this.data.has(key)?this.data.get(key):null;}
+  setItem(key,value){this.data.set(key,String(value));}
+  removeItem(key){this.data.delete(key);}
+}
+
+const PRIMARY='poply-v2-state-1';
+const BACKUP='poply-v2-state-1-backup';
+
+function withStorage(run){
+  const previous=globalThis.window,storage=new MemoryStorage();
+  globalThis.window={localStorage:storage};
+  try{return run(storage);}finally{if(previous===undefined)delete globalThis.window;else globalThis.window=previous;}
+}
 
 test('clean domain start remains the deterministic eight-object start',()=>{
   const state=migrateState(createInitialState());
@@ -33,3 +50,30 @@ test('known five-slot overmerge trap is recovered without deleting value',()=>{
     assert.equal(migrated.board.filter(item=>item?.family===family&&item.level===1).length,2);
   }
 });
+
+test('save keeps the previous valid state as a rolling recovery backup',()=>withStorage(storage=>{
+  const first=createInitialState();first.coins=111;
+  saveGameState(first);
+  const second=structuredClone(first);second.coins=222;
+  saveGameState(second);
+  assert.equal(JSON.parse(storage.getItem(PRIMARY)).coins,222);
+  assert.equal(JSON.parse(storage.getItem(BACKUP)).coins,111);
+}));
+
+test('corrupt primary save recovers the last valid backup and repairs primary',()=>withStorage(storage=>{
+  const first=createInitialState();first.coins=333;saveGameState(first);
+  const second=structuredClone(first);second.coins=444;saveGameState(second);
+  storage.setItem(PRIMARY,'{broken-json');
+  const recovered=loadSavedState();
+  assert.equal(recovered.coins,333);
+  assert.equal(JSON.parse(storage.getItem(PRIMARY)).coins,333);
+}));
+
+test('fresh reset replaces both primary and backup so old progress cannot resurrect',()=>withStorage(storage=>{
+  const old=createInitialState();old.coins=999;saveGameState(old);
+  const fresh=freshState(),freshCoins=fresh.coins;
+  storage.setItem(PRIMARY,'{broken-json');
+  const recovered=loadSavedState();
+  assert.equal(recovered.coins,freshCoins);
+  assert.equal(JSON.parse(storage.getItem(BACKUP)).coins,freshCoins);
+}));
