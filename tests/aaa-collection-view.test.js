@@ -10,7 +10,7 @@ const root=new URL('../',import.meta.url),read=path=>readFile(new URL(path,root)
 test('Collection Book renders known starting tiers and hides future names',()=>{
   const state=ensureCollectionState(createInitialState()).state,html=collectionView(state,'coffee');
   assert.match(html,/Deine Entdeckungen/);assert.match(html,/3\/30/);assert.match(html,/Getränke/);assert.match(html,/Kaffeebohnen/);assert.match(html,/1\/6/);
-  assert.match(html,/MEISTERSCHAFT/);assert.match(html,/Entdecker/);assert.match(html,new RegExp(`5 Stufen bis Meister · \+${FAMILY_MASTERY_REWARD_COINS} ●`));
+  assert.match(html,/MEISTERSCHAFT/);assert.match(html,/Entdecker/);assert.ok(html.includes(`5 Stufen bis Meister · +${FAMILY_MASTERY_REWARD_COINS} ●`));
   assert.ok((html.match(/Noch entdecken/g)||[]).length>=5);assert.doesNotMatch(html,/Kaffeetasse/);
 });
 
@@ -19,7 +19,7 @@ test('completed family renders earned mastery inside existing Collection focus',
   state.discoveries=state.discoveries.filter(key=>!key.startsWith('item:coffee:'));
   for(let level=1;level<=6;level+=1)state.discoveries.push(discoveryItemKey('coffee',level));
   const html=collectionView(state,'coffee');
-  assert.match(html,/collection-mastery complete/);assert.match(html,/FAMILIE GEMEISTERT/);assert.match(html,/Meister/);assert.match(html,new RegExp(`\+${FAMILY_MASTERY_REWARD_COINS} ● verdient`));
+  assert.match(html,/collection-mastery complete/);assert.match(html,/FAMILIE GEMEISTERT/);assert.match(html,/Meister/);assert.ok(html.includes(`+${FAMILY_MASTERY_REWARD_COINS} ● verdient`));
 });
 
 test('undiscovered fruit family is represented by six locked silhouettes',()=>{
