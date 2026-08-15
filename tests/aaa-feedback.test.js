@@ -44,6 +44,7 @@ test('global mobile chrome carries authored resource and destination color ident
   }
   assert.match(css,/\.topbar\{[\s\S]*radial-gradient/);
   assert.match(css,/\.main-nav\{[\s\S]*radial-gradient/);
+  assert.match(css,/\.app-shell\{max-height:100vh\}/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{[\s\S]*\.nav-tab \.nav-icon\{transition:none\}/);
   assert.doesNotMatch(css,/\.topbar\{[^}]*height:/);
   assert.doesNotMatch(css,/\.main-nav\{[^}]*height:/);
