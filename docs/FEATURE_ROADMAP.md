@@ -63,20 +63,19 @@ Issues #107/#109 and PRs #108/#110/#113 established a stronger causal loop and o
 - Board CTA leads to playable work while Stars are missing and to building when ready;
 - generated 390×844 / 390×720 screenshots are part of the acceptance contract.
 
-## Current open product ownership — Guest Loyalty requires rebuild
-PR #99 proposes persistent loyalty for Mika, Nora and Sam, but its implementation branch is stale and **must not be merged as-is**.
+## Active product slice — #115 Guest Loyalty fresh rebuild
+Historical PR #99 is closed without merge after a current-main audit. Its implementation branch diverged by 8 commits behind / 11 ahead and overlapped newer session/Collection/PWA work.
 
-Useful product contract worth preserving:
+Issue #115 preserves only the useful product contract and requires a clean implementation from current `main`.
+
+Contract to evaluate/build:
 - normal serving should create lightweight durable guest relationship progress;
 - Mika, Nora and Sam can progress through `Neu` → `Bekannt` → `Stammgast` → `Lieblingsgast`;
-- milestone rewards should be automatic and one-time, with no new currency, streak, claim loop or fifth navigation tab;
+- milestone rewards are automatic and one-time, with no new currency, streak, claim loop or fifth navigation tab;
 - legacy saves must not invent guest history or retroactive rewards;
-- loyalty should reinforce the existing Orders/Collection loop rather than become another dashboard.
-
-Current technical state:
-- #99 diverged from current `main` by 8 commits behind / 11 ahead;
-- its diff overlaps newer `aaa-session.js`, Collection, Browser QA, service-worker and PWA-update work;
-- next action is a fresh current-main rebuild of only the loyalty feature, or closing the concept if visual/gameplay review says it does not add enough value.
+- loyalty must reinforce the existing Orders → relationship → Collection/world loop rather than become another dashboard;
+- the old #99 code is reference material only and must not overwrite current First-Session, Daily, purpose or PWA code;
+- final UI must be accepted from current 390×844 and 390×720 GitHub Actions screenshots.
 
 ## Milestone B — visual production quality — OPEN continuously
 Continue stronger color/material identity, authored Board/Orders/Place atmosphere, tactile merge/discovery/delivery/restoration feedback and less dashboard-like presentation.
@@ -92,7 +91,7 @@ A green browser test is never sufficient. Generated phone screenshots must be op
 
 ## J — Collection depth & achievements — continuing
 Potential later slices:
-- current-main Guest Loyalty only if it survives fresh product/visual review;
+- Guest Loyalty only if #115 survives fresh product/visual review;
 - broader world/Place completion records;
 - non-grindy achievements that arise naturally from normal play;
 - cosmetic-only recognition when it creates visible player value;
@@ -118,7 +117,7 @@ Only after base progression has enough depth and pacing data. No punitive urgenc
 Maintain the shared codebase and installed-web-app update path. Later work includes native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance, battery and accessibility audits.
 
 # Immediate build order
-1. Resolve stale PR #99 without merging its outdated branch: rebuild Guest Loyalty from current `main` only if the feature still strengthens the core loop.
+1. Implement/evaluate #115 from fresh current `main`; do not reuse #99 wholesale.
 2. Continue screenshot-first Milestone B visual/game-feel improvements, especially Place transformation and world life.
 3. Start K economy/pacing/configuration simulation so progression decisions are evidence-based instead of guessed.
 4. Choose later J/world-completion slices only when they create a concrete player decision, motivation or visible reward.
