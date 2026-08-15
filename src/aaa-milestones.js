@@ -10,6 +10,15 @@ export const PLAYER_MILESTONES=[
   {id:'level-five',label:'Stammspieler',detail:'Erreiche Spielerlevel 5.',target:5,measure:state=>playerProgress(state?.playerXp).level}
 ];
 
+export const PLAYER_TITLES=[
+  {rank:0,label:'Neu dabei'},
+  {rank:1,label:'Gastgeber'},
+  {rank:2,label:'Merge-Kenner'},
+  {rank:3,label:'Place-Macher'},
+  {rank:4,label:'Entdecker'},
+  {rank:5,label:'Poply-Profi'}
+];
+
 export function milestoneProgress(state,definition){
   const raw=Math.max(0,Number(definition.measure(state))||0),current=Math.min(definition.target,raw);
   return {...definition,current,raw,complete:raw>=definition.target,ratio:definition.target?current/definition.target:1};
@@ -17,3 +26,7 @@ export function milestoneProgress(state,definition){
 
 export function playerMilestones(state){return PLAYER_MILESTONES.map(definition=>milestoneProgress(state,definition));}
 export function completedMilestoneCount(state){return playerMilestones(state).filter(entry=>entry.complete).length;}
+export function playerTitleProgress(state){
+  const completed=completedMilestoneCount(state),rank=Math.min(completed,PLAYER_TITLES.length-1);
+  return {current:PLAYER_TITLES[rank],next:PLAYER_TITLES[rank+1]||null,completed,total:PLAYER_MILESTONES.length,remaining:Math.max(0,PLAYER_MILESTONES.length-completed)};
+}
