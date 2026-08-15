@@ -16,9 +16,14 @@ export function installServiceSpecialsUI(root){
   const decorateChoice=(order,special)=>{
     const node=root.querySelector(`.customer-choice[data-select-order="${order.id}"]`);if(!node)return;
     node.classList.add('has-service-special',`special-${tone(special)}`);node.classList.toggle('special-complete',special.completed);
-    let badge=node.querySelector('.service-special-choice');if(!badge){badge=document.createElement('span');badge.className='service-special-choice';node.append(badge);}
-    const signature=`${special.tag}:${special.progress}:${special.target}:${special.completed}`;
-    if(badge.dataset.signature!==signature){badge.dataset.signature=signature;badge.innerHTML=`<b>${special.completed?'✓':special.tag}</b><span>${serviceSpecialProgressText(special)}</span>`;}
+    const line=node.querySelector(':scope > small');if(!line)return;
+    if(!line.dataset.specialGuest)line.dataset.specialGuest=(line.textContent||'').split('·')[0].trim();
+    line.classList.add('service-special-choice-line');
+    const signature=`${special.tag}:${special.progress}:${special.target}:${special.completed}:${line.dataset.specialGuest}`;
+    if(line.dataset.specialSignature!==signature){
+      line.dataset.specialSignature=signature;
+      line.innerHTML=`<b>${special.completed?'✓ Fertig':`${special.tag} ${serviceSpecialProgressText(special)}`}</b><span> · ${line.dataset.specialGuest}</span>`;
+    }
     pulse(node,order);
   };
   const decorateBoardJob=(order,special)=>{
