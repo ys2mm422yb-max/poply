@@ -60,7 +60,7 @@ try{
   viewportReports.orders720=await assertShellFits('390x720 orders');
   await shot('06-orders-short-safari');
 
-  // Existing real service regression follows the authored reward on the seeded order.
+  // Existing real service regression follows the authored Order reward and exact loyalty milestone reward.
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
@@ -84,13 +84,25 @@ try{
     document.addEventListener('click',event=>record('document-capture',event),true);document.querySelector('#app')?.addEventListener('click',event=>record('app-bubble',event));
   });
   const before=await readSave();
-  const servedReward=before.currentOrders.find(order=>order.id==='order-0')?.rewards;
+  const servedOrder=before.currentOrders.find(order=>order.id==='order-0');
+  const servedReward=servedOrder?.rewards;
   assert(servedReward&&Number(servedReward.coins)>0&&Number(servedReward.stars)>0,'seeded order reward missing');
+  const expectedGuest=await page.evaluate(async order=>{
+    const guests=await import('./src/aaa-guests.js');
+    const state=JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}');
+    const guest=guests.guestForSequence(order.sequence);
+    const beforeVisits=Number(state.guestVisits?.[guest.id]||0);
+    const nextVisits=beforeVisits+1;
+    const milestone=guests.GUEST_LOYALTY_MILESTONES.find(entry=>entry.visits===nextVisits)??null;
+    return {id:guest.id,beforeVisits,nextVisits,rewardCoins:milestone?.rewardCoins||0};
+  },servedOrder);
   await serve.click();await page.waitForTimeout(80);afterImmediate=await readSave();
   clickTrace=await page.evaluate(()=>window.__qaClickTrace||[]);toastState=await page.evaluate(()=>{const el=document.querySelector('#toast');return {text:el?.textContent||'',show:el?.classList.contains('show')||false,tone:el?.dataset?.tone||null};});
   await page.waitForTimeout(1020);const after=await readSave();await shot('08-after-serve-short-safari');
   if(after.coins===before.coins){await page.evaluate(()=>document.querySelector('button[data-order="order-0"]')?.click());await page.waitForTimeout(100);afterProgrammatic=await readSave();}
-  assert(after.coins===before.coins+servedReward.coins,`coins did not increase by authored reward ${servedReward.coins} (${before.coins} -> ${after.coins}); trace=${JSON.stringify(clickTrace)} toast=${JSON.stringify(toastState)} programmaticCoins=${afterProgrammatic?.coins??'n/a'}`);
+  const expectedCoins=before.coins+servedReward.coins+expectedGuest.rewardCoins;
+  assert(after.coins===expectedCoins,`coins did not increase by authored Order ${servedReward.coins} + loyalty ${expectedGuest.rewardCoins} (${before.coins} -> ${after.coins}); trace=${JSON.stringify(clickTrace)} toast=${JSON.stringify(toastState)} programmaticCoins=${afterProgrammatic?.coins??'n/a'}`);
+  assert(after.guestVisits?.[expectedGuest.id]===expectedGuest.nextVisits,`served guest visit did not increment exactly once: ${expectedGuest.id} ${expectedGuest.beforeVisits} -> ${after.guestVisits?.[expectedGuest.id]}`);
   assert(after.stars===before.stars+servedReward.stars,`stars did not increase by authored reward ${servedReward.stars} (${before.stars} -> ${after.stars})`);
   assert(!after.currentOrders.some(order=>order.id==='order-0'),'served order still exists');
   assert(after.currentOrders.some(order=>order.id==='order-3'),'replacement order was not created');

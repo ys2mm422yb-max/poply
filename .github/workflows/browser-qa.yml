@@ -56,6 +56,9 @@ jobs:
       - name: Run first-session rebuild WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/first-session-qa.mjs
+      - name: Run guest loyalty WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/guest-loyalty-qa.mjs
       - name: Run actionable milestone-focus WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/milestone-focus-qa.mjs

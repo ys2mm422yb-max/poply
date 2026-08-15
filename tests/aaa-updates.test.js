@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { fetchReleaseSha, releasePollingForWindow, releaseUrl, shouldReloadForRelease } from '../src/aaa-updates.js';
+import { fetchReleaseSha, releasePollingForWindow, releaseUrl, serviceWorkerPaths, shouldReloadForRelease } from '../src/aaa-updates.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
@@ -25,6 +25,12 @@ test('release marker URL stays on the app origin and preserves the GitHub Pages 
   assert.equal(releaseUrl('http://127.0.0.1:4173/src/aaa-updates.js'),'http://127.0.0.1:4173/release.json');
 });
 
+test('service worker registration uses origin-relative paths and preserves app subpaths',()=>{
+  assert.deepEqual(serviceWorkerPaths('http://127.0.0.1:4173/'),{workerUrl:'/sw.js',workerScope:'/'});
+  assert.deepEqual(serviceWorkerPaths('https://ys2mm422yb-max.github.io/poply/'),{workerUrl:'/poply/sw.js',workerScope:'/poply/'});
+  assert.deepEqual(serviceWorkerPaths('https://example.test/poply/index.html'),{workerUrl:'/poply/sw.js',workerScope:'/poply/'});
+});
+
 test('release marker reader requires a non-empty SHA and uses an absolute same-origin URL',async()=>{
   const calls=[];
   const fetchImpl=async(url,options)=>{calls.push({url,options});return {ok:true,json:async()=>({sha:'  abc123  '})};};
@@ -41,8 +47,7 @@ test('installed Poply app uses stable identity and deployed-only release polling
   assert.equal(JSON.parse(manifest).id,'./');
   assert.match(main,/installAppUpdates\(\)\.catch/);
   assert.match(updates,/const documentBase=documentObj\.baseURI\|\|windowObj\.location\?\.href/);
-  assert.match(updates,/const workerUrl=new URL\('\.\/sw\.js',documentBase\)\.href/);
-  assert.match(updates,/const workerScope=new URL\('\.\/',documentBase\)\.href/);
+  assert.match(updates,/serviceWorkerPaths\(documentBase\)/);
   assert.match(updates,/serviceWorker\.register\(workerUrl,\{scope:workerScope,updateViaCache:'none'\}\)/);
   assert.match(updates,/location\?\.protocol==='https:'/);
   assert.match(updates,/if\(releasePolling\)/);

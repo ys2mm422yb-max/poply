@@ -21,6 +21,12 @@ export async function fetchReleaseSha(fetchImpl=globalThis.fetch,moduleUrl=impor
   return typeof payload?.sha==='string'&&payload.sha.trim()?payload.sha.trim():null;
 }
 
+export function serviceWorkerPaths(documentBase){
+  const worker=new URL('./sw.js',documentBase);
+  const scope=new URL('./',documentBase);
+  return {workerUrl:`${worker.pathname}${worker.search}`,workerScope:scope.pathname};
+}
+
 export async function installAppUpdates({
   navigatorObj=globalThis.navigator,
   documentObj=globalThis.document,
@@ -33,8 +39,7 @@ export async function installAppUpdates({
   if(!navigatorObj?.serviceWorker||!documentObj||!windowObj||typeof fetchImpl!=='function')return {supported:false};
 
   const documentBase=documentObj.baseURI||windowObj.location?.href;
-  const workerUrl=new URL('./sw.js',documentBase).href;
-  const workerScope=new URL('./',documentBase).href;
+  const {workerUrl,workerScope}=serviceWorkerPaths(documentBase);
   const hadController=Boolean(navigatorObj.serviceWorker.controller);
   const registration=await navigatorObj.serviceWorker.register(workerUrl,{scope:workerScope,updateViaCache:'none'});
   registration.update().catch(()=>{});
