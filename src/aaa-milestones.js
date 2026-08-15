@@ -19,6 +19,11 @@ export const PLAYER_TITLES=[
   {rank:5,label:'Poply-Profi'}
 ];
 
+export const PLACE_COMPLETION_BADGES=[
+  {id:'coast',number:1,label:'Café am Meer',shortLabel:'Café',upgradeIds:['lights','counter','menu','seating','terrace','sign']},
+  {id:'sunset',number:2,label:'Sonnenkai',shortLabel:'Sonnenkai',upgradeIds:['sunset-lanterns','sunset-bar','sunset-lounge','sunset-fire','sunset-stage','sunset-sign']}
+];
+
 export function milestoneProgress(state,definition){
   const raw=Math.max(0,Number(definition.measure(state))||0),current=Math.min(definition.target,raw);
   return {...definition,current,raw,complete:raw>=definition.target,ratio:definition.target?current/definition.target:1};
@@ -30,3 +35,14 @@ export function playerTitleProgress(state){
   const completed=completedMilestoneCount(state),rank=Math.min(completed,PLAYER_TITLES.length-1);
   return {current:PLAYER_TITLES[rank],next:PLAYER_TITLES[rank+1]||null,completed,total:PLAYER_MILESTONES.length,remaining:Math.max(0,PLAYER_MILESTONES.length-completed)};
 }
+
+export function placeCompletionBadges(state){
+  const upgrades=new Set(state?.placeUpgrades||[]);
+  return PLACE_COMPLETION_BADGES.map((definition,index)=>{
+    const completedSteps=definition.upgradeIds.filter(id=>upgrades.has(id)).length;
+    const unlocked=index===0||PLACE_COMPLETION_BADGES[index-1].upgradeIds.every(id=>upgrades.has(id))||completedSteps>0;
+    return {...definition,completedSteps,totalSteps:definition.upgradeIds.length,unlocked,complete:completedSteps===definition.upgradeIds.length,ratio:definition.upgradeIds.length?completedSteps/definition.upgradeIds.length:1};
+  });
+}
+
+export function completedPlaceBadgeCount(state){return placeCompletionBadges(state).filter(entry=>entry.complete).length;}
