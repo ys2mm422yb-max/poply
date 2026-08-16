@@ -1,58 +1,71 @@
 # Poply current status
 
-Updated: 2026-08-15
+Updated: 2026-08-16
 
 ## Current production baseline
-Current production `main` is `19a43e897c54c8b21d447c107162dcaa8c80c73b` and contains:
+The latest shipped gameplay/visual release is PR #127, merge commit `3112b6d5e049539bd3d2ed9c3b75f6039ab9c72b`. It contains the full current Poply product baseline:
 - persistent 7×7 merge Board / Werkbank;
-- Place 01 · Café am Meer, Place 02 · Sonnenkai and Place 03 · Dachgarten with visible restoration progression;
-- five six-tier item families and four generators, including Dachgarten's deterministic four-step harvest bonus;
-- authored First Session: an immediate first serve/build payoff, real opening combo orders, anti-repeat replacement selection and Place-stage order pools;
+- Place 01 · Café am Meer, Place 02 · Sonnenkai and Place 03 · Dachgarten with six-step restoration progression;
+- five six-tier item families and four generators, including Dachgarten's deterministic harvest bonus;
+- authored First Session with immediate first serve/build payoff, combo orders, anti-repeat selection and Place-stage content pools;
 - three simultaneous customer orders with deterministic Place-local difficulty bands;
 - Coins, restoration Stars, fair regenerating Energy and Player XP/Levels;
 - visible purpose loop across Board, Orders and Place, including next-build blueprint and actionable next-step CTA;
 - Collection/Discovery with family mastery and one-time final-tier mastery rewards;
 - persistent Storage + Coin expansion + explicit full/full recycling recovery;
-- contextual Daily Goals + Bonus Guest without two permanently fixed daily tasks;
+- contextual Daily Goals + Bonus Guest;
 - Places world-map/revisit flow;
-- materially richer Café am Meer restoration stages with authored workers/guests/steam/light/terrace life and Reduced Motion support;
-- Place 01 upgrades that unlock broader gameplay/order content as well as visible scene changes;
-- Player milestones, titles, Place badges, next-Level reward/XP and Energy-capacity previews;
-- automatic installed-PWA update path, absolute same-origin service-worker registration and iOS standalone safe-area protection;
+- persistent Mika/Nora/Sam Guest Loyalty with automatic one-time milestone rewards;
+- migration of untouched legacy starter orders into the rebuilt First Session without rewriting progressed saves;
+- tactical Merge Flow: successful merges charge a player-chosen generator boost;
+- optional Service Specials that reward different short-term play styles without blocking normal delivery;
+- persistent Café upgrade powers: Abendservice, Vorbereitung and Gastwahl;
+- Café am Meer Scene V2 with authored 2.5D depth, materially larger stage transformations, living-world motion, build-camera payoff and real completed-state revisit QA;
+- automatic installed-PWA update path, same-origin service-worker behavior and iOS standalone safe-area protection;
 - previous-valid LocalStorage backup / corrupt-save recovery;
-- local save/resume and migration safety;
-- mandatory CI + Mobile WebKit + screenshot review + Place03/PWA QA + canonical Pages release gates.
+- mandatory deterministic CI + Mobile WebKit + screenshot review + Place03/PWA QA + canonical Pages release gates.
 
-The First Session rebuild is complete: Issue #109 is closed; PR #110 shipped the seven-block rebuild and PR #113 closed the final post-merge ready-order copy defect from #111.
+## Recently shipped sequence
+The latest gameplay/visual depth sequence is complete:
+- PR #116 — current-main Guest Loyalty rebuild;
+- PR #119 — untouched legacy starter-save migration;
+- PR #121 — tactical Merge Flow generator boosts;
+- PR #123 — optional Service Specials;
+- PR #125 — persistent powers from Café upgrades;
+- PR #127 — Café am Meer Scene V2.
 
-Latest exact-main verification for `19a43e897c54c8b21d447c107162dcaa8c80c73b`:
-- CI `31898264006` — success;
-- Browser QA `31898264009` — success;
-- Place 03 QA `31898264011` — success;
-- PWA Update QA `31898263997` — success;
-- canonical deploy `31898264018` — success.
+There are currently no open product pull requests or product feature issues. Issue #42 is the only open issue and remains the durable coordination/work log.
 
-GitHub Issue #42 remains the durable cross-worker work log.
+## Latest accepted visual and release evidence
+Accepted Scene V2 head: `9133ef954d51671b306b0d485dea15f336dee447`.
 
-## Open product ownership
-Issue #115 `Guests: rebuild loyalty progression on current main` is the next defined product slice.
+Pre-merge acceptance:
+- CI `31914022157` — success;
+- Browser QA `31914022217` — success;
+- Place 03 QA `31914022160` — success;
+- PWA Update QA `31914022164` — success;
+- Browser artifact `9254502284` — all 14 Café Scene V2 screenshots manually opened and accepted at 390×844 / 390×720 after reject/fix iterations.
 
-Historical PR #99 is **closed without merge**. Its product idea was retained, but its stale branch was rejected after audit:
-- old head: `a1e0d1c4b392f11d62e9b30139079646f6e36927`;
-- merge base: `cabfb7797b5e8647d24499e5eb9c02f1a846dfa4`;
-- at audit it had diverged from `main` by 8 commits behind / 11 commits ahead;
-- its stale diff touched `aaa-session.js`, Collection, Browser QA, `sw.js` and PWA update tests and could overwrite newer First-Session/PWA behavior.
+Post-merge verification on exact release commit `3112b6d5e049539bd3d2ed9c3b75f6039ab9c72b`:
+- CI `31914437255` — success;
+- Browser QA `31914437232` — success;
+- Place 03 QA `31914437491` — success;
+- PWA Update QA `31914437200` — success;
+- canonical Pages deploy `31914437244` — success.
 
-#115 preserves only the useful Guest Loyalty contract and requires a fresh current-main implementation with current mobile screenshot review. No code from #99 may be merged wholesale.
+## Save/backend status
+The shipped game remains local-first. Runtime save/resume uses `localStorage` with a previous-valid backup and migration safety; no cloud database is required by the current game loop.
+
+A Neon project named `Poply` exists separately, but as of this status sync it is not wired into the repository/runtime and contains no application tables. Do not introduce a backend dependency implicitly; cloud/accounts remain a later explicit product decision.
 
 ## Current product priorities
-1. Implement #115 from fresh current `main`: lightweight durable Mika/Nora/Sam loyalty only if it still strengthens the core Orders → relationship → Collection/world loop.
-2. Continue Milestone B visual production quality: stronger authored game-world presence, color/material identity, motion and reward payoff while reducing dashboard-like UI.
-3. Continue K economy/pacing/configuration: centralized tuning data, progression simulations and clear currency purpose across all three Places.
-4. Only then broaden Collection/world completion where it strengthens the merge → serve → build → world-change loop.
+1. Choose the next gameplay-depth slice from fresh current `main`; a strong candidate is a temporary Board/service event that changes short-term decisions rather than another passive progression screen.
+2. Continue screenshot-first visual/game-feel production quality across the remaining weaker surfaces while preserving the 390×720 one-screen contract.
+3. Continue economy/pacing/configuration work so Energy, Coins, Stars, rewards and chapter pacing remain evidence-based and regression-safe.
+4. Keep PWA/update/save reliability healthy as infrastructure.
 5. Cloud/accounts, live events and native packaging remain later phases, not current blockers.
 
 ## Durable coordination rule
-Every substantial worker run records in Issue #42: exact starting main, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and next free task.
+Every substantial worker run records in Issue #42: exact starting `main`, branch/PR/head, changed systems, test/run IDs, screenshots actually opened, visible findings, merge/deploy state, blockers and next free task.
 
 A green assertion is not visual acceptance. Any visual change must still be reviewed from generated 390×844 and 390×720 GitHub Actions screenshots before merge.
