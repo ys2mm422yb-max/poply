@@ -1,4 +1,0 @@
-Issue #134 · branch fix/place-screen-v4
-Start main: 61835e93111b85a3ae2a6027ab6d1f40d555ac25
-Implementation commits through: 16ffa55d3d5dfc464f99dcb03910f9da653525e4
-Do not merge before exact-head CI, Browser QA, PWA, relevant Place gates, and manual review of the 14 Place screenshots at 390×844 / 390×720.
