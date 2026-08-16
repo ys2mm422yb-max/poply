@@ -1,0 +1,193 @@
+/* Place Screen V3 — café first, one clear next action, secondary progress only. */
+.production-place{
+  --place-v3-accent:#63ddd1;
+  --place-v3-accent-2:#ffd169;
+  --place-v3-ink:#173d45;
+  grid-template-rows:minmax(0,58fr) minmax(0,42fr)!important;
+  gap:8px!important;
+  padding:8px 11px 6px!important;
+  background:
+    radial-gradient(circle at 50% 2%,rgba(78,211,207,.18),transparent 31%),
+    linear-gradient(180deg,#0a3442 0%,#082b38 53%,#062532 100%)!important;
+}
+.production-place.place-sunset{--place-v3-accent:#ff9f79;--place-v3-accent-2:#ffd168}
+.production-place.place-garden{--place-v3-accent:#77d0a4;--place-v3-accent-2:#d5c07a}
+
+/* The authored place is the screen, not a dashboard card. */
+.production-place .world-hero{
+  min-height:0!important;
+  border-radius:24px!important;
+  border-color:rgba(179,233,229,.2)!important;
+  box-shadow:0 18px 42px rgba(0,18,27,.34),inset 0 1px rgba(255,255,255,.15)!important;
+}
+.production-place .world-vignette{
+  background:linear-gradient(180deg,rgba(2,24,31,0) 42%,rgba(2,22,29,.2) 64%,rgba(2,18,26,.86) 100%),linear-gradient(90deg,rgba(0,22,29,.12),transparent 35%,transparent 76%,rgba(0,22,29,.08))!important;
+}
+.production-place .world-copy{left:18px!important;right:64px;bottom:15px!important}
+.production-place .world-kicker{margin-bottom:4px!important;font-size:9px!important;letter-spacing:.18em!important;color:#a5eee5!important}
+.production-place .world-copy h1{font-size:clamp(27px,7.2vw,38px)!important;line-height:.96!important}
+.production-place .world-copy p{margin-top:6px!important;font-size:12px!important;color:rgba(255,255,255,.78)!important}
+.production-place .world-progress{display:none!important}
+
+/* Blueprint label stays contextual but stops competing with the title. */
+.production-place .purpose-blueprint-tag{
+  left:12px!important;top:12px!important;max-width:46%!important;
+  padding:6px 9px!important;border-radius:13px!important;
+  border-color:rgba(255,220,116,.54)!important;
+  background:linear-gradient(145deg,rgba(8,46,57,.9),rgba(12,65,70,.79))!important;
+  box-shadow:0 8px 20px rgba(0,24,31,.22),inset 0 1px rgba(255,255,255,.11)!important;
+}
+.production-place .purpose-blueprint-tag small{font-size:7px!important;letter-spacing:.13em!important}
+.production-place .purpose-blueprint-tag strong{font-size:12px!important}
+
+/* World map becomes a lightweight utility on the scene itself. */
+.production-place .world-hero>.place-map-launch{
+  position:absolute;z-index:7;right:11px;top:11px;
+  display:flex!important;align-items:center;gap:5px;
+  width:auto!important;margin:0!important;padding:7px 9px!important;
+  border:1px solid rgba(255,255,255,.24)!important;border-radius:999px!important;
+  background:rgba(4,37,48,.7)!important;color:#f7fffd!important;
+  box-shadow:0 7px 18px rgba(0,18,27,.2),inset 0 1px rgba(255,255,255,.1)!important;
+  backdrop-filter:blur(8px);text-align:left;
+}
+.production-place .world-hero>.place-map-launch>span{font-size:14px!important;color:var(--place-v3-accent-2)!important}
+.production-place .world-hero>.place-map-launch b{font-size:10px!important;letter-spacing:.02em}
+.production-place .world-hero>.place-map-launch small{display:none!important}
+
+/* Command area is intentionally open: one goal card plus one small progress rail. */
+.production-place .place-command{
+  min-height:0!important;
+  display:grid!important;grid-template-rows:minmax(0,1fr) 72px!important;gap:7px!important;
+  padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;
+}
+.production-place .place-progress-row{display:block!important;min-height:0!important}
+.production-place .place-progress-dial{display:none!important}
+.production-place .place-current-goal{
+  height:100%;min-height:0!important;overflow:hidden;
+  display:grid!important;grid-template-columns:minmax(0,1fr) 100px!important;grid-template-rows:minmax(0,1fr) 46px!important;
+  gap:7px 10px!important;align-items:stretch!important;
+  padding:13px 13px 12px!important;border-radius:22px!important;
+  background:linear-gradient(145deg,#fff7df 0%,#f8e9bf 58%,#f2dca4 100%)!important;
+  color:var(--place-v3-ink)!important;
+  box-shadow:0 12px 30px rgba(0,19,27,.26),inset 0 1px #fff!important;
+}
+.production-place .place-current-goal .goal-copy{grid-column:1;grid-row:1/3;min-width:0;align-self:center}
+.production-place .place-current-goal .goal-copy>small{font-size:8px!important;letter-spacing:.14em!important;color:#8a671c!important}
+.production-place .place-current-goal .goal-copy>strong{
+  margin-top:2px!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;
+  font-size:24px!important;line-height:.98!important;letter-spacing:-.025em!important;color:#153d47!important;
+}
+.production-place .place-current-goal .goal-copy>p{
+  margin:6px 0 5px!important;font-size:10px!important;line-height:1.25!important;font-weight:760!important;color:#637477!important;
+}
+.production-place .place-current-goal .goal-copy>span{
+  display:flex;align-items:center;gap:3px;margin-top:1px;font-size:15px!important;line-height:1!important;font-weight:950!important;color:#a86f08!important;
+}
+.production-place .place-current-goal .goal-copy>span .ui-icon{width:16px;height:16px}
+
+/* Missing requirement is explicit and actionable instead of a mysterious disabled button. */
+.production-place .place-goal-status{
+  grid-column:2;grid-row:1;align-self:stretch;
+  display:grid;grid-template-columns:20px minmax(0,1fr);grid-template-rows:auto auto;column-gap:5px;align-content:center;
+  min-width:0;padding:7px 8px;border:1px solid rgba(153,111,29,.18);border-radius:14px;
+  background:rgba(255,255,255,.33);color:#563b18;
+}
+.production-place .place-goal-status>span{grid-row:1/3;align-self:start;font-size:18px;line-height:1;color:#bf8013}
+.production-place .place-goal-status>strong{font-size:10px;line-height:1.05}
+.production-place .place-goal-status>small{margin-top:2px;font-size:7px;line-height:1.15;color:#7a684b}
+.production-place .place-goal-status.ready{border-color:rgba(47,144,92,.2);background:rgba(100,191,139,.12);color:#245c47}
+.production-place .place-goal-status.ready>span{color:#2fa56b}
+.production-place .place-goal-orders{
+  grid-column:1/-1;margin-top:5px;padding:4px 5px;border:0;border-radius:8px;background:rgba(155,111,25,.1);color:#6f501d;
+  font-size:7px;font-weight:900;text-align:left;
+}
+.production-place .place-current-goal>button{
+  grid-column:2;grid-row:2;width:100%!important;min-width:0!important;height:46px!important;
+  border:0!important;border-radius:14px!important;
+  background:linear-gradient(180deg,#5bd43f,#35ad29)!important;color:#fff!important;
+  font-size:12px!important;font-weight:950!important;
+  box-shadow:0 7px 14px rgba(45,149,37,.25),inset 0 1px rgba(255,255,255,.35)!important;
+}
+.production-place .place-current-goal>button:disabled{
+  background:linear-gradient(180deg,#c8c8bb,#bdbdb4)!important;color:rgba(255,255,255,.92)!important;box-shadow:none!important;cursor:default;
+}
+
+/* Unlock and 'after' become reward metadata, not nested cards. */
+.production-place .purpose-place-unlock{
+  display:flex!important;align-items:flex-start!important;gap:5px!important;margin-top:6px!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:none!important;color:#35665b!important;
+}
+.production-place .purpose-place-unlock>span{font-size:10px!important}
+.production-place .purpose-place-unlock>strong{font-size:8px!important;line-height:1.15!important}
+.production-place .purpose-place-after{
+  gap:5px!important;margin-top:5px!important;padding-top:5px!important;border-top-color:rgba(117,84,28,.14)!important;
+}
+.production-place .purpose-place-after>span{padding:1px 4px!important;font-size:6px!important}
+.production-place .purpose-place-after>strong{font-size:8px!important;white-space:normal!important;line-height:1.12!important}
+
+/* Restoration progress is deliberately secondary and compact. */
+.production-place .journey-wrap{
+  min-height:0!important;display:grid!important;grid-template-rows:auto 4px minmax(0,1fr)!important;gap:4px!important;
+  padding:5px 4px 1px!important;border:0!important;background:transparent!important;
+}
+.production-place .journey-head{padding:0 2px;color:#dff6f2!important}
+.production-place .journey-head strong{font-size:8px!important;letter-spacing:.14em!important}
+.production-place .journey-head span{font-size:8px!important;color:var(--place-v3-accent-2)!important}
+.production-place .journey-line{height:3px!important;background:rgba(255,255,255,.07)!important}
+.production-place .journey-line i{background:linear-gradient(90deg,var(--place-v3-accent),var(--place-v3-accent-2))!important;box-shadow:0 0 10px rgba(99,221,209,.2)!important}
+.production-place .journey-steps{gap:2px!important}
+.production-place .journey-step{gap:2px!important;transform:none!important}
+.production-place .journey-step>span{
+  width:24px!important;height:24px!important;border-radius:50%!important;font-size:9px!important;
+  background:#0b3542!important;border-color:rgba(160,218,214,.12)!important;box-shadow:none!important;
+}
+.production-place .journey-step small{
+  max-width:52px!important;font-size:6px!important;line-height:1!important;font-weight:820!important;color:currentColor!important;
+}
+.production-place .journey-step.done>span{background:linear-gradient(145deg,#5cd7c5,#329e8c)!important;color:#fff!important}
+.production-place .journey-step.current{color:#ffd66d!important}
+.production-place .journey-step.current>span{
+  border-color:#f5c95e!important;background:linear-gradient(145deg,#ffe58a,#efba4a)!important;color:#183e46!important;
+  box-shadow:0 0 0 3px rgba(245,201,94,.1)!important;
+}
+
+.production-place .place-current-goal.complete{grid-template-columns:minmax(0,1fr) 46px!important;grid-template-rows:1fr!important}
+.production-place .place-current-goal.complete .goal-copy{grid-column:1;grid-row:1}
+.production-place .place-current-goal.complete .goal-complete-mark{grid-column:2;grid-row:1;align-self:center}
+
+@media(max-height:760px) and (max-width:520px){
+  .production-place{grid-template-rows:minmax(0,56fr) minmax(0,44fr)!important;gap:6px!important;padding:6px 9px 4px!important}
+  .production-place .world-hero{border-radius:20px!important}
+  .production-place .world-copy{left:14px!important;bottom:11px!important}
+  .production-place .world-copy h1{font-size:27px!important}
+  .production-place .world-copy p{font-size:10px!important;margin-top:4px!important}
+  .production-place .purpose-blueprint-tag{left:9px!important;top:9px!important;padding:5px 7px!important}
+  .production-place .world-hero>.place-map-launch{right:8px;top:8px;padding:6px 8px!important}
+  .production-place .place-command{grid-template-rows:minmax(0,1fr) 62px!important;gap:5px!important}
+  .production-place .place-current-goal{grid-template-columns:minmax(0,1fr) 88px!important;grid-template-rows:minmax(0,1fr) 40px!important;gap:5px 7px!important;padding:10px 10px 9px!important;border-radius:18px!important}
+  .production-place .place-current-goal .goal-copy>strong{font-size:20px!important}
+  .production-place .place-current-goal .goal-copy>p{margin:4px 0 3px!important;font-size:9px!important;line-height:1.15!important}
+  .production-place .place-current-goal .goal-copy>span{font-size:13px!important}
+  .production-place .place-goal-status{padding:5px 6px;grid-template-columns:16px minmax(0,1fr)}
+  .production-place .place-goal-status>span{font-size:15px}
+  .production-place .place-goal-status>strong{font-size:8px}
+  .production-place .place-goal-status>small{font-size:6px}
+  .production-place .place-goal-orders{margin-top:3px;padding:3px 4px;font-size:6px}
+  .production-place .place-current-goal>button{height:40px!important;font-size:10px!important}
+  .production-place .purpose-place-unlock{margin-top:4px!important}
+  .production-place .purpose-place-after{display:none!important}
+  .production-place .journey-wrap{padding-top:3px!important}
+  .production-place .journey-head strong,.production-place .journey-head span{font-size:7px!important}
+  .production-place .journey-step>span{width:20px!important;height:20px!important;font-size:8px!important}
+  .production-place .journey-step small{font-size:5.5px!important;max-width:46px!important}
+}
+
+@media(max-width:365px){
+  .production-place .place-current-goal{grid-template-columns:minmax(0,1fr) 84px!important}
+  .production-place .place-current-goal .goal-copy>strong{font-size:19px!important}
+  .production-place .journey-step small{display:none!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .production-place .place-goal-orders,.production-place .place-current-goal>button{transition:none!important}
+}
