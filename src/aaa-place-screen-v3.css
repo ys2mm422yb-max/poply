@@ -123,11 +123,12 @@
   font-size:6.8px!important;line-height:1.08!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden!important;
 }
 .production-place .purpose-place-after{
-  display:flex!important;align-items:center!important;gap:4px!important;margin-top:3px!important;padding-top:3px!important;border-top-color:rgba(117,84,28,.12)!important;
+  display:flex!important;align-items:flex-start!important;gap:4px!important;margin-top:3px!important;padding-top:3px!important;border-top-color:rgba(117,84,28,.12)!important;
 }
-.production-place .purpose-place-after>span{padding:1px 3px!important;font-size:5.2px!important}
+.production-place .purpose-place-after>span{flex:0 0 auto;padding:1px 3px!important;font-size:5.2px!important}
 .production-place .purpose-place-after>strong{
-  min-width:0;font-size:6.5px!important;white-space:nowrap!important;line-height:1.05!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  min-width:0;font-size:6.5px!important;white-space:normal!important;line-height:1.08!important;overflow:hidden!important;text-overflow:clip!important;
+  display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important;
 }
 
 /* Restoration progress is a quiet rail; the six technical circles are intentionally gone. */
@@ -169,7 +170,7 @@
   .production-place .purpose-place-unlock>strong{font-size:6px!important;-webkit-line-clamp:1;line-clamp:1}
   .production-place .purpose-place-after{gap:3px!important;margin-top:2px!important;padding-top:2px!important}
   .production-place .purpose-place-after>span{font-size:4.8px!important}
-  .production-place .purpose-place-after>strong{font-size:5.8px!important}
+  .production-place .purpose-place-after>strong{font-size:5.8px!important;line-height:1.05!important}
   .production-place .journey-wrap{padding-top:2px!important}
   .production-place .journey-head strong,.production-place .journey-head span{font-size:6.3px!important}
 }
