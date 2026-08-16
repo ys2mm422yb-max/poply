@@ -6,12 +6,13 @@ const read=path=>readFile(new URL(path,import.meta.url),'utf8');
 
 test('Place Screen V3 makes the scene primary and removes dashboard chrome',async()=>{
   const css=await read('../src/aaa-place-screen-v3.css');
-  assert.match(css,/grid-template-rows:minmax\(0,58fr\) minmax\(0,42fr\)/);
+  assert.match(css,/grid-template-rows:minmax\(0,67fr\) minmax\(0,33fr\)/);
   assert.match(css,/\.production-place \.world-progress\{display:none!important\}/);
   assert.match(css,/\.production-place \.place-progress-dial\{display:none!important\}/);
-  assert.match(css,/grid-template-rows:minmax\(0,1fr\) 72px/);
-  assert.match(css,/\.production-place \.journey-step>span/);
+  assert.match(css,/grid-template-rows:minmax\(0,1fr\) 34px/);
+  assert.match(css,/\.production-place \.journey-steps\{display:none!important\}/);
   assert.match(css,/@media\(max-height:760px\)/);
+  assert.match(css,/grid-template-rows:minmax\(0,65fr\) minmax\(0,35fr\)/);
 });
 
 test('Place Screen V3 explains blocked builds and routes to orders',async()=>{
