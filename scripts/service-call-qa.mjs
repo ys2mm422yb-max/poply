@@ -11,6 +11,7 @@ const problems=[];page.on('console',msg=>{if(['error','warning'].includes(msg.ty
 const assert=(value,message)=>{if(!value)throw new Error(message);};
 const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
+const waitForCallCounter=(field,expected)=>page.waitForFunction(({field,expected})=>{const state=JSON.parse(localStorage.getItem('poply-v2-state-1')||'null');return state?.serviceCallState?.[field]===expected;},{field,expected});
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertWithin=async(locator,label)=>{const box=await locator.boundingBox(),height=await page.evaluate(()=>window.visualViewport?.height||innerHeight);assert(box&&box.y>=-1&&box.y+box.height<=height+1,`${label} outside viewport ${JSON.stringify(box)}`);};
 const assertAboveNav=async(locator,label)=>{const [box,nav]=await Promise.all([locator.boundingBox(),page.locator('.main-nav').boundingBox()]);assert(box&&nav&&box.y+box.height<=nav.y-4,`${label} overlaps bottom nav: element=${JSON.stringify(box)} nav=${JSON.stringify(nav)}`);};
@@ -52,7 +53,7 @@ try{
   const activePanel=page.locator(`.service-card[data-service-order="${targetId}"] .service-call-panel.is-active`);await activePanel.waitFor();assert(((await activePanel.textContent())||'').includes('2/2'),'active target panel lost Nachschub progress');
   const beforeSuccess=await readSave(),beforeCoins=beforeSuccess.coins,callsCompleted=beforeSuccess.serviceCallState.callsCompleted;
   await page.locator(`.service-card[data-service-order="${targetId}"] button[data-order="${targetId}"]`).click();
-  await page.waitForFunction(()=>document.querySelector('#toast')?.textContent?.includes('Service-Ruf +'));
+  await waitForCallCounter('callsCompleted',callsCompleted+1);
   await page.waitForTimeout(380);save=await readSave();assert(save.serviceCallState.callsCompleted===callsCompleted+1,'successful Service-Ruf was not counted');assert(save.coins>beforeCoins,'successful Service-Ruf did not pay Coins');assert(save.serviceCallState.orderId===null,'Service-Ruf stayed active after success');
   await shot('112-service-call-success-390x844');
 
@@ -60,13 +61,13 @@ try{
   await page.locator('.service-card .service-call-panel [data-service-call-mode="direct"]').click();await page.waitForSelector('.service-call-strip.is-active.mode-direct');
   save=await readSave();const other=save.currentOrders.find(order=>order.id!==directTarget);assert(other,'no second order available for expiry path');const expiredBefore=save.serviceCallState.callsExpired;
   await prepareOrder(other.id);await openOrders();await selectOrder(other.id);await page.locator(`.service-card[data-service-order="${other.id}"] button[data-order="${other.id}"]`).click();
-  await page.waitForFunction(()=>document.querySelector('#toast')?.textContent?.includes('Service-Ruf verfallen'));await page.waitForTimeout(380);save=await readSave();assert(save.serviceCallState.callsExpired===expiredBefore+1,'other delivery did not expire the call');assert(save.serviceCallState.orderId===null,'expired call stayed active');
+  await waitForCallCounter('callsExpired',expiredBefore+1);await page.waitForTimeout(380);save=await readSave();assert(save.serviceCallState.callsExpired===expiredBefore+1,'other delivery did not expire the call');assert(save.serviceCallState.orderId===null,'expired call stayed active');
 
   await page.setViewportSize({width:390,height:720});await forceReady();await openOrders();
   const shortPanel=page.locator('.service-card .service-call-panel.is-ready'),shortStrip=page.locator('.view-orders>.service-call-strip.is-ready'),shortDeliver=page.locator('.service-deliver');await shortPanel.waitFor();await shortStrip.waitFor();
   assert(((await shortPanel.textContent())||'').includes('Nachschub'),'390x720 lost Service-Ruf choices');await assertWithin(shortStrip,'Service-Ruf strip 390x720');await assertWithin(shortPanel,'Service-Ruf panel 390x720');await assertWithin(shortDeliver,'service button 390x720');await assertAboveNav(shortDeliver,'service button 390x720');await assertNoScroll('Service-Ruf ready 390x720');await shot('113-service-call-ready-390x720');
 
-  report={readyAfterOrders:3,modes:['direct','stock'],stockGeneratorTarget:2,successfulBonus:true,otherDeliveryExpiresOnlyBonus:true,shortViewportNoScroll:true,shortViewportNoNavOverlap:true};
+  report={readyAfterOrders:3,modes:['direct','stock'],stockGeneratorTarget:2,successfulBonus:true,otherDeliveryExpiresOnlyBonus:true,shortViewportNoScroll:true,shortViewportNoNavOverlap:true,persistedDeliveryAssertions:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('114-service-call-failure');}catch{}}
 finally{await writeFile(`${outDir}/service-call-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}

@@ -1,6 +1,9 @@
 # Service-Ruf
 
-Status: candidate in PR #132 · Issue #131 · 2026-08-16.
+Status: **LIVE** · PR #132 · Issue #131 · 2026-08-16.
+
+Accepted implementation head: `3d08523b65c73fdf2beaac9ff460ac62d31e213c`.
+Production merge commit: `8cdeeab8f1c50c97a83c8b569bda9bddce0564c6`.
 
 ## Player problem
 Three guests wait at once, but existing tactical systems mostly change **how** the player merges or generates. Service-Ruf adds a small explicit sequencing decision: **which guest should be served next?**
@@ -49,11 +52,27 @@ Canonical fields:
 
 If a legacy save has no Service-Ruf state, a safe state is derived from existing `stats.orders`. If an active target order no longer exists, the invalid target is cleared safely instead of blocking play.
 
-## QA contract
-Before merge:
-- deterministic domain tests cover cadence, choice, generator progress, success, harmless expiry and migration;
-- dedicated WebKit QA proves ready → choice → Nachschub 2/2 → successful target delivery plus harmless other-order expiry;
-- canonical Service-Ruf screenshots at 390×844 and 390×720 must be generated and actually opened/reviewed;
-- exact accepted head must pass CI, Browser QA, PWA Update QA and relevant Place gate.
+## Release acceptance
+The accepted exact head passed:
+- CI `31940477484`;
+- Browser QA `31940477492`;
+- PWA Update QA `31940477487`;
+- Place 03 QA `31940477536`.
 
-After merge, the exact production `main` must pass the full release gate again, including canonical Pages deployment.
+Accepted Browser artifact: `9261945619`.
+The following screenshots were actually opened and reviewed before merge:
+- `110-service-call-ready-390x844.png`;
+- `111-service-call-stock-ready-390x844.png`;
+- `112-service-call-success-390x844.png`;
+- `113-service-call-ready-390x720.png`.
+
+The first technically green 390×720 candidate was manually rejected because the fixed bottom navigation partly covered the `Liefern` action. The final accepted version compacts only the short-phone Ruf state and the dedicated WebKit gate now asserts that `Liefern` remains fully above `.main-nav`.
+
+The exact production merge commit then passed the release gate again:
+- CI `31940888464`;
+- Browser QA `31940888460`;
+- PWA Update QA `31940888461`;
+- Place 03 QA `31940888448`;
+- canonical Pages deploy `31940888456`.
+
+The full post-merge Browser QA completed successfully through Service-Ruf, Café Powers, Café Scene V2, migration, Energy, Collection, Storage, Daily, Place Map, Place03 and screenshot upload.

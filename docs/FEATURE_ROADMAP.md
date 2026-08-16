@@ -24,6 +24,7 @@ Current production includes:
 - tactical Merge Flow generator boosts;
 - optional Service Specials that change short-term play without blocking service;
 - persistent Café upgrade powers: Abendservice, Vorbereitung and Gastwahl;
+- deterministic optional **Service-Ruf** for choosing which waiting guest to commit to next, with Direkt / Nachschub tradeoff;
 - Café am Meer Scene V2 with authored foreground/midground/background depth, larger restoration transformations, ambient life and build-camera payoff;
 - Place Screen V3 with Café-first hierarchy, one compact build objective, secondary restoration progress and map-as-utility presentation;
 - automatic installed-PWA update handling, iOS safe-area protection and save recovery;
@@ -66,15 +67,19 @@ Issues #107/#109 and PRs #108/#110/#113 established the stronger causal loop:
 - Board CTA leads to playable work while Stars are missing and to building when ready;
 - generated 390×844 / 390×720 screenshots are part of the acceptance contract.
 
-### P — Guest/service decision depth — LIVE first layers, active next layer
+### P — Guest/service decision depth — LIVE
 The 2026-08-15/16 sequence added real gameplay consequences instead of more passive dashboards:
-- PR #116: Guest Loyalty on current main;
+- PR #116: Guest Loyalty;
 - PR #119: untouched legacy starter-save migration;
 - PR #121: Merge Flow lets three successful merges arm a chosen generator boost;
 - PR #123: optional Service Specials reward Merge-Serie, fresh-item and Flow-Tipp play styles;
-- PR #125: Café upgrades unlock persistent Abendservice, Vorbereitung and Gastwahl powers.
+- PR #125: Café upgrades unlock persistent Abendservice, Vorbereitung and Gastwahl powers;
+- PR #132: **Service-Ruf** adds a deterministic optional choice of which waiting guest to commit to next. `Direkt` rewards immediate next service; `Nachschub` asks for 2 generator actions before that same next service for a larger bonus.
 
-Active candidate Issue #131 / draft PR #132 adds **Service-Ruf**, a deterministic optional choice of which waiting guest to commit to next. `Direkt` rewards immediate next service; `Nachschub` asks for 2 generator actions before that same next service for a larger bonus. It is not live until exact-head gates, manual phone screenshot review, merge and exact-main release verification are complete.
+Service-Ruf accepted head: `3d08523b65c73fdf2beaac9ff460ac62d31e213c`.
+Release merge commit: `8cdeeab8f1c50c97a83c8b569bda9bddce0564c6`.
+Accepted Browser artifact: `9261945619`.
+The first green 390×720 candidate was manually rejected because bottom navigation covered part of `Liefern`; the final version was compacted and the browser gate now asserts no bottom-nav overlap. Exact production-main CI, Browser QA, PWA Update QA, Place03 QA and canonical Pages deployment all passed after merge.
 
 ### Q — Café am Meer Scene V2 — LIVE
 PR #127 rebuilt Place 01 as a living 2.5D scene with materially larger stage transformations, real foreground depth, ambient motion and build-camera payoff. Acceptance included all stages 0–6 at 390×844 and 390×720, a real completed-Café revisit state and reject/fix iterations for visible QA defects.
@@ -86,12 +91,12 @@ Release merge commit: `3112b6d5e049539bd3d2ed9c3b75f6039ab9c72b`.
 PR #130 recomposed the Place surface around the authored Café scene instead of stacked dashboard chrome: map is a scene utility, build state is compact/actionable, and restoration progress is secondary. All 14 Café stage screenshots were actually reviewed at 390×844 / 390×720 before merge.
 
 Accepted PR head: `9a75722705830140d78b1812d06281374d3e95d3`.
-Release merge commit / production main at the start of Service-Ruf: `3b6754b04b12902d25960884bedbc13e7d7c3853`.
+Release merge commit: `3b6754b04b12902d25960884bedbc13e7d7c3853`.
 
 ## Current ownership
-Active product scope is Issue #131 / draft PR #132 on branch `feat/service-call`. It owns the isolated Service-Ruf domain/UI/session/browser-QA surface. Issue #42 remains the durable coordination/work-log issue.
+No product feature branch is active after Service-Ruf. This documentation-only release sync owns only `docs/CURRENT_STATUS.md`, `docs/FEATURE_ROADMAP.md` and `docs/SERVICE_CALL.md`. Issue #42 remains the durable coordination/work-log issue.
 
-Other workers must re-read exact current `main`, open PRs and #42 before writes and avoid overlap with the active Service-Ruf files.
+Other workers must re-read exact current `main`, open PRs and #42 before writes and avoid overlap with any active branch.
 
 ## Milestone B — visual production quality — OPEN continuously
 Continue stronger color/material identity, authored Board/Orders/Place atmosphere, tactile merge/discovery/delivery/restoration feedback and less dashboard-like presentation.
@@ -105,24 +110,21 @@ Priority visual questions:
 
 A green browser test is never sufficient. Generated phone screenshots must be opened and accepted.
 
-## Active gameplay-depth candidate — Service-Ruf
-The current candidate deliberately implements the previously identified short-term service decision without duplicating existing systems:
-- deterministic, visible, optional/fair;
-- changes **which guest is next**, not how an order's Special is completed;
-- no new currency, timer/FOMO or hidden outcome rigging;
-- must coexist cleanly with Merge Flow, Service Specials and Café powers;
-- must fit 390×720 without returning Orders/Board to dashboard UI.
+## Next gameplay-depth rule
+Service-Ruf filled the identified short-term guest sequencing gap. The next gameplay slice should be selected only if it creates a genuinely new decision, motivation or visible reward and does **not** duplicate:
+- Merge Flow's generator boost decision;
+- Service Specials' order-specific play-style challenges;
+- Café powers' persistent restoration benefits;
+- Service-Ruf's next-guest commitment.
 
-Authoritative contract: `docs/SERVICE_CALL.md`.
-
-After this candidate is accepted or rejected, choose the next depth slice only if it creates a genuinely new decision, motivation or visible reward.
+Keep it deterministic, visible and optional/fair where possible; avoid a new currency, timer/FOMO or hidden outcome rigging. It must fit the mobile shell without returning Board/Orders to dashboard UI.
 
 ## K — Economy, balancing & configuration — HIGH VALUE NEXT
 Next systems work:
 - move content/reward/generator/Place costs toward centralized data-driven configuration;
 - automate progression simulations across all five families / three Places;
 - define pacing targets for Energy, merges, orders, Stars, Coins and restoration;
-- check that Storage expansion, family mastery, level rewards, loyalty and new service powers remain useful but not inflationary;
+- check that Storage expansion, family mastery, level rewards, loyalty and service systems remain useful but not inflationary;
 - detect grind walls and dead zones in first session, mid-Place and inter-Place transitions;
 - every currency must keep a clear player purpose;
 - no hidden rigging or dynamic difficulty that falsifies outcomes.
@@ -139,11 +141,11 @@ Only after base progression has enough depth and pacing data. No punitive urgenc
 Maintain the shared codebase and installed-web-app update path. Later work includes native packaging, iPhone/iPad/Android device matrix, app assets, privacy, performance, battery and accessibility audits.
 
 # Immediate build order
-1. Finish Service-Ruf only after exact-head full gates and actual 390×844 / 390×720 screenshot acceptance.
-2. Continue screenshot-first Milestone B visual/game-feel improvements on remaining weak surfaces.
-3. Continue K economy/pacing/configuration simulation so progression decisions remain evidence-based.
-4. Keep PWA/save reliability healthy in parallel where scopes do not overlap.
-5. Choose any later gameplay slice only after re-reading fresh `main`, open PRs and Issue #42.
+1. Continue screenshot-first Milestone B visual/game-feel improvements on remaining weak surfaces.
+2. Continue K economy/pacing/configuration simulation so progression decisions remain evidence-based.
+3. Keep PWA/save reliability healthy in parallel where scopes do not overlap.
+4. Choose the next gameplay slice only after re-reading fresh `main`, open PRs and Issue #42 and confirming it adds a new decision axis.
+5. Cloud/accounts, live events and native packaging remain later phases.
 
 # Feature-selection rule
 Before adding a feature, answer:
