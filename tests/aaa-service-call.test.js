@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { createInitialState } from '../src/v2-game.js';
 import { SERVICE_CALL_INTERVAL, SERVICE_CALL_STOCK_TARGET, ensureServiceCallState, serviceCallStatus, serviceCallReward, chooseServiceCall, progressServiceCallGenerator, recordServiceCallDelivery } from '../src/aaa-service-call.js';
 
@@ -56,4 +57,18 @@ test('existing saves normalize safely and a missing focused order reopens a due 
   state.currentOrders=state.currentOrders.filter(order=>order.id!==target.id);
   ensured=ensureServiceCallState(state);
   assert.equal(ensured.status.active,false);assert.equal(ensured.status.ready,true);assert.equal(ensured.state.serviceCallState.orderId,null);
+});
+
+test('Service-Ruf UI is wired into the shell and mutation decoration stays idempotent',async()=>{
+  const [index,main,ui,workflow]=await Promise.all([
+    readFile(new URL('../index.html',import.meta.url),'utf8'),
+    readFile(new URL('../src/aaa-main.js',import.meta.url),'utf8'),
+    readFile(new URL('../src/aaa-service-call-ui.js',import.meta.url),'utf8'),
+    readFile(new URL('../.github/workflows/browser-qa.yml',import.meta.url),'utf8'),
+  ]);
+  assert.match(index,/aaa-service-call\.css\?v=20260816-servicecall1/);
+  assert.match(main,/installServiceCallUI\(root,ui\)/);
+  assert.match(ui,/node\.textContent!==text/);
+  assert.match(workflow,/Run Service-Ruf WebKit QA/);
+  assert.match(workflow,/node scripts\/service-call-qa\.mjs/);
 });
