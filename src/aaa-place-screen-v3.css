@@ -28,6 +28,9 @@
 .production-place .world-copy p{margin-top:4px!important;font-size:10px!important;line-height:1.15!important;color:rgba(255,255,255,.72)!important}
 .production-place .world-progress{display:none!important}
 
+/* Keep the authored next-upgrade node for progression semantics, but do not paint it as a ghost over the finished scene. */
+.production-place .scene-upgrade-preview{opacity:0!important;pointer-events:none!important}
+
 /* Next upgrade is only a tiny context label on the scene. */
 .production-place .purpose-blueprint-tag{
   left:9px!important;top:9px!important;max-width:54%!important;
