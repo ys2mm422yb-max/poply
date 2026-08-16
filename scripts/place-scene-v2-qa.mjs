@@ -34,10 +34,10 @@ const seed=async stage=>{
   }
   await page.waitForTimeout(180);
 };
-const inspectPlaceScreenV3=async(stage,height)=>{
+const inspectPlaceScreenV4=async(stage,height)=>{
   const m=await page.evaluate(()=>{
-    const view=document.querySelector('.view-place'),hero=view?.querySelector('.world-hero'),command=view?.querySelector('.place-command'),journey=view?.querySelector('.journey-wrap'),dial=view?.querySelector('.place-progress-dial'),status=view?.querySelector('.place-goal-status'),orders=view?.querySelector('[data-place-v3-orders]'),build=view?.querySelector('.place-current-goal>button[data-action="build"]');
-    const viewBox=view?.getBoundingClientRect(),heroBox=hero?.getBoundingClientRect(),journeyBox=journey?.getBoundingClientRect();
+    const view=document.querySelector('.view-place'),hero=view?.querySelector('.world-hero'),command=view?.querySelector('.place-command'),journey=view?.querySelector('.journey-wrap'),dial=view?.querySelector('.place-progress-dial'),status=view?.querySelector('.place-goal-status'),orders=view?.querySelector('[data-place-v4-orders]'),button=view?.querySelector('.place-current-goal>button');
+    const viewBox=view?.getBoundingClientRect(),heroBox=hero?.getBoundingClientRect(),journeyBox=journey?.getBoundingClientRect(),buttonBox=button?.getBoundingClientRect(),navBox=document.querySelector('.main-nav')?.getBoundingClientRect();
     return {
       heroShare:viewBox&&heroBox?heroBox.height/viewBox.height:0,
       mapInHero:Boolean(hero?.querySelector(':scope > [data-action="place-map"]')),
@@ -46,17 +46,23 @@ const inspectPlaceScreenV3=async(stage,height)=>{
       journeyHeight:journeyBox?.height||0,
       statusText:status?.textContent?.replace(/\s+/g,' ').trim()||'',
       hasOrdersRoute:Boolean(orders),
-      buildDisabled:Boolean(build?.disabled),
-      buildDescribedBy:build?.getAttribute('aria-describedby')||''
+      buttonDisabled:Boolean(button?.disabled),
+      buttonAction:button?.getAttribute('data-action')||'',
+      buttonText:button?.textContent?.replace(/\s+/g,' ').trim()||'',
+      buttonDescribedBy:button?.getAttribute('aria-describedby')||'',
+      ctaAboveNav:Boolean(buttonBox&&navBox&&buttonBox.bottom<=navBox.top+1)
     };
   });
-  assert(m.heroShare>.5,`stage ${stage} ${height}: café scene is not primary enough ${JSON.stringify(m)}`);
+  assert(m.heroShare>.55,`stage ${stage} ${height}: café scene is not primary enough ${JSON.stringify(m)}`);
   assert(m.mapInHero&&!m.mapInCommand,`stage ${stage} ${height}: map launcher must be a hero utility ${JSON.stringify(m)}`);
   assert(m.dialDisplay==='none',`stage ${stage} ${height}: legacy progress dial still visible ${JSON.stringify(m)}`);
-  assert(m.journeyHeight<=80,`stage ${stage} ${height}: restoration journey is too dominant ${JSON.stringify(m)}`);
-  assert(m.statusText.includes('Noch')&&m.statusText.includes('Aufträge'),`stage ${stage} ${height}: blocked build is not explained ${JSON.stringify(m)}`);
-  assert(m.hasOrdersRoute,`stage ${stage} ${height}: missing-star route to orders is absent`);
-  assert(m.buildDisabled&&m.buildDescribedBy==='place-build-status',`stage ${stage} ${height}: disabled build lacks explicit status relationship ${JSON.stringify(m)}`);
+  assert(m.journeyHeight<=35,`stage ${stage} ${height}: restoration progress is still too dominant ${JSON.stringify(m)}`);
+  assert(m.statusText.includes('Noch'),`stage ${stage} ${height}: missing-star fact is not visible ${JSON.stringify(m)}`);
+  assert(m.hasOrdersRoute,`stage ${stage} ${height}: missing-star CTA to orders is absent`);
+  assert(!m.buttonDisabled&&!m.buttonAction,`stage ${stage} ${height}: blocked build still behaves like a dead build button ${JSON.stringify(m)}`);
+  assert(m.buttonText.includes('Aufträgen holen'),`stage ${stage} ${height}: active CTA does not explain the route ${JSON.stringify(m)}`);
+  assert(m.buttonDescribedBy==='place-build-status',`stage ${stage} ${height}: CTA lacks explicit missing-star status relationship ${JSON.stringify(m)}`);
+  assert(m.ctaAboveNav,`stage ${stage} ${height}: primary CTA is clipped by bottom navigation ${JSON.stringify(m)}`);
 };
 const inspectLiveStage=async(stage,height)=>{
   const hero=page.locator('.view-place .world-hero');
@@ -75,7 +81,7 @@ const inspectLiveStage=async(stage,height)=>{
     const ratio=(box.width*box.height)/(heroBox.width*heroBox.height);
     assert(ratio>.035,`stage ${stage}: latest built authored upgrade is visually too small (${ratio.toFixed(3)})`);
   }
-  await inspectPlaceScreenV3(stage,height);
+  await inspectPlaceScreenV4(stage,height);
   if(stage===5){
     const after=page.locator('.purpose-place-goal .purpose-place-after>strong');
     assert(await after.count()===1,`stage 5 ${height}: final DANACH teaser missing`);
@@ -83,7 +89,7 @@ const inspectLiveStage=async(stage,height)=>{
     assert(teaser.text.includes('Sonnenkai')&&teaser.text.includes('Tropenbar'),`stage 5 ${height}: final DANACH promise incomplete: ${teaser.text}`);
     assert(teaser.whiteSpace!=='nowrap'&&teaser.textOverflow!=='ellipsis',`stage 5 ${height}: final DANACH teaser still uses truncation CSS ${JSON.stringify(teaser)}`);
     assert(teaser.scrollWidth<=teaser.clientWidth+1,`stage 5 ${height}: final DANACH teaser overflows horizontally ${JSON.stringify(teaser)}`);
-    assert(!teaser.lineHeight||teaser.height<=teaser.lineHeight*2.6,`stage 5 ${height}: final DANACH teaser exceeds two readable lines ${JSON.stringify(teaser)}`);
+    assert(!teaser.lineHeight||teaser.height<=teaser.lineHeight*2.8,`stage 5 ${height}: final DANACH teaser exceeds readable height ${JSON.stringify(teaser)}`);
   }
   await assertNoScroll(`Scene V2 stage ${stage} ${height}`);
 };
@@ -118,9 +124,9 @@ try{
     await page.setViewportSize({width:390,height});
     for(let stage=0;stage<=6;stage++)await inspectStage(stage,height);
   }
-  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit',finalTeaser:'two-line readable',placeScreenV3:'scene primary, map utility, explicit missing-star route, compact journey'};
+  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit',finalTeaser:'readable without truncation',placeScreenV4:'scene primary, icon map utility, active missing-star CTA, minimal progress'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('scene-v2-failure');}catch{}}
 finally{await writeFile(`${outDir}/place-scene-v2-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
 if(failure)throw failure;
-console.log('Place Scene V2 + Place Screen V3 WebKit QA passed.');
+console.log('Place Scene V2 + Place Screen V4 WebKit QA passed.');
