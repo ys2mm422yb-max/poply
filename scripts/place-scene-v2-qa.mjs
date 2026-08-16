@@ -20,7 +20,7 @@ const seed=async stage=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState();
     state.placeUpgrades=upgrades.slice(0,stage);
-    state.stars=0;
+    state.stars=stage===4?10:0;
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
     localStorage.removeItem('poply-v2-state-1-backup');
   },{stage,upgrades});
@@ -63,6 +63,10 @@ const inspectPlaceScreenV4=async(stage,height)=>{
   assert(m.buttonText.includes('Aufträgen holen'),`stage ${stage} ${height}: active CTA does not explain the route ${JSON.stringify(m)}`);
   assert(m.buttonDescribedBy==='place-build-status',`stage ${stage} ${height}: CTA lacks explicit missing-star status relationship ${JSON.stringify(m)}`);
   assert(m.ctaAboveNav,`stage ${stage} ${height}: primary CTA is clipped by bottom navigation ${JSON.stringify(m)}`);
+  if(stage===4){
+    assert(m.statusText.includes('Noch 1 Stern'),`stage 4 ${height}: Meerterrasse 10/11 status must say exactly one star is missing ${JSON.stringify(m)}`);
+    assert(m.buttonText==='1 ★ in Aufträgen holen',`stage 4 ${height}: Meerterrasse 10/11 CTA is not explicit ${JSON.stringify(m)}`);
+  }
 };
 const inspectLiveStage=async(stage,height)=>{
   const hero=page.locator('.view-place .world-hero');
@@ -124,7 +128,7 @@ try{
     await page.setViewportSize({width:390,height});
     for(let stage=0;stage<=6;stage++)await inspectStage(stage,height);
   }
-  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit',finalTeaser:'readable without truncation',placeScreenV4:'scene primary, icon map utility, active missing-star CTA, minimal progress'};
+  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage4Meerterrasse:'10/11 stars -> exact one-star Orders CTA',stage6Mode:'real completed coast revisit',finalTeaser:'readable without truncation',placeScreenV4:'scene primary, icon map utility, active missing-star CTA, minimal progress'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('scene-v2-failure');}catch{}}
 finally{await writeFile(`${outDir}/place-scene-v2-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
