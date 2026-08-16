@@ -94,7 +94,7 @@ export function createUI(root,toast){
         const rewardOrigin=rewardOriginSnapshot(card),specialBonus=result.specialBonus?.coins||0,callBonus=result.serviceCallBonus?.coins||0;
         const specialNote=specialBonus?` inkl. +${specialBonus} Bonus`:'';
         const callNote=callBonus?` · Service-Ruf +${callBonus}`:result.serviceCall?.expired?' · Service-Ruf verfallen':'';
-        playDelivery(card);playFeedback(callBonus?'reward':'delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}`);
+        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}`);
         if(selectedOrderId===orderId)selectedOrderId=null;
         setTimeout(()=>{render();playRewards(result.rewards,rewardOrigin);emitProgression(result,'order');},320);
       }
