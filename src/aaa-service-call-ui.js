@@ -28,6 +28,7 @@ export function installServiceCallUI(root,ui){
     let panel=card.querySelector('.service-call-panel');
     const orderId=card.dataset.serviceOrder,order=state.currentOrders?.find(entry=>entry.id===orderId);
     const shouldShow=status.ready||status.active&&status.orderId===orderId;
+    card.classList.toggle('has-service-call',shouldShow);
     if(!shouldShow){panel?.remove();return;}
     if(!panel){panel=document.createElement('section');panel.className='service-call-panel';card.querySelector('.service-rewards')?.before(panel);}
     if(status.ready){
