@@ -15,6 +15,6 @@ The shipped Place Screen V3 still reads like a stacked mobile dashboard on 390px
 - gameplay values, save format, economy and backend architecture are unchanged.
 
 ## QA contract
-The existing 14-stage Scene V2 WebKit screenshot gate now also checks the V4 hierarchy at 390×844 and 390×720, including active missing-star CTA behavior and bottom-navigation clearance. Visual screenshots must be manually reviewed before merge.
+The existing 14-stage Scene V2 WebKit screenshot gate now also checks the V4 hierarchy at 390×844 and 390×720, including active missing-star CTA behavior and bottom-navigation clearance. Stage 4 deliberately seeds the original critical Meerterrasse state at **10/11 stars** and requires the exact `Noch 1 Stern` status plus active `1 ★ in Aufträgen holen` CTA. Visual screenshots must be manually reviewed before merge.
 
 The dedicated Place03 WebKit gate continues to fail on all real console/page/network errors. It ignores only the exact localhost WebKit service-worker pageerror `sw.js due to access control checks`, which can occur after a fully successful Place03 flow and is unrelated to application behavior.
