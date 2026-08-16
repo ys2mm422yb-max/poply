@@ -8,6 +8,7 @@ test('Place Screen V4 makes the scene primary and removes dashboard chrome',asyn
   const css=await read('../src/aaa-place-screen-v3.css');
   assert.match(css,/grid-template-rows:minmax\(0,72fr\) minmax\(0,28fr\)/);
   assert.match(css,/\.production-place \.world-progress\{display:none!important\}/);
+  assert.match(css,/\.production-place \.scene-upgrade-preview\{opacity:0!important;pointer-events:none!important\}/);
   assert.match(css,/\.production-place \.place-progress-dial\{display:none!important\}/);
   assert.match(css,/grid-template-rows:minmax\(0,1fr\) 22px/);
   assert.match(css,/\.production-place \.journey-steps\{display:none!important\}/);
