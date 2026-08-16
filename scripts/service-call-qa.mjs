@@ -13,6 +13,7 @@ const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertWithin=async(locator,label)=>{const box=await locator.boundingBox(),height=await page.evaluate(()=>window.visualViewport?.height||innerHeight);assert(box&&box.y>=-1&&box.y+box.height<=height+1,`${label} outside viewport ${JSON.stringify(box)}`);};
+const assertAboveNav=async(locator,label)=>{const [box,nav]=await Promise.all([locator.boundingBox(),page.locator('.main-nav').boundingBox()]);assert(box&&nav&&box.y+box.height<=nav.y-4,`${label} overlaps bottom nav: element=${JSON.stringify(box)} nav=${JSON.stringify(nav)}`);};
 const reset=async()=>{await page.evaluate(()=>{localStorage.removeItem('poply-v2-state-1');localStorage.removeItem('poply-v2-state-1-backup');});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board');};
 const openOrders=async()=>{await page.locator('.nav-tab[data-view="orders"]').click();await page.waitForSelector('.view-orders .customer-choice');};
 const selectOrder=async orderId=>{
@@ -62,10 +63,10 @@ try{
   await page.waitForFunction(()=>document.querySelector('#toast')?.textContent?.includes('Service-Ruf verfallen'));await page.waitForTimeout(380);save=await readSave();assert(save.serviceCallState.callsExpired===expiredBefore+1,'other delivery did not expire the call');assert(save.serviceCallState.orderId===null,'expired call stayed active');
 
   await page.setViewportSize({width:390,height:720});await forceReady();await openOrders();
-  const shortPanel=page.locator('.service-card .service-call-panel.is-ready'),shortStrip=page.locator('.view-orders>.service-call-strip.is-ready');await shortPanel.waitFor();await shortStrip.waitFor();
-  assert(((await shortPanel.textContent())||'').includes('Nachschub'),'390x720 lost Service-Ruf choices');await assertWithin(shortStrip,'Service-Ruf strip 390x720');await assertWithin(shortPanel,'Service-Ruf panel 390x720');await assertWithin(page.locator('.service-deliver'),'service button 390x720');await assertNoScroll('Service-Ruf ready 390x720');await shot('113-service-call-ready-390x720');
+  const shortPanel=page.locator('.service-card .service-call-panel.is-ready'),shortStrip=page.locator('.view-orders>.service-call-strip.is-ready'),shortDeliver=page.locator('.service-deliver');await shortPanel.waitFor();await shortStrip.waitFor();
+  assert(((await shortPanel.textContent())||'').includes('Nachschub'),'390x720 lost Service-Ruf choices');await assertWithin(shortStrip,'Service-Ruf strip 390x720');await assertWithin(shortPanel,'Service-Ruf panel 390x720');await assertWithin(shortDeliver,'service button 390x720');await assertAboveNav(shortDeliver,'service button 390x720');await assertNoScroll('Service-Ruf ready 390x720');await shot('113-service-call-ready-390x720');
 
-  report={readyAfterOrders:3,modes:['direct','stock'],stockGeneratorTarget:2,successfulBonus:true,otherDeliveryExpiresOnlyBonus:true,shortViewportNoScroll:true};
+  report={readyAfterOrders:3,modes:['direct','stock'],stockGeneratorTarget:2,successfulBonus:true,otherDeliveryExpiresOnlyBonus:true,shortViewportNoScroll:true,shortViewportNoNavOverlap:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('114-service-call-failure');}catch{}}
 finally{await writeFile(`${outDir}/service-call-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
