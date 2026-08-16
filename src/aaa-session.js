@@ -9,8 +9,9 @@ import { ensureGuestState, recordGuestService } from './aaa-guests.js';
 import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flow.js';
 import { ensureServiceSpecials, progressServiceSpecials, awardServiceSpecialBonus } from './aaa-specials.js';
 import { ensurePlacePowerState, applyPreparationBonus, recordServicePlacePowers, replaceOrderWithGuestChoice, unlockPlacePowerForUpgrade } from './aaa-place-powers.js';
+import { ensureServiceCallState, serviceCallStatus, chooseServiceCall, progressServiceCallGenerator, recordServiceCallDelivery } from './aaa-service-call.js';
 
-const ensureMeta=source=>ensurePlacePowerState(ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state).state;
+const ensureMeta=source=>ensurePlacePowerState(ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceCallState(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state).state).state;
 let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
 const collectSpecialProgress=(result,event)=>{
@@ -36,6 +37,11 @@ export function resetSession(){
   const fresh=ensureMeta(freshState()),tracked=ensureEnergyClock(fresh);
   state=tracked.state;saveGameState(state);return state;
 }
+export function chooseServiceCallAt(orderId,mode){
+  const result=chooseServiceCall(getState(),orderId,mode);
+  if(result.changed)keep(result.state);
+  return result;
+}
 export function generateAt(index){
   const current=getState(),beforeEnergy=current.energy,result=generateFromSlot(current,index);
   if(result.changed){
@@ -52,6 +58,7 @@ export function generateAt(index){
     if(discovery.changed){const discovered=progressDailyEvent(result.state,'discover');result.state=discovered.state;}
     collectSpecialProgress(result,{type:'item-created',family:item.family});
     if(boost.boosted)collectSpecialProgress(result,{type:'flow-boost',family:item.family});
+    const serviceCall=progressServiceCallGenerator(result.state);result.state=serviceCall.state;result.serviceCall=serviceCall;result.serviceCallProgress=serviceCall.gained?serviceCall:null;
     keep(result.state);
   }
   return result;
@@ -77,23 +84,24 @@ export function recycleStorageAt(storageIndex){const result=recycleStoredItem(ge
 export function expandStorage(){const result=upgradeStorage(getState());if(result.changed)keep(result.state);return result;}
 export function replaceOrder(id){
   const result=replaceOrderWithGuestChoice(getState(),id);if(!result.changed)return result;
-  result.state=ensureServiceSpecials(result.state).state;result.replacement=structuredClone(result.state.currentOrders.find(order=>order.id===result.replacement.id));
+  result.state=ensureServiceSpecials(result.state).state;result.state=ensureServiceCallState(result.state).state;result.serviceCallStatus=serviceCallStatus(result.state);result.replacement=structuredClone(result.state.currentOrders.find(order=>order.id===result.replacement.id));
   keep(result.state);return result;
 }
 export function deliverOrder(id){
-  const current=getState(),order=current.currentOrders.find(entry=>entry.id===id);
-  const result=fulfillOrder(current,id);
-  if(!result.changed)return result;
+  const current=getState(),order=current.currentOrders.find(entry=>entry.id===id),preview=fulfillOrder(current,id);
+  if(!preview.changed)return preview;
+  const serviceCall=recordServiceCallDelivery(current,id),result=serviceCall.changed?fulfillOrder(serviceCall.state,id):preview;
   const baseRewards={...result.rewards},special=awardServiceSpecialBonus(result.state,order);
   result.state=special.state;result.specialBonus=special.changed?{coins:special.bonusCoins,special:special.special}:null;
-  result.rewards={...baseRewards,coins:baseRewards.coins+special.bonusCoins};
+  result.serviceCall=serviceCall;result.serviceCallBonus=serviceCall.completed?{coins:serviceCall.bonusCoins,mode:serviceCall.mode}:null;
+  result.rewards={...baseRewards,coins:baseRewards.coins+special.bonusCoins+serviceCall.bonusCoins};
   result.state=ensureServiceSpecials(result.state).state;
   const progression=awardPlayerXp(result.state,xpForOrder(order));
   result.state=progression.state;result.progression=progression;
   result.state=progressDailyEvent(result.state,'serve').state;
   const guest=recordGuestService(result.state,order.sequence);
   result.state=guest.state;result.guest=guest;
-  const powers=recordServicePlacePowers(result.state,order);result.state=powers.state;result.placePowers=powers.effects;result.placePowerStatus=powers.status;
+  const powers=recordServicePlacePowers(result.state,order);result.state=powers.state;result.placePowers=powers.effects;result.placePowerStatus=powers.status;result.serviceCallStatus=serviceCallStatus(result.state);
   keep(result.state);return result;
 }
 export function buildUpgrade(){
