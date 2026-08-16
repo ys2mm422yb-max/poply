@@ -15,7 +15,17 @@ const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:docu
 const assertWithin=async(locator,label)=>{const box=await locator.boundingBox(),height=await page.evaluate(()=>window.visualViewport?.height||innerHeight);assert(box&&box.y>=-1&&box.y+box.height<=height+1,`${label} outside viewport ${JSON.stringify(box)}`);};
 const reset=async()=>{await page.evaluate(()=>{localStorage.removeItem('poply-v2-state-1');localStorage.removeItem('poply-v2-state-1-backup');});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board');};
 const openOrders=async()=>{await page.locator('.nav-tab[data-view="orders"]').click();await page.waitForSelector('.view-orders .customer-choice');};
-const selectOrder=async orderId=>{const active=page.locator(`.service-card[data-service-order="${orderId}"]`);if(await active.count())return;await page.locator(`[data-select-order="${orderId}"]`).click();await active.waitFor();};
+const selectOrder=async orderId=>{
+  const active=page.locator(`.service-card[data-service-order="${orderId}"]`);if(await active.count())return;
+  const choice=page.locator(`[data-select-order="${orderId}"]`);
+  const point=await choice.evaluate(element=>{
+    const rect=element.getBoundingClientRect(),xs=[.18,.5,.82].map(ratio=>rect.left+rect.width*ratio),ys=[4,9,15,22,30].map(offset=>rect.top+offset);
+    for(const y of ys)for(const x of xs){if(x<0||x>=innerWidth||y<0||y>=innerHeight)continue;const hit=document.elementFromPoint(x,y);if(hit&&(hit===element||element.contains(hit)))return {x,y};}
+    return null;
+  });
+  assert(point,`order ${orderId} has no real visible touch point while another guest is selected`);
+  await page.touchscreen.tap(point.x,point.y);await active.waitFor();
+};
 const forceReady=async()=>{await page.evaluate(()=>{const key='poply-v2-state-1',state=JSON.parse(localStorage.getItem(key)||'{}');state.stats=state.stats||{};state.stats.orders=Math.max(3,Number(state.stats.orders)||0);state.serviceCallState={nextAt:state.stats.orders,orderId:null,mode:null,generatorProgress:0,callsCompleted:Number(state.serviceCallState?.callsCompleted)||0,callsExpired:Number(state.serviceCallState?.callsExpired)||0};localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('poply-v2-state-1-backup',JSON.stringify(state));});await page.reload({waitUntil:'networkidle'});};
 const prepareOrder=async orderId=>{await page.evaluate(id=>{const key='poply-v2-state-1',state=JSON.parse(localStorage.getItem(key)||'{}'),order=state.currentOrders.find(entry=>entry.id===id);if(!order)throw new Error(`unknown order ${id}`);for(const req of order.requirements){let have=state.board.filter(item=>item?.kind==='item'&&item.family===req.family&&item.level===req.level).length;while(have<req.qty){const index=state.board.findIndex(item=>!item);if(index<0)throw new Error('no empty board slot');state.nextId=(Number(state.nextId)||1000)+1;state.board[index]={id:`qa-call-${state.nextId}`,kind:'item',family:req.family,level:req.level};have+=1;}}localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('poply-v2-state-1-backup',JSON.stringify(state));},orderId);await page.reload({waitUntil:'networkidle'});};
 
