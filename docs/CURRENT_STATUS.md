@@ -3,7 +3,9 @@
 Updated: 2026-08-16
 
 ## Current production baseline
-The latest shipped gameplay/visual release is PR #127, merge commit `3112b6d5e049539bd3d2ed9c3b75f6039ab9c72b`. It contains the full current Poply product baseline:
+Current verified production `main` at the start of the active Service-Ruf slice is `3b6754b04b12902d25960884bedbc13e7d7c3853`, the merge commit of PR #130 (Place Screen V3).
+
+Production currently includes:
 - persistent 7×7 merge Board / Werkbank;
 - Place 01 · Café am Meer, Place 02 · Sonnenkai and Place 03 · Dachgarten with six-step restoration progression;
 - five six-tier item families and four generators, including Dachgarten's deterministic harvest bonus;
@@ -20,47 +22,44 @@ The latest shipped gameplay/visual release is PR #127, merge commit `3112b6d5e04
 - tactical Merge Flow: successful merges charge a player-chosen generator boost;
 - optional Service Specials that reward different short-term play styles without blocking normal delivery;
 - persistent Café upgrade powers: Abendservice, Vorbereitung and Gastwahl;
-- Café am Meer Scene V2 with authored 2.5D depth, materially larger stage transformations, living-world motion, build-camera payoff and real completed-state revisit QA;
+- Café am Meer Scene V2 with authored 2.5D depth, larger stage transformations, living-world motion, build-camera payoff and real completed-state revisit QA;
+- Place Screen V3 with Café-first hierarchy, compact restoration objective/progress and world map reduced to a scene utility;
 - automatic installed-PWA update path, same-origin service-worker behavior and iOS standalone safe-area protection;
 - previous-valid LocalStorage backup / corrupt-save recovery;
 - mandatory deterministic CI + Mobile WebKit + screenshot review + Place03/PWA QA + canonical Pages release gates.
 
 ## Recently shipped sequence
-The latest gameplay/visual depth sequence is complete:
-- PR #116 — current-main Guest Loyalty rebuild;
+- PR #116 — Guest Loyalty rebuild;
 - PR #119 — untouched legacy starter-save migration;
 - PR #121 — tactical Merge Flow generator boosts;
 - PR #123 — optional Service Specials;
 - PR #125 — persistent powers from Café upgrades;
-- PR #127 — Café am Meer Scene V2.
+- PR #127 — Café am Meer Scene V2;
+- PR #128 — release/status documentation sync;
+- PR #130 — Place Screen V3 café-first hierarchy cleanup.
 
-There are currently no open product pull requests or product feature issues. Issue #42 is the only open issue and remains the durable coordination/work log.
+Place Screen V3 accepted head: `9a75722705830140d78b1812d06281374d3e95d3`.
+Production merge commit: `3b6754b04b12902d25960884bedbc13e7d7c3853`.
+Its 14 Café stage screenshots at 390×844 / 390×720 were actually opened and accepted before merge, and exact-main CI, Browser QA, PWA Update QA, Place03 QA and canonical Pages deployment passed after merge.
 
-## Latest accepted visual and release evidence
-Accepted Scene V2 head: `9133ef954d51671b306b0d485dea15f336dee447`.
+## Active candidate — Service-Ruf
+Issue #131 and draft PR #132 implement a deterministic optional next-guest decision:
+- every 3 resolved normal services, choose one waiting guest;
+- **Direkt**: chosen guest must be next for a modest Coin bonus;
+- **Nachschub**: 2 successful generator actions first, then that same guest next for a larger Coin bonus;
+- another delivery expires only the optional bonus and never blocks normal service;
+- no timer/FOMO, new currency, hidden RNG, base-order rebalance or Neon dependency.
 
-Pre-merge acceptance:
-- CI `31914022157` — success;
-- Browser QA `31914022217` — success;
-- Place 03 QA `31914022160` — success;
-- PWA Update QA `31914022164` — success;
-- Browser artifact `9254502284` — all 14 Café Scene V2 screenshots manually opened and accepted at 390×844 / 390×720 after reject/fix iterations.
-
-Post-merge verification on exact release commit `3112b6d5e049539bd3d2ed9c3b75f6039ab9c72b`:
-- CI `31914437255` — success;
-- Browser QA `31914437232` — success;
-- Place 03 QA `31914437491` — success;
-- PWA Update QA `31914437200` — success;
-- canonical Pages deploy `31914437244` — success.
+The authoritative mechanic contract is `docs/SERVICE_CALL.md`. This candidate is **not production** until exact-head gates, manual screenshot review, merge and exact-main release verification are complete.
 
 ## Save/backend status
 The shipped game remains local-first. Runtime save/resume uses `localStorage` with a previous-valid backup and migration safety; no cloud database is required by the current game loop.
 
-A Neon project named `Poply` exists separately, but as of this status sync it is not wired into the repository/runtime and contains no application tables. Do not introduce a backend dependency implicitly; cloud/accounts remain a later explicit product decision.
+A Neon project named `Poply` exists separately, but it is not wired into the repository/runtime and contains no application tables. Do not introduce a backend dependency implicitly; cloud/accounts remain a later explicit product decision.
 
 ## Current product priorities
-1. Choose the next gameplay-depth slice from fresh current `main`; a strong candidate is a temporary Board/service event that changes short-term decisions rather than another passive progression screen.
-2. Continue screenshot-first visual/game-feel production quality across the remaining weaker surfaces while preserving the 390×720 one-screen contract.
+1. Finish the active Service-Ruf slice only if it remains clearly additive to Flow/Specials/Café powers and passes screenshot-first mobile acceptance.
+2. Continue screenshot-first visual/game-feel production quality across remaining weaker surfaces while preserving the 390×720 one-screen contract.
 3. Continue economy/pacing/configuration work so Energy, Coins, Stars, rewards and chapter pacing remain evidence-based and regression-safe.
 4. Keep PWA/update/save reliability healthy as infrastructure.
 5. Cloud/accounts, live events and native packaging remain later phases, not current blockers.
