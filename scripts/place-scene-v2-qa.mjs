@@ -34,6 +34,30 @@ const seed=async stage=>{
   }
   await page.waitForTimeout(180);
 };
+const inspectPlaceScreenV3=async(stage,height)=>{
+  const m=await page.evaluate(()=>{
+    const view=document.querySelector('.view-place'),hero=view?.querySelector('.world-hero'),command=view?.querySelector('.place-command'),journey=view?.querySelector('.journey-wrap'),dial=view?.querySelector('.place-progress-dial'),status=view?.querySelector('.place-goal-status'),orders=view?.querySelector('[data-place-v3-orders]'),build=view?.querySelector('.place-current-goal>button[data-action="build"]');
+    const viewBox=view?.getBoundingClientRect(),heroBox=hero?.getBoundingClientRect(),journeyBox=journey?.getBoundingClientRect();
+    return {
+      heroShare:viewBox&&heroBox?heroBox.height/viewBox.height:0,
+      mapInHero:Boolean(hero?.querySelector(':scope > [data-action="place-map"]')),
+      mapInCommand:Boolean(command?.querySelector('[data-action="place-map"]')),
+      dialDisplay:dial?getComputedStyle(dial).display:null,
+      journeyHeight:journeyBox?.height||0,
+      statusText:status?.textContent?.replace(/\s+/g,' ').trim()||'',
+      hasOrdersRoute:Boolean(orders),
+      buildDisabled:Boolean(build?.disabled),
+      buildDescribedBy:build?.getAttribute('aria-describedby')||''
+    };
+  });
+  assert(m.heroShare>.5,`stage ${stage} ${height}: café scene is not primary enough ${JSON.stringify(m)}`);
+  assert(m.mapInHero&&!m.mapInCommand,`stage ${stage} ${height}: map launcher must be a hero utility ${JSON.stringify(m)}`);
+  assert(m.dialDisplay==='none',`stage ${stage} ${height}: legacy progress dial still visible ${JSON.stringify(m)}`);
+  assert(m.journeyHeight<=80,`stage ${stage} ${height}: restoration journey is too dominant ${JSON.stringify(m)}`);
+  assert(m.statusText.includes('Noch')&&m.statusText.includes('Aufträge'),`stage ${stage} ${height}: blocked build is not explained ${JSON.stringify(m)}`);
+  assert(m.hasOrdersRoute,`stage ${stage} ${height}: missing-star route to orders is absent`);
+  assert(m.buildDisabled&&m.buildDescribedBy==='place-build-status',`stage ${stage} ${height}: disabled build lacks explicit status relationship ${JSON.stringify(m)}`);
+};
 const inspectLiveStage=async(stage,height)=>{
   const hero=page.locator('.view-place .world-hero');
   const scene=hero.locator('.place-scene-v2');
@@ -51,6 +75,7 @@ const inspectLiveStage=async(stage,height)=>{
     const ratio=(box.width*box.height)/(heroBox.width*heroBox.height);
     assert(ratio>.035,`stage ${stage}: latest built authored upgrade is visually too small (${ratio.toFixed(3)})`);
   }
+  await inspectPlaceScreenV3(stage,height);
   if(stage===5){
     const after=page.locator('.purpose-place-goal .purpose-place-after>strong');
     assert(await after.count()===1,`stage 5 ${height}: final DANACH teaser missing`);
@@ -93,9 +118,9 @@ try{
     await page.setViewportSize({width:390,height});
     for(let stage=0;stage<=6;stage++)await inspectStage(stage,height);
   }
-  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit',finalTeaser:'two-line readable'};
+  report={stages:[0,1,2,3,4,5,6],viewports:['390x844','390x720'],screenshots:14,stage6Mode:'real completed coast revisit',finalTeaser:'two-line readable',placeScreenV3:'scene primary, map utility, explicit missing-star route, compact journey'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('scene-v2-failure');}catch{}}
 finally{await writeFile(`${outDir}/place-scene-v2-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
 if(failure)throw failure;
-console.log('Place Scene V2 WebKit QA passed.');
+console.log('Place Scene V2 + Place Screen V3 WebKit QA passed.');
