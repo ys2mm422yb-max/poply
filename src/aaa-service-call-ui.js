@@ -2,7 +2,7 @@ import { getState, chooseServiceCallAt } from './aaa-session.js';
 import { serviceCallStatus, serviceCallReward, serviceCallModeLabel, serviceCallProgressText } from './aaa-service-call.js';
 
 const callOrder=(state,status)=>state.currentOrders?.find(order=>order.id===status.orderId)||null;
-const selectedOrder=root=>root.querySelector('.service-card[data-service-order]')?.dataset.serviceOrder||null;
+const setText=(node,text)=>{if(node.textContent!==text)node.textContent=text;};
 
 export function installServiceCallUI(root,ui){
   let decorating=false;
@@ -42,14 +42,15 @@ export function installServiceCallUI(root,ui){
   };
   const decorateOrders=(status,state)=>{
     const view=root.querySelector('.view-orders');if(!view)return;
-    setMarkup;
     upsertStrip(view,status,state);
     root.querySelectorAll('.customer-choice').forEach(node=>{
       const orderId=node.dataset.selectOrder,isActive=status.active&&status.orderId===orderId;
       node.classList.toggle('service-call-eligible',status.ready);node.classList.toggle('service-call-active',isActive);
       let badge=node.querySelector('.service-call-choice-badge');
-      if(isActive){if(!badge){badge=document.createElement('span');badge.className='service-call-choice-badge';node.append(badge);}badge.textContent=status.mode==='stock'?`${status.generatorProgress}/${status.generatorTarget}`:'RUF';}
-      else badge?.remove();
+      if(isActive){
+        if(!badge){badge=document.createElement('span');badge.className='service-call-choice-badge';node.append(badge);}
+        setText(badge,status.mode==='stock'?`${status.generatorProgress}/${status.generatorTarget}`:'RUF');
+      }else badge?.remove();
     });
     upsertPanel(root.querySelector('.service-card[data-service-order]'),status,state);
   };
@@ -59,8 +60,10 @@ export function installServiceCallUI(root,ui){
     root.querySelectorAll('.board-job').forEach(node=>{
       const active=status.active&&node.dataset.focusOrder===status.orderId;node.classList.toggle('service-call-active',active);
       let badge=node.querySelector('.service-call-board-badge');
-      if(active){if(!badge){badge=document.createElement('span');badge.className='service-call-board-badge';node.append(badge);}badge.textContent=status.mode==='stock'?`${status.generatorProgress}/${status.generatorTarget}`:'RUF';}
-      else badge?.remove();
+      if(active){
+        if(!badge){badge=document.createElement('span');badge.className='service-call-board-badge';node.append(badge);}
+        setText(badge,status.mode==='stock'?`${status.generatorProgress}/${status.generatorTarget}`:'RUF');
+      }else badge?.remove();
     });
   };
   const decorate=()=>{
