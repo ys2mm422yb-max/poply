@@ -64,12 +64,12 @@
     height:auto!important;
     min-height:62px!important;
     min-width:0!important;
-    grid-template-columns:34px minmax(0,1fr)!important;
-    column-gap:4px!important;
-    padding-inline:6px!important;
+    grid-template-columns:32px minmax(0,1fr)!important;
+    column-gap:3px!important;
+    padding-inline:5px!important;
     overflow:hidden!important;
   }
-  .customer-choice .choice-avatar img{width:33px!important;height:33px!important}
+  .customer-choice .choice-avatar img{width:31px!important;height:31px!important}
   .service-card{
     min-width:0!important;
     min-height:0!important;
