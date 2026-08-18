@@ -1,6 +1,3 @@
-import { currentChapterProgress } from './v2-game.js';
-import { getState } from './aaa-session.js';
-
 const NS='http://www.w3.org/2000/svg';
 
 function guestMarkup(stage){
@@ -37,11 +34,10 @@ function guestMarkup(stage){
 }
 
 function decorate(root){
-  const state=getState(),{chapter,completed}=currentChapterProgress(state);
-  if(chapter.id!=='coast'||completed<4)return;
   const svg=root.querySelector('.view-place .place-scene-svg');if(!svg||svg.querySelector('.place-life-guests-v2'))return;
   const seating=svg.querySelector('.scene-upgrade.seating');if(!seating)return;
-  const group=document.createElementNS(NS,'g');group.innerHTML=guestMarkup(completed);
+  const stage=svg.querySelector('.scene-upgrade.sign')?6:svg.querySelector('.scene-upgrade.terrace')?5:4;
+  const group=document.createElementNS(NS,'g');group.innerHTML=guestMarkup(stage);
   const replacement=group.firstElementChild;if(replacement)seating.parentNode.insertBefore(replacement,seating);
 }
 
