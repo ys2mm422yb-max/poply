@@ -45,7 +45,7 @@ test('Service-Ruf ready is a direct Orders choice row while active Ruf keeps one
   assert.match(hierarchy,/\.view-orders>\.service-call-strip\{display:none!important\}/);
   assert.match(hierarchy,/\.service-call-choice-panel\{[\s\S]*display:grid!important/);
   assert.match(activeFix,/grid-template-rows:auto auto minmax\(12px,1fr\) auto!important/);
-  assert.match(activeFix,/"panel panel"[\s\S]*"\. \\."[\s\S]*"deliver deliver"/);
+  assert.match(activeFix,/"panel panel"[\s\S]*"\. \."[\s\S]*"deliver deliver"/);
   assert.match(activeFix,/max-height:72px!important/);
   assert.match(activeFix,/align-self:start!important/);
 });
