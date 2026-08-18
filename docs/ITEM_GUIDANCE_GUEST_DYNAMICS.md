@@ -33,7 +33,7 @@ This is explanatory UI only. Generator drop tables, energy cost, merge rules and
 
 ## Guest traits
 
-The three recurring guests now have deterministic service preferences:
+The three recurring guests have deterministic service preferences once the Café's `Menüwand` restoration is complete:
 
 | Guest | Trait | Qualifies when | Bonus |
 |---|---|---|---:|
@@ -41,16 +41,17 @@ The three recurring guests now have deterministic service preferences:
 | Nora | Kaffee-Liebe | order contains Coffee | +10 Coins |
 | Sam | Abwechslung | order contains at least two distinct families | +10 Coins |
 
-Traits are derived from the existing recurring guest identity. They require no new save field.
+Traits are derived from the existing recurring guest identity. They require no new save field. Before `Menüwand`, the traits remain mechanically locked: no dynamic Coin payout and no extra trait/day metadata is shown in the opening service UI. This preserves the established first-session economy and keeps the new decision layer tied to visible Place progress.
 
 ## Daily service condition
 
-Each local calendar day deterministically selects one family from generators currently present/unlocked on the player's board. A matching delivered order grants +15 Coins.
+After `Menüwand`, each local calendar day deterministically selects one family from generators currently present/unlocked on the player's board. A matching delivered order grants +15 Coins.
 
 Labels include `Kaffeezeit`, `Backstuben-Tag`, `Süßer Tag`, `Sonnenfrucht-Tag` and `Gartentag`.
 
 This condition:
 
+- is locked before `Menüwand`, so opening/tutorial rewards remain unchanged;
 - creates no timer pressure;
 - creates no new currency;
 - does not change stars, XP, requirements or Service-Ruf semantics;
@@ -74,14 +75,16 @@ No Place restoration cost or stage requirement changes.
 
 ## QA contract
 
-`scripts/item-guidance-place-life-qa.mjs` must pass at 390×844 and 390×720 with installed-iPhone safe-area simulation. It verifies:
+`scripts/item-guidance-place-life-qa.mjs` must pass at 390×844 and 390×720 with installed-iPhone safe-area simulation. Its fixture is already beyond `Menüwand`, matching the intended unlock state. It verifies:
 
 1. a missing `Mehl` requirement is tappable and self-describing;
 2. provenance sheet names `Mehl`, `Vorratskiste` and `Weizen`;
 3. Board routing highlights `pantry-gen` above the dock;
 4. generator inspector explains Backwaren/Süßes and relevant waiting order context;
-5. guest trait and daily condition UI are present;
+5. unlocked guest trait and daily condition UI are present;
 6. new Place guest layer is present while old stiff `.cafe-guest` figures are hidden;
 7. eight canonical screenshots are emitted for manual review.
+
+The unit suite also verifies that the opening state receives zero dynamic bonus and that completing `Menüwand` enables the mechanic without changing Stars.
 
 Green automation is not visual acceptance. The final exact-head screenshots must be opened manually, especially the Place guest composition and the production sheet.
