@@ -64,8 +64,8 @@ const inspectOrders=async height=>{
   const [contentBox,panelBox,deliverBox]=await Promise.all([box(content),box(panel),box(deliver)]);
   assert(contentBox.y+contentBox.height<=panelBox.y+1,`Orders ${height}: underlying order content overlaps Service-Ruf panel ${JSON.stringify({contentBox,panelBox})}`);
   assert(panelBox.y+panelBox.height<=deliverBox.y+1,`Orders ${height}: Service-Ruf panel overlaps delivery CTA ${JSON.stringify({panelBox,deliverBox})}`);
-  const focus=await card.evaluate(node=>({special:getComputedStyle(node.querySelector('.service-special-panel')).display,pseudo:getComputedStyle(node,'::before').display}));
-  assert(focus.special==='none'&&focus.pseudo==='none',`Orders ${height}: background service layers still compete with Service-Ruf ${JSON.stringify(focus)}`);
+  const focus=await card.evaluate(node=>{const special=node.querySelector('.service-special-panel');return {special:special?getComputedStyle(special).display:'absent',pseudo:getComputedStyle(node,'::before').display};});
+  assert((focus.special==='none'||focus.special==='absent')&&focus.pseudo==='none',`Orders ${height}: background service layers still compete with Service-Ruf ${JSON.stringify(focus)}`);
   await assertAboveNav(deliver,`Orders delivery ${height}`,6);
   await assertNoDocumentScroll(`Orders ${height}`);
   await shot(`201-layout-orders-service-call-390x${height}`);
