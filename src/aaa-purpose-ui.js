@@ -169,7 +169,7 @@ export function installPurposeUI(root,ui){
       const toast=safeText(document.querySelector('#toast')?.textContent),match=toast.match(/\+(\d+)\s*(?:★|Sterne)/i),stars=Number(match?.[1]||0);
       setTimeout(()=>{lastSignature='';decorate();pulse(purposeRewardLine(getState(),stars));},360);
     }
-    if(Number(detail.levelsGained||0)>0)setTimeout(()=>{lastSignature='';decorate();pulse(`Level ${detail.after?.level??''} · ${purposeLine(getState())}`,'level'),950);
+    if(Number(detail.levelsGained||0)>0)setTimeout(()=>{lastSignature='';decorate();pulse(`Level ${detail.after?.level??''} · ${purposeLine(getState())}`,'level');},950);
   });
   const observer=new MutationObserver(()=>queueMicrotask(decorate));observer.observe(root,{childList:true,subtree:true});
   decorate();
