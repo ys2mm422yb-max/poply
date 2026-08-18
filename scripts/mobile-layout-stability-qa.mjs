@@ -17,7 +17,7 @@ const box=async locator=>{const value=await locator.boundingBox();assert(value,`
 const assertAboveNav=async(locator,label,clearance=3)=>{const [item,nav]=await Promise.all([box(locator),box(page.locator('.main-nav'))]);assert(item.y+item.height<=nav.y-clearance,`${label} overlaps dock: item=${JSON.stringify(item)} nav=${JSON.stringify(nav)}`);};
 const assertVerticalOrder=async(locators,label)=>{for(let i=1;i<locators.length;i++){const [a,b]=await Promise.all([box(locators[i-1]),box(locators[i])]);assert(a.y+a.height<=b.y+1,`${label}: ${i-1} overlaps ${i}: ${JSON.stringify({a,b})}`);}};
 const assertNoDocumentScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
-const applyInstalledInsets=async()=>{await page.evaluate(({top,bottom})=>{document.documentElement.style.setProperty('--poply-safe-top',`${top}px`);document.documentElement.style.setProperty('--poply-safe-bottom',`${bottom}px`);},{top:SAFE_TOP,bottom:SAFE_BOTTOM});await page.waitForTimeout(80);};
+const applyInstalledInsets=async()=>{await page.evaluate(({top,bottom})=>{document.documentElement.style.setProperty('--poply-safe-top',`${top}px`);document.documentElement.style.setProperty('--poply-safe-bottom',`${bottom}px`);},{top:SAFE_TOP,bottom:SAFE_BOTTOM});await page.waitForTimeout(100);};
 const seed=async()=>{
   await page.evaluate(async()=>{
     const game=await import('./src/v2-game.js');
@@ -32,7 +32,7 @@ const seed=async()=>{
   });
   await page.reload({waitUntil:'networkidle'});await applyInstalledInsets();
 };
-const go=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click();await page.waitForSelector(`.view-${view}`);await page.waitForTimeout(100);};
+const go=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click();await page.waitForSelector(`.view-${view}`);await page.waitForTimeout(140);};
 
 const inspectPlace=async height=>{
   await go('place');
@@ -48,29 +48,38 @@ const inspectPlace=async height=>{
 };
 const inspectOrders=async height=>{
   await go('orders');
-  const view=page.locator('.view-orders'),strip=view.locator(':scope > .service-call-strip.is-ready'),hero=view.locator(':scope > .service-hero'),queue=view.locator(':scope > .customer-queue'),card=view.locator(':scope > .service-card'),footer=view.locator(':scope > .service-footnote');
+  const view=page.locator('.view-orders'),strip=view.locator('.service-call-strip.is-ready'),card=view.locator('.service-card');
   const panel=card.locator(':scope > .service-call-panel.is-ready'),content=card.locator(':scope > .service-content'),deliver=card.locator(':scope > .service-deliver');
   await strip.waitFor();await panel.waitFor();
   assert(await view.evaluate(node=>node.classList.contains('has-service-call-strip')),`Orders ${height}: dynamic strip row class missing`);
+  assert(await view.evaluate(node=>node.classList.contains('has-daily-ribbon')),`Orders ${height}: Daily row class missing in combined state`);
   assert(await card.evaluate(node=>node.classList.contains('has-service-call')),`Orders ${height}: focus card class missing`);
   assert(await card.locator(':scope > .service-call-panel').count()===1,`Orders ${height}: Service-Ruf panel is not a direct card layout row`);
-  await assertVerticalOrder([strip,hero,queue,card,footer],`Orders view ${height}`);
+  const rows=await view.evaluate(node=>Array.from(node.children).map(child=>{const r=child.getBoundingClientRect();return {className:child.className,top:r.top,bottom:r.bottom,height:r.height};}));
+  const expected=['service-call-strip','service-hero','daily-ribbon','customer-queue','service-card','service-footnote'];
+  assert(rows.length===expected.length,`Orders ${height}: expected six explicit rows, got ${JSON.stringify(rows)}`);
+  expected.forEach((name,index)=>assert(String(rows[index].className).includes(name),`Orders ${height}: row ${index} expected ${name}, got ${JSON.stringify(rows[index])}`));
+  for(let index=1;index<rows.length;index++)assert(rows[index-1].bottom<=rows[index].top+1,`Orders ${height}: explicit rows overlap ${JSON.stringify({previous:rows[index-1],current:rows[index]})}`);
   const [contentBox,panelBox,deliverBox]=await Promise.all([box(content),box(panel),box(deliver)]);
   assert(contentBox.y+contentBox.height<=panelBox.y+1,`Orders ${height}: underlying order content overlaps Service-Ruf panel ${JSON.stringify({contentBox,panelBox})}`);
   assert(panelBox.y+panelBox.height<=deliverBox.y+1,`Orders ${height}: Service-Ruf panel overlaps delivery CTA ${JSON.stringify({panelBox,deliverBox})}`);
+  const focus=await card.evaluate(node=>({special:getComputedStyle(node.querySelector('.service-special-panel')).display,pseudo:getComputedStyle(node,'::before').display}));
+  assert(focus.special==='none'&&focus.pseudo==='none',`Orders ${height}: background service layers still compete with Service-Ruf ${JSON.stringify(focus)}`);
   await assertAboveNav(deliver,`Orders delivery ${height}`,6);
   await assertNoDocumentScroll(`Orders ${height}`);
   await shot(`201-layout-orders-service-call-390x${height}`);
 };
 const inspectBoard=async height=>{
   await go('board');
-  const view=page.locator('.view-board'),strip=view.locator(':scope > .service-call-strip.is-ready'),mission=view.locator(':scope > .mission-card'),jobs=view.locator(':scope > .board-jobs'),area=view.locator(':scope > .board-area'),frame=area.locator('.board-frame');
-  await strip.waitFor();
+  const view=page.locator('.view-board'),strip=view.locator('.service-call-strip.is-ready'),mission=view.locator('.mission-card'),jobs=view.locator('.board-jobs'),area=view.locator('.board-area'),frame=area.locator('.board-frame');
+  await strip.waitFor();await page.waitForTimeout(100);
   assert(await view.evaluate(node=>node.classList.contains('has-service-call-strip')),`Board ${height}: dynamic strip row class missing`);
   await assertVerticalOrder([strip,mission,jobs,area],`Board view ${height}`);
   const [areaBox,frameBox]=await Promise.all([box(area),box(frame)]);
   assert(frameBox.y>=areaBox.y-1&&frameBox.y+frameBox.height<=areaBox.y+areaBox.height+1,`Board ${height}: square escapes remaining board area ${JSON.stringify({areaBox,frameBox})}`);
   assert(Math.abs(frameBox.width-frameBox.height)<=2,`Board ${height}: workbench is no longer square ${JSON.stringify(frameBox)}`);
+  const measured=await frame.evaluate(node=>node.style.getPropertyValue('--board-square'));
+  assert(/^\d+px$/.test(measured),`Board ${height}: available-area square was not measured: ${measured}`);
   await assertAboveNav(frame,`Board workbench ${height}`,6);
   await assertNoDocumentScroll(`Board ${height}`);
   await shot(`202-layout-board-390x${height}`);
@@ -86,7 +95,7 @@ try{
     await inspectOrders(height);
     await inspectBoard(height);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,place:'Meerterrasse 10/11 above dock',orders:'Service-Ruf direct layout row without overlap',board:'dynamic strip row and remaining-area square'};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,place:'Meerterrasse 10/11 above dock',orders:'six explicit rows + Service-Ruf single focus layer',board:'dynamic strip row + measured remaining-area square'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('203-layout-stability-failure');}catch{}}
 finally{await writeFile(`${outDir}/mobile-layout-stability-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
