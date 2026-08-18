@@ -5,15 +5,16 @@ import { readFile } from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 
-test('gameplay-first layer is loaded last and decorator is installed',async()=>{
+test('gameplay-first layers are loaded last and decorator is installed',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1/);
-  assert.match(html,/data-build="aaa-foundation-20260818-gameplay1"/);
+  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay2/);
+  assert.match(html,/data-build="aaa-foundation-20260818-gameplay2"/);
+  assert.match(html,/aaa-main\.js\?v=20260818-gameplay2/);
   assert.match(main,/installGameplayFirst/);
 });
 
 test('Orders missing item becomes an active Board route instead of a disabled dominant CTA',async()=>{
-  const [behavior,css]=await Promise.all([read('src/aaa-gameplay-first.js'),read('src/aaa-gameplay-first.css')]);
+  const [behavior,css,tune]=await Promise.all([read('src/aaa-gameplay-first.js'),read('src/aaa-gameplay-first.css'),read('src/aaa-gameplay-first-orders.css')]);
   assert.match(behavior,/firstMissingRequirement/);
   assert.match(behavior,/button\.disabled=false/);
   assert.match(behavior,/button\.removeAttribute\('data-order'\)/);
@@ -21,6 +22,9 @@ test('Orders missing item becomes an active Board route instead of a disabled do
   assert.match(behavior,/Auf dem Board herstellen/);
   assert.match(behavior,/nav-tab\[data-view="board"\]/);
   assert.match(css,/\.service-deliver\.service-missing-action/);
+  assert.match(tune,/grid-template-rows:auto auto 4px auto!important/);
+  assert.match(tune,/min-height:36px!important;max-height:42px!important/);
+  assert.match(tune,/background:rgba\(24,92,91,\.28\)!important/);
 });
 
 test('Board meta is compressed while measured workbench stays the primary surface',async()=>{
