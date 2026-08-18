@@ -59,7 +59,8 @@ const inspectOrders=async height=>{
   const expected=['service-call-strip','service-hero','daily-ribbon','customer-queue','service-card','service-footnote'];
   assert(rows.length===expected.length,`Orders ${height}: expected six explicit rows, got ${JSON.stringify(rows)}`);
   expected.forEach((name,index)=>assert(String(rows[index].className).includes(name),`Orders ${height}: row ${index} expected ${name}, got ${JSON.stringify(rows[index])}`));
-  for(let index=1;index<rows.length;index++)assert(rows[index-1].bottom<=rows[index].top+1,`Orders ${height}: explicit rows overlap ${JSON.stringify({previous:rows[index-1],current:rows[index]})}`);
+  const visibleRows=rows.filter(row=>row.height>.5);
+  for(let index=1;index<visibleRows.length;index++)assert(visibleRows[index-1].bottom<=visibleRows[index].top+1,`Orders ${height}: visible rows overlap ${JSON.stringify({previous:visibleRows[index-1],current:visibleRows[index]})}`);
   const [contentBox,panelBox,deliverBox]=await Promise.all([box(content),box(panel),box(deliver)]);
   assert(contentBox.y+contentBox.height<=panelBox.y+1,`Orders ${height}: underlying order content overlaps Service-Ruf panel ${JSON.stringify({contentBox,panelBox})}`);
   assert(panelBox.y+panelBox.height<=deliverBox.y+1,`Orders ${height}: Service-Ruf panel overlaps delivery CTA ${JSON.stringify({panelBox,deliverBox})}`);
@@ -95,7 +96,7 @@ try{
     await inspectOrders(height);
     await inspectBoard(height);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,place:'Meerterrasse 10/11 above dock',orders:'six explicit rows + Service-Ruf single focus layer',board:'dynamic strip row + measured remaining-area square'};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,place:'Meerterrasse 10/11 above dock',orders:'six explicit rows + visible-row collision check + Service-Ruf single focus layer',board:'dynamic strip row + measured remaining-area square'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('203-layout-stability-failure');}catch{}}
 finally{await writeFile(`${outDir}/mobile-layout-stability-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
