@@ -77,6 +77,7 @@ test('combined shell release cache key is explicit',()=>{
   assert.match(html,/aaa-place-screen-v3\.css\?v=20260816-placev4/);
   assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1/);
   assert.match(html,/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1/);
-  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy1/);
-  assert.match(html,/data-build="aaa-foundation-20260818-hierarchy1"/);
+  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy2/);
+  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy2/);
+  assert.match(html,/data-build="aaa-foundation-20260818-hierarchy2"/);
 });
