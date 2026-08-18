@@ -17,6 +17,8 @@ const localDayKey=now=>{
   return date.getFullYear()*10000+(date.getMonth()+1)*100+date.getDate();
 };
 
+export const isDynamicServiceUnlocked=state=>(state?.placeUpgrades||[]).includes('menu');
+
 export function guestTraitForOrder(order){
   const guest=guestForSequence(order?.sequence||0);
   return {guest,trait:GUEST_TRAITS[guest.id]||GUEST_TRAITS.mika};
@@ -45,9 +47,10 @@ export function dailyServiceCondition(state,now=Date.now()){
 export function dynamicServiceBonus(state,order,now=Date.now()){
   const {guest,trait}=guestTraitForOrder(order);
   const condition=dailyServiceCondition(state,now);
-  const traitCoins=guestTraitQualifies(order,trait.id)?trait.bonusCoins:0;
-  const dailyCoins=(order?.requirements||[]).some(req=>req.family===condition.family)?condition.bonusCoins:0;
-  return {guest,trait,condition,traitCoins,dailyCoins,totalCoins:traitCoins+dailyCoins};
+  const unlocked=isDynamicServiceUnlocked(state);
+  const traitCoins=unlocked&&guestTraitQualifies(order,trait.id)?trait.bonusCoins:0;
+  const dailyCoins=unlocked&&(order?.requirements||[]).some(req=>req.family===condition.family)?condition.bonusCoins:0;
+  return {guest,trait,condition,unlocked,traitCoins,dailyCoins,totalCoins:traitCoins+dailyCoins};
 }
 
 export function applyDynamicServiceBonus(inputState,order,now=Date.now()){
