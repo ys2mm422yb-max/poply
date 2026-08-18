@@ -41,6 +41,7 @@ test('Place Screen V4 remains loaded under the current hierarchy shell release',
   assert.match(index,/aaa-place-screen-v3\.css\?v=20260816-placev4/);
   assert.match(index,/aaa-layout-stability\.css\?v=20260818-layout1/);
   assert.match(index,/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1/);
-  assert.match(index,/aaa-main\.js\?v=20260818-hierarchy1/);
-  assert.match(index,/data-build="aaa-foundation-20260818-hierarchy1"/);
+  assert.match(index,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy2/);
+  assert.match(index,/aaa-main\.js\?v=20260818-hierarchy2/);
+  assert.match(index,/data-build="aaa-foundation-20260818-hierarchy2"/);
 });
