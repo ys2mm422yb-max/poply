@@ -128,7 +128,7 @@
   .service-call-panel .service-call-actions{min-width:0!important}
   .service-call-panel .service-call-actions>button{min-width:0!important}
 
-  /* BOARD — dynamic Service-Ruf strip gets its own row; JS clamps width to the real remaining track and aspect-ratio owns height. */
+  /* BOARD — JS is the single geometry owner: one measured side is applied to both axes. */
   .view-board{
     grid-template-rows:auto auto minmax(0,1fr)!important;
     gap:7px!important;
@@ -156,11 +156,15 @@
   }
   .board-title{min-width:0!important;padding:1px 5px 3px!important}
   .board-frame{
-    width:min(var(--board-square,520px),100%)!important;
-    height:auto!important;
-    max-width:100%!important;
+    box-sizing:border-box!important;
+    width:var(--board-square,320px)!important;
+    height:var(--board-square,320px)!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
     max-height:none!important;
     aspect-ratio:1/1!important;
+    overflow:hidden!important;
     align-self:start!important;
     justify-self:center!important;
   }
