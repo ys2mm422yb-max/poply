@@ -31,13 +31,15 @@ export function installLayoutStability(root){
   const run=()=>{scheduled=false;measureBoard();};
   function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(run);}
 
-  const observer=new MutationObserver(schedule);
+  // View changes are synchronous UI swaps. Measure in the mutation checkpoint so a newly
+  // mounted Board is square before the next paint; ResizeObserver keeps later geometry fresh.
+  const observer=new MutationObserver(measureBoard);
   observer.observe(root,{childList:true,subtree:true});
   window.addEventListener('resize',schedule);
   window.visualViewport?.addEventListener('resize',schedule);
-  schedule();
+  measureBoard();
 
-  return {refresh:schedule,disconnect:()=>{
+  return {refresh:measureBoard,disconnect:()=>{
     observer.disconnect();resizeObserver.disconnect();window.removeEventListener('resize',schedule);window.visualViewport?.removeEventListener('resize',schedule);
   }};
 }
