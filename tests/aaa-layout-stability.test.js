@@ -26,6 +26,12 @@ test('Place action tray sizes to content and preserves dock clearance',async()=>
   assert.match(css,/padding:6px 8px var\(--poply-dock-clearance\)!important/);
 });
 
+test('mobile guest choices reserve enough text track for full German order titles',async()=>{
+  const css=await read('src/aaa-layout-stability.css');
+  assert.match(css,/\.customer-choice\{[\s\S]*grid-template-columns:32px minmax\(0,1fr\)!important[\s\S]*column-gap:3px!important[\s\S]*padding-inline:5px!important/);
+  assert.match(css,/\.customer-choice \.choice-avatar img\{width:31px!important;height:31px!important\}/);
+});
+
 test('Service-Ruf owns an explicit Orders row and becomes the single selected-card focus layer',async()=>{
   const [css,ui]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-service-call-ui.js')]);
   assert.match(ui,/classList\.toggle\('has-service-call-strip',hasStrip\)/);
