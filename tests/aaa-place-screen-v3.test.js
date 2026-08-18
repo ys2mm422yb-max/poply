@@ -36,12 +36,13 @@ test('Place map launcher remains a scene utility, not a command-panel row',async
   assert.doesNotMatch(map,/const command=root\.querySelector\('\.place-command'\)/);
 });
 
-test('Place Screen V4 remains loaded under the current hierarchy shell release',async()=>{
+test('Place Screen V4 remains loaded under the current gameplay-first shell release',async()=>{
   const index=await read('../index.html');
   assert.match(index,/aaa-place-screen-v3\.css\?v=20260816-placev4/);
   assert.match(index,/aaa-layout-stability\.css\?v=20260818-layout1/);
   assert.match(index,/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1/);
   assert.match(index,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4/);
-  assert.match(index,/aaa-main\.js\?v=20260818-hierarchy4/);
-  assert.match(index,/data-build="aaa-foundation-20260818-hierarchy4"/);
+  assert.match(index,/aaa-gameplay-first\.css\?v=20260818-gameplay1/);
+  assert.match(index,/aaa-main\.js\?v=20260818-gameplay1/);
+  assert.match(index,/data-build="aaa-foundation-20260818-gameplay1"/);
 });
