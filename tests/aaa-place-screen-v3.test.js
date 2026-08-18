@@ -44,7 +44,7 @@ test('Place Screen V4 remains loaded under the current gameplay-first shell rele
   assert.match(index,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4/);
   assert.match(index,/aaa-gameplay-first\.css\?v=20260818-gameplay1/);
   assert.match(index,/aaa-gameplay-first-orders\.css\?v=20260818-gameplay2/);
-  assert.match(index,/aaa-gameplay-first-polish\.css\?v=20260818-gameplay3/);
-  assert.match(index,/aaa-main\.js\?v=20260818-gameplay3/);
-  assert.match(index,/data-build="aaa-foundation-20260818-gameplay3"/);
+  assert.match(index,/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
+  assert.match(index,/aaa-main\.js\?v=20260818-gameplay4/);
+  assert.match(index,/data-build="aaa-foundation-20260818-gameplay4"/);
 });
