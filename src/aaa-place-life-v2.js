@@ -9,7 +9,7 @@ function guestMarkup(stage){
         <path class="guest-shoe" d="M-25 83h17M18 79h17"/>
         <path class="guest-body guest-coral" d="M-20 28q20-13 40 0l-3 33h-34Z"/>
         <circle class="guest-head guest-warm" cx="0" cy="10" r="14"/>
-        <path class="guest-hair guest-dark" d="M-13 8q3-18 17-15 11 1 13 14-7-5-12-2-5-7-18 9-18 8Z"/>
+        <path class="guest-hair guest-dark" d="M-13 8q3-18 17-15q11 1 13 14q-7-5-12-2q-5-7-18 9q-8 5-18 8Z"/>
         <path class="guest-arm guest-warm-stroke" d="M-14 34q-18 7-28 19"/>
         <path class="guest-arm guest-warm-stroke guest-sip-arm" d="M13 34q-7-12-16-18"/>
         <g class="guest-cup" transform="translate(-5 15)"><rect x="-5" y="-5" width="10" height="12" rx="3"/><path d="M5-1q7 0 5 6-2 4-6 2"/></g>
@@ -23,7 +23,7 @@ function guestMarkup(stage){
         <path class="guest-shoe" d="M-31 79h17M18 80h17"/>
         <path class="guest-body guest-blue" d="M-20 27q20-13 40 0l-2 31h-36Z"/>
         <circle class="guest-head guest-deep" cx="0" cy="9" r="14"/>
-        <path class="guest-hair guest-night" d="M-14 7q4-18 18-15 10 1 13 14-8-4-13-2-6-7-16 8-16 8Z"/>
+        <path class="guest-hair guest-night" d="M-14 7q4-18 18-15q10 1 13 14q-8-4-13-2q-6-7-16 8q-8 5-16 8Z"/>
         <path class="guest-arm guest-deep-stroke" d="M-14 33q15 8 26 18"/>
         <path class="guest-arm guest-deep-stroke" d="M14 34q17 3 28 13"/>
         <circle class="guest-eye" cx="-5" cy="8" r="1.3"/><circle class="guest-eye" cx="5" cy="8" r="1.3"/><path class="guest-smile" d="M-4 14q4 3 8 0"/>
