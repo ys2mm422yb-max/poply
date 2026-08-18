@@ -114,7 +114,10 @@ function decoratePlace(root,goal){
     const small=copy?.querySelector(':scope > small');if(small)small.textContent=`NÄCHSTES ZIEL · SCHRITT ${goal.step}/${goal.total}`;
     let unlock=current.querySelector('.purpose-place-unlock');if(goal.upgrade?.unlock&&!unlock){unlock=document.createElement('div');unlock.className='purpose-place-unlock';copy?.append(unlock);}if(unlock)unlock.innerHTML=`<span>🔓</span><strong>Schaltet frei: ${goal.upgrade.unlock}</strong>`;
     let after=current.querySelector('.purpose-after');if(!after){after=document.createElement('div');after.className='purpose-after purpose-place-after';copy?.append(after);}
-    if(after)after.innerHTML=`<span>DANACH</span><strong>${afterLabel(goal)}</strong>`;
+    if(after){
+      after.classList.toggle('is-next-place',goal.after?.kind==='place');
+      after.innerHTML=`<span>DANACH</span><strong>${afterLabel(goal)}</strong>`;
+    }
   }
 }
 
@@ -166,7 +169,7 @@ export function installPurposeUI(root,ui){
       const toast=safeText(document.querySelector('#toast')?.textContent),match=toast.match(/\+(\d+)\s*(?:★|Sterne)/i),stars=Number(match?.[1]||0);
       setTimeout(()=>{lastSignature='';decorate();pulse(purposeRewardLine(getState(),stars));},360);
     }
-    if(Number(detail.levelsGained||0)>0)setTimeout(()=>{lastSignature='';decorate();pulse(`Level ${detail.after?.level??''} · ${purposeLine(getState())}`,'level');},950);
+    if(Number(detail.levelsGained||0)>0)setTimeout(()=>{lastSignature='';decorate();pulse(`Level ${detail.after?.level??''} · ${purposeLine(getState())}`,'level'),950);
   });
   const observer=new MutationObserver(()=>queueMicrotask(decorate));observer.observe(root,{childList:true,subtree:true});
   decorate();
