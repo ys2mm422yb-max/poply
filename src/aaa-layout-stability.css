@@ -86,6 +86,7 @@
     align-content:stretch!important;
     padding:11px 13px 10px!important;
   }
+  .service-card.has-service-call:before{display:none!important}
   .service-card.has-service-call .service-customer{grid-area:customer!important;min-width:0!important;align-self:start!important;padding:0!important}
   .service-card.has-service-call .service-content{
     grid-area:context!important;
@@ -104,10 +105,13 @@
     text-overflow:clip!important;
   }
   .service-card.has-service-call .service-needs{min-width:0!important;gap:4px!important}
+  .service-card.has-service-call .service-special-panel,
   .service-card.has-service-call .service-rewards,
   .service-card.has-service-call .service-purpose{display:none!important}
   .service-card.has-service-call>.service-call-panel{
     grid-area:panel!important;
+    position:relative!important;
+    z-index:2!important;
     min-width:0!important;
     min-height:0!important;
     align-self:stretch!important;
@@ -124,7 +128,7 @@
   .service-call-panel .service-call-actions{min-width:0!important}
   .service-call-panel .service-call-actions>button{min-width:0!important}
 
-  /* BOARD — dynamic Service-Ruf strip gets its own row; the square board uses the remaining track instead of viewport subtraction magic. */
+  /* BOARD — dynamic Service-Ruf strip gets its own row; JS clamps the 7×7 square to the actual remaining track. */
   .view-board{
     grid-template-rows:auto auto minmax(0,1fr)!important;
     gap:7px!important;
@@ -152,12 +156,12 @@
   }
   .board-title{min-width:0!important;padding:1px 5px 3px!important}
   .board-frame{
-    width:auto!important;
-    height:100%!important;
+    width:var(--board-square,min(100%,520px))!important;
+    height:var(--board-square,auto)!important;
     max-width:100%!important;
     max-height:100%!important;
     aspect-ratio:1/1!important;
-    align-self:center!important;
+    align-self:start!important;
     justify-self:center!important;
   }
 }
