@@ -30,3 +30,10 @@ test('generator inspector is separate from normal generator production tap',asyn
   assert.match(guidance,/GERADE GEBRAUCHT FÜR/);
   assert.match(drag,/closest\('\[data-generator-info\]'\)/);
 });
+
+test('guest dynamics decorator is idempotent under its child-list observer',async()=>{
+  const source=await read('src/aaa-guest-dynamics-ui.js');
+  assert.doesNotMatch(source,/existing\?\.remove\(\)/);
+  assert.match(source,/if\(!line\)\{[\s\S]*heading\.append\(line\);return;\}/);
+  assert.match(source,/if\(line\.innerHTML!==markup\)line\.innerHTML=markup/);
+});
