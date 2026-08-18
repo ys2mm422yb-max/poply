@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createInitialState } from '../src/v2-game.js';
 import { guestTraitForOrder, guestTraitQualifies, dailyServiceCondition, applyDynamicServiceBonus } from '../src/aaa-guest-dynamics.js';
 
@@ -29,4 +30,10 @@ test('dynamic service bonus adds only its explicit guest/day coins without chang
   assert.equal(result.state.coins,before+result.totalCoins);
   assert.ok(result.totalCoins>=0&&result.totalCoins<=25);
   assert.equal(result.state.stars,state.stars);
+});
+
+test('guest dynamics stay a single lightweight metadata line on short phones',()=>{
+  const css=readFileSync(new URL('../src/aaa-guest-dynamics.css',import.meta.url),'utf8');
+  assert.match(css,/@media\(max-height:760px\)\{\.guest-dynamic-line\{font-size:8px;line-height:1;margin-top:1px;gap:1px 6px\}/);
+  assert.match(css,/\.daily-condition\{max-width:100%;overflow:hidden;text-overflow:ellipsis\}/);
 });
