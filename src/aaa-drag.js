@@ -11,6 +11,7 @@ export function installDrag({root,ghost,ui}){
 
   root.addEventListener('pointerdown',event=>{
     if(ui.getView()!=='board')return;
+    if(event.target instanceof Element&&event.target.closest('[data-generator-info]'))return;
     const cell=event.target.closest('.board-cell.occupied');if(!cell)return;
     const index=Number(cell.dataset.index),item=getState().board[index];if(!item)return;
     drag={index,x:event.clientX,y:event.clientY,pointerId:event.pointerId,moved:false};
