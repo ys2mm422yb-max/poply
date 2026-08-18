@@ -17,6 +17,14 @@ const box=async locator=>{const value=await locator.boundingBox();assert(value,`
 const assertAboveNav=async(locator,label,clearance=3)=>{const [item,nav]=await Promise.all([box(locator),box(page.locator('.main-nav'))]);assert(item.y+item.height<=nav.y-clearance,`${label} overlaps dock: item=${JSON.stringify(item)} nav=${JSON.stringify(nav)}`);};
 const assertVerticalOrder=async(locators,label)=>{for(let i=1;i<locators.length;i++){const [a,b]=await Promise.all([box(locators[i-1]),box(locators[i])]);assert(a.y+a.height<=b.y+1,`${label}: ${i-1} overlaps ${i}: ${JSON.stringify({a,b})}`);}};
 const assertNoDocumentScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
+const assertDirectRows=async(view,expected,label)=>{
+  const rows=await view.evaluate(node=>Array.from(node.children).map(child=>{const r=child.getBoundingClientRect();return {className:child.className,top:r.top,bottom:r.bottom,height:r.height};}));
+  assert(rows.length===expected.length,`${label}: expected ${expected.length} direct rows, got ${JSON.stringify(rows)}`);
+  expected.forEach((name,index)=>assert(String(rows[index].className).includes(name),`${label}: row ${index} expected ${name}, got ${JSON.stringify(rows[index])}`));
+  const visible=rows.filter(row=>row.height>.5);
+  for(let index=1;index<visible.length;index++)assert(visible[index-1].bottom<=visible[index].top+1,`${label}: visible rows overlap ${JSON.stringify({previous:visible[index-1],current:visible[index]})}`);
+  return rows;
+};
 const applyInstalledInsets=async()=>{await page.evaluate(({top,bottom})=>{document.documentElement.style.setProperty('--poply-safe-top',`${top}px`);document.documentElement.style.setProperty('--poply-safe-bottom',`${bottom}px`);},{top:SAFE_TOP,bottom:SAFE_BOTTOM});await page.waitForTimeout(100);};
 const seed=async()=>{
   await page.evaluate(async()=>{
@@ -32,7 +40,7 @@ const seed=async()=>{
   });
   await page.reload({waitUntil:'networkidle'});await applyInstalledInsets();
 };
-const go=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click();await page.waitForSelector(`.view-${view}`);await page.waitForTimeout(140);};
+const go=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click();await page.waitForSelector(`.view-${view}`);await page.waitForTimeout(160);};
 
 const inspectPlace=async height=>{
   await go('place');
@@ -40,50 +48,75 @@ const inspectPlace=async height=>{
   const text=(await goal.textContent())?.replace(/\s+/g,' ')||'';
   assert(text.includes('Meerterrasse')&&text.includes('10/11')&&text.includes('Noch 1 Stern'),`Place ${height}: exact Meerterrasse 10/11 state missing: ${text}`);
   assert((await goal.locator('[data-place-v4-orders]').count())===1,`Place ${height}: active star route missing`);
+  assert((await hero.locator('.purpose-blueprint-tag').count())===0,`Place ${height}: duplicate next-upgrade scene badge still exists`);
   await assertVerticalOrder([hero,command],`Place ${height}`);
   await assertAboveNav(journey,`Place progress ${height}`,6);
   await assertAboveNav(goal,`Place action tray ${height}`,6);
   await assertNoDocumentScroll(`Place ${height}`);
-  await shot(`200-layout-place-10of11-390x${height}`);
+  await shot(`200-hierarchy-place-10of11-390x${height}`);
 };
-const inspectOrders=async height=>{
+
+const inspectOrdersReady=async height=>{
   await go('orders');
-  const view=page.locator('.view-orders'),strip=view.locator('.service-call-strip.is-ready'),card=view.locator('.service-card');
-  const panel=card.locator(':scope > .service-call-panel.is-ready'),content=card.locator(':scope > .service-content'),deliver=card.locator(':scope > .service-deliver');
-  await strip.waitFor();await panel.waitFor();
-  assert(await view.evaluate(node=>node.classList.contains('has-service-call-strip')),`Orders ${height}: dynamic strip row class missing`);
-  assert(await view.evaluate(node=>node.classList.contains('has-daily-ribbon')),`Orders ${height}: Daily row class missing in combined state`);
-  assert(await card.evaluate(node=>node.classList.contains('has-service-call')),`Orders ${height}: focus card class missing`);
-  assert(await card.locator(':scope > .service-call-panel').count()===1,`Orders ${height}: Service-Ruf panel is not a direct card layout row`);
-  const rows=await view.evaluate(node=>Array.from(node.children).map(child=>{const r=child.getBoundingClientRect();return {className:child.className,top:r.top,bottom:r.bottom,height:r.height};}));
-  const expected=['service-call-strip','service-hero','daily-ribbon','customer-queue','service-card','service-footnote'];
-  assert(rows.length===expected.length,`Orders ${height}: expected six explicit rows, got ${JSON.stringify(rows)}`);
-  expected.forEach((name,index)=>assert(String(rows[index].className).includes(name),`Orders ${height}: row ${index} expected ${name}, got ${JSON.stringify(rows[index])}`));
-  const visibleRows=rows.filter(row=>row.height>.5);
-  for(let index=1;index<visibleRows.length;index++)assert(visibleRows[index-1].bottom<=visibleRows[index].top+1,`Orders ${height}: visible rows overlap ${JSON.stringify({previous:visibleRows[index-1],current:visibleRows[index]})}`);
-  const [contentBox,panelBox,deliverBox]=await Promise.all([box(content),box(panel),box(deliver)]);
-  assert(contentBox.y+contentBox.height<=panelBox.y+1,`Orders ${height}: underlying order content overlaps Service-Ruf panel ${JSON.stringify({contentBox,panelBox})}`);
-  assert(panelBox.y+panelBox.height<=deliverBox.y+1,`Orders ${height}: Service-Ruf panel overlaps delivery CTA ${JSON.stringify({panelBox,deliverBox})}`);
-  const focus=await card.evaluate(node=>{const special=node.querySelector('.service-special-panel');return {special:special?getComputedStyle(special).display:'absent',pseudo:getComputedStyle(node,'::before').display};});
-  assert((focus.special==='none'||focus.special==='absent')&&focus.pseudo==='none',`Orders ${height}: background service layers still compete with Service-Ruf ${JSON.stringify(focus)}`);
-  await assertAboveNav(deliver,`Orders delivery ${height}`,6);
-  await assertNoDocumentScroll(`Orders ${height}`);
-  await shot(`201-layout-orders-service-call-390x${height}`);
+  const view=page.locator('.view-orders'),queue=view.locator(':scope > .customer-queue'),choice=view.locator(':scope > .service-call-choice-panel.is-ready'),card=view.locator(':scope > .service-card'),deliver=card.locator(':scope > .service-deliver');
+  await choice.waitFor();
+  assert((await view.locator(':scope > .service-call-strip').count())===0,`Orders ready ${height}: duplicate top Service-Ruf strip still exists`);
+  assert(await view.evaluate(node=>node.classList.contains('has-service-call-ready')),`Orders ready ${height}: ready row class missing`);
+  assert(await view.evaluate(node=>node.classList.contains('has-daily-ribbon')),`Orders ready ${height}: Daily row missing in combined state`);
+  assert((await card.locator(':scope > .service-call-panel').count())===0,`Orders ready ${height}: ready Ruf panel is still nested inside service card`);
+  await assertDirectRows(view,['service-hero','daily-ribbon','customer-queue','service-call-choice-panel','service-card','service-footnote'],`Orders ready ${height}`);
+  await assertVerticalOrder([queue,choice,card],`Orders ready hierarchy ${height}`);
+  const [choiceBox,cardBox,deliverBox]=await Promise.all([box(choice),box(card),box(deliver)]);
+  assert(choiceBox.y+choiceBox.height<=cardBox.y+1,`Orders ready ${height}: Ruf choice overlaps underlying order card ${JSON.stringify({choiceBox,cardBox})}`);
+  assert(deliverBox.y>=cardBox.y&&deliverBox.y+deliverBox.height<=cardBox.y+cardBox.height+1,`Orders ready ${height}: delivery action escapes its own card ${JSON.stringify({cardBox,deliverBox})}`);
+  assert((await deliver.evaluate(node=>getComputedStyle(node).display))!=='none',`Orders ready ${height}: optional Ruf incorrectly hides normal delivery`);
+  await assertAboveNav(deliver,`Orders ready delivery ${height}`,6);
+  await assertNoDocumentScroll(`Orders ready ${height}`);
+  await shot(`201-hierarchy-orders-ruf-ready-390x${height}`);
 };
-const inspectBoard=async height=>{
+
+const activateDirect=async height=>{
+  const selected=page.locator('.view-orders .service-card[data-service-order]');
+  const orderId=await selected.getAttribute('data-service-order');
+  const orderTitle=((await selected.locator('.service-heading h2').textContent())||'').trim();
+  const direct=page.locator(`.service-call-choice-panel [data-service-call-mode="direct"][data-service-call-order="${orderId}"]`);
+  await direct.click();
+  await page.waitForSelector('.view-orders.has-service-call-active');await page.waitForTimeout(180);
+  return {orderId,orderTitle};
+};
+
+const inspectOrdersActive=async(height,target)=>{
+  const view=page.locator('.view-orders'),hero=view.locator(':scope > .service-hero'),card=view.locator(`.service-card[data-service-order="${target.orderId}"]`),panel=card.locator(':scope > .service-call-panel.is-active'),deliver=card.locator(':scope > .service-deliver');
+  await panel.waitFor();
+  assert((await view.locator(':scope > .service-call-strip').count())===0,`Orders active ${height}: duplicate top Service-Ruf strip exists`);
+  assert((await view.locator(':scope > .service-call-choice-panel').count())===0,`Orders active ${height}: ready choice row survived activation`);
+  const heroText=((await hero.textContent())||'').replace(/\s+/g,' ');
+  assert(!heroText.includes('Wähle deinen nächsten Auftrag'),`Orders active ${height}: stale choose-order hero survived: ${heroText}`);
+  assert(heroText.includes(target.orderTitle),`Orders active ${height}: hero does not name committed guest ${target.orderTitle}: ${heroText}`);
+  assert((await card.locator(':scope > .service-call-panel').count())===1,`Orders active ${height}: expected one compact active Ruf panel`);
+  const panelText=((await panel.textContent())||'').replace(/\s+/g,' ');
+  assert(panelText.includes('Als Nächstes servieren'),`Orders active ${height}: compact direct instruction missing: ${panelText}`);
+  await assertAboveNav(deliver,`Orders active delivery ${height}`,6);
+  await assertNoDocumentScroll(`Orders active ${height}`);
+  await shot(`202-hierarchy-orders-ruf-direct-390x${height}`);
+};
+
+const inspectBoardActive=async(height,target)=>{
   await go('board');
-  const view=page.locator('.view-board'),strip=view.locator('.service-call-strip.is-ready'),mission=view.locator('.mission-card'),jobs=view.locator('.board-jobs'),area=view.locator('.board-area'),frame=area.locator('.board-frame');
-  await strip.waitFor();await page.waitForTimeout(100);
-  assert(await view.evaluate(node=>node.classList.contains('has-service-call-strip')),`Board ${height}: dynamic strip row class missing`);
-  await assertVerticalOrder([strip,mission,jobs,area],`Board view ${height}`);
+  const view=page.locator('.view-board'),strip=view.locator(':scope > .service-call-strip.is-active'),mission=view.locator(':scope > .mission-card'),jobs=view.locator(':scope > .board-jobs'),area=view.locator(':scope > .board-area'),frame=area.locator('.board-frame');
+  await strip.waitFor();await page.waitForTimeout(120);
+  assert(await view.evaluate(node=>node.classList.contains('has-service-call-strip')),`Board active ${height}: Ruf row class missing`);
+  assert((await view.locator(`.board-job[data-focus-order="${target.orderId}"].service-call-active`).count())===1,`Board active ${height}: focused Ruf guest is not marked`);
+  await assertVerticalOrder([strip,mission,jobs,area],`Board active view ${height}`);
   const [areaBox,frameBox]=await Promise.all([box(area),box(frame)]);
-  assert(frameBox.y>=areaBox.y-1&&frameBox.y+frameBox.height<=areaBox.y+areaBox.height+1,`Board ${height}: square escapes remaining board area ${JSON.stringify({areaBox,frameBox})}`);
-  assert(Math.abs(frameBox.width-frameBox.height)<=2,`Board ${height}: workbench is no longer square ${JSON.stringify(frameBox)}`);
+  assert(frameBox.y>=areaBox.y-1&&frameBox.y+frameBox.height<=areaBox.y+areaBox.height+1,`Board active ${height}: square escapes remaining board area ${JSON.stringify({areaBox,frameBox})}`);
+  assert(Math.abs(frameBox.width-frameBox.height)<=2,`Board active ${height}: workbench is no longer square ${JSON.stringify(frameBox)}`);
+  assert(frameBox.height>=Math.min(330,height*.43),`Board active ${height}: meta chrome pushes workbench too small ${JSON.stringify(frameBox)}`);
   const measured=await frame.evaluate(node=>node.style.getPropertyValue('--board-square'));
-  assert(/^\d+px$/.test(measured),`Board ${height}: available-area square was not measured: ${measured}`);
-  await assertAboveNav(frame,`Board workbench ${height}`,6);
-  await assertNoDocumentScroll(`Board ${height}`);
-  await shot(`202-layout-board-390x${height}`);
+  assert(/^\d+px$/.test(measured),`Board active ${height}: available-area square was not measured: ${measured}`);
+  await assertAboveNav(frame,`Board active workbench ${height}`,6);
+  await assertNoDocumentScroll(`Board active ${height}`);
+  await shot(`203-hierarchy-board-ruf-direct-390x${height}`);
 };
 
 let report={},failure=null;
@@ -93,12 +126,14 @@ try{
     await page.setViewportSize({width:390,height});
     await seed();
     await inspectPlace(height);
-    await inspectOrders(height);
-    await inspectBoard(height);
+    await inspectOrdersReady(height);
+    const target=await activateDirect(height);
+    await inspectOrdersActive(height,target);
+    await inspectBoardActive(height,target);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,place:'Meerterrasse 10/11 above dock',orders:'six explicit rows + visible-row collision check + Service-Ruf single focus layer',board:'dynamic strip row + measured remaining-area square'};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:8,place:'single Meerterrasse 10/11 objective above dock',orders:'ready choice is direct row with no delivery ghost; active Direct has contextual hero and one compact card status',board:'one compact Ruf row + focused guest + measured square workbench'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
-}catch(error){failure=error;try{await shot('203-layout-stability-failure');}catch{}}
+}catch(error){failure=error;try{await shot('204-hierarchy-failure');}catch{}}
 finally{await writeFile(`${outDir}/mobile-layout-stability-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
 if(failure)throw failure;
-console.log('Mobile layout stability WebKit QA passed.');
+console.log('Mobile real-device hierarchy WebKit QA passed.');
