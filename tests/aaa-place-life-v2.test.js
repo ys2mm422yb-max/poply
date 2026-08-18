@@ -13,6 +13,15 @@ test('living Place pass hides the old stiff guests and installs seated authored 
   assert.match(source,/seating\.parentNode\.insertBefore/);
 });
 
+test('living guests derive coast stage from rendered scene so completed revisits keep people',async()=>{
+  const source=await read('src/aaa-place-life-v2.js');
+  assert.doesNotMatch(source,/currentChapterProgress|getState/);
+  assert.match(source,/scene-upgrade\.seating/);
+  assert.match(source,/scene-upgrade\.sign/);
+  assert.match(source,/scene-upgrade\.terrace/);
+  assert.match(source,/\?6:[\s\S]*\?5:4/);
+});
+
 test('Place guests use subtle idle life with reduced-motion safety',async()=>{
   const css=await read('src/aaa-place-life-v2.css');
   assert.match(css,/placeGuestBreathe/);
