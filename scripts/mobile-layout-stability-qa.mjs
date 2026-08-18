@@ -96,7 +96,12 @@ const inspectOrdersActive=async(height,target)=>{
   assert((await card.locator(':scope > .service-call-panel').count())===1,`Orders active ${height}: expected one compact active Ruf panel`);
   const panelText=((await panel.textContent())||'').replace(/\s+/g,' ');
   assert(panelText.includes('Als Nächstes servieren'),`Orders active ${height}: compact direct instruction missing: ${panelText}`);
+  const [cardBox,panelBox]=await Promise.all([box(card),box(panel)]);
+  assert(cardBox.height<=Math.min(330,height*.42),`Orders active ${height}: selected order card stretches into dead space ${JSON.stringify(cardBox)}`);
+  assert(panelBox.height<=72.5,`Orders active ${height}: Ruf status stretches instead of staying content-height ${JSON.stringify(panelBox)}`);
   await assertAboveNav(deliver,`Orders active delivery ${height}`,6);
+  const toast=page.locator('#toast.show');
+  if(await toast.count())await assertAboveNav(toast,`Orders active toast ${height}`,6);
   await assertNoDocumentScroll(`Orders active ${height}`);
   await shot(`202-hierarchy-orders-ruf-direct-390x${height}`);
 };
@@ -115,6 +120,8 @@ const inspectBoardActive=async(height,target)=>{
   const measured=await frame.evaluate(node=>node.style.getPropertyValue('--board-square'));
   assert(/^\d+px$/.test(measured),`Board active ${height}: available-area square was not measured: ${measured}`);
   await assertAboveNav(frame,`Board active workbench ${height}`,6);
+  const toast=page.locator('#toast.show');
+  if(await toast.count())await assertAboveNav(toast,`Board active toast ${height}`,6);
   await assertNoDocumentScroll(`Board active ${height}`);
   await shot(`203-hierarchy-board-ruf-direct-390x${height}`);
 };
@@ -131,7 +138,7 @@ try{
     await inspectOrdersActive(height,target);
     await inspectBoardActive(height,target);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:8,place:'single Meerterrasse 10/11 objective above dock',orders:'ready choice is direct row with no delivery ghost; active Direct has contextual hero and one compact card status',board:'one compact Ruf row + focused guest + measured square workbench'};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:8,place:'single Meerterrasse 10/11 objective above dock',orders:'ready choice is direct row with no delivery ghost; active Direct has contextual hero and content-sized card/status',board:'one compact Ruf row + focused guest + measured square workbench',toast:'transient feedback clears complete dock row'};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('204-hierarchy-failure');}catch{}}
 finally{await writeFile(`${outDir}/mobile-layout-stability-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
