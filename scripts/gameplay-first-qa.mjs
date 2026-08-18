@@ -52,8 +52,13 @@ const seed=async()=>{
   await page.reload({waitUntil:'networkidle'});await applyInsets();await page.waitForTimeout(120);
 };
 
-const activateDirect=async()=>{
+const activateDirect=async height=>{
   await go('orders');
+  const view=page.locator('.view-orders'),readyCard=view.locator(':scope > .service-card'),readyAction=readyCard.locator('.service-missing-action');
+  await readyAction.waitFor({state:'visible'});
+  const [viewBox,cardBox]=await Promise.all([box(view),box(readyCard)]);
+  assert(cardBox.height<=Math.min(190,viewBox.height*.32),`Orders Ruf-ready ${height}: selected task card stretches into dead dashboard space ${JSON.stringify({viewBox,cardBox})}`);
+  assert(((await readyAction.textContent())||'').includes('Auf dem Board herstellen'),`Orders Ruf-ready ${height}: missing-item next action is not primary`);
   const choice=page.locator('.service-call-choice-panel.is-ready [data-service-call-mode="direct"]').first();
   await choice.waitFor({state:'visible'});await choice.click();
   await page.waitForSelector('.view-orders.has-service-call-active');await page.waitForTimeout(160);
@@ -130,13 +135,13 @@ try{
   for(const height of [844,720]){
     await page.setViewportSize({width:390,height});
     await seed();
-    await activateDirect();
+    await activateDirect(height);
     await inspectOrders(height);
     await inspectBoard(height);
     await inspectCollection(height);
     await inspectPlace(height);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:8,states:['Orders active Direct missing item','Board active Direct','collection drinks 3/6','Place 10/11']};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:8,states:['Orders Ruf-ready compact precondition','Orders active Direct missing item','Board active Direct','collection drinks 3/6','Place 10/11']};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('219-gameplay-first-failure');}catch{}}
 finally{await writeFile(`${outDir}/gameplay-first-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
