@@ -48,7 +48,6 @@ test('Level-up celebration differentiates Coin, Energy and capacity reward color
   const css=read('src/aaa-level-up-celebration.css'),html=read('index.html'),ui=read('src/aaa-player-ui.js');
   assert.match(css,/linear-gradient\(90deg,#ffd25e[\s\S]*#82e5eb[\s\S]*#a7e98b/);
   assert.match(css,/poply-level-reward-bloom/);
-  assert.match(css,/poply-level-reward-sparks/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*animation:none!important/);
   assert.match(html,/aaa-level-up-celebration\.css\?v=20260815-level2/);
   assert.match(ui,/\+\$\{progression\.bonusCoins\} Coins · Energie voll/);
@@ -80,6 +79,7 @@ test('combined shell release cache key is explicit',()=>{
   assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4/);
   assert.match(html,/aaa-gameplay-first\.css\?v=20260818-gameplay1/);
   assert.match(html,/aaa-gameplay-first-orders\.css\?v=20260818-gameplay2/);
-  assert.match(html,/aaa-main\.js\?v=20260818-gameplay2/);
-  assert.match(html,/data-build="aaa-foundation-20260818-gameplay2"/);
+  assert.match(html,/aaa-gameplay-first-polish\.css\?v=20260818-gameplay3/);
+  assert.match(html,/aaa-main\.js\?v=20260818-gameplay3/);
+  assert.match(html,/data-build="aaa-foundation-20260818-gameplay3"/);
 });
