@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createInitialState } from '../src/v2-game.js';
-import { guestTraitForOrder, guestTraitQualifies, dailyServiceCondition, applyDynamicServiceBonus } from '../src/aaa-guest-dynamics.js';
+import { guestTraitForOrder, guestTraitQualifies, dailyServiceCondition, applyDynamicServiceBonus, isDynamicServiceUnlocked } from '../src/aaa-guest-dynamics.js';
 
 test('recurring guests have deterministic distinct service traits',()=>{
   const state=createInitialState();
@@ -24,12 +24,18 @@ test('daily condition is deterministic for the same local day and only uses unlo
   assert.ok(['coffee','bakery','sweet'].includes(first.family));
 });
 
-test('dynamic service bonus adds only its explicit guest/day coins without changing stars',()=>{
-  const state=createInitialState(),order=state.currentOrders.find(entry=>entry.title==='Frühstück am Fenster')||state.currentOrders[1];
-  const before=state.coins,result=applyDynamicServiceBonus(state,order,new Date(2026,7,18,12,0,0).getTime());
-  assert.equal(result.state.coins,before+result.totalCoins);
-  assert.ok(result.totalCoins>=0&&result.totalCoins<=25);
-  assert.equal(result.state.stars,state.stars);
+test('guest and daily service bonuses unlock with the Menüwand instead of changing the opening economy',()=>{
+  const state=createInitialState(),order=state.currentOrders.find(entry=>entry.title==='Frühstück am Fenster')||state.currentOrders[1],now=new Date(2026,7,18,12,0,0).getTime();
+  assert.equal(isDynamicServiceUnlocked(state),false);
+  const locked=applyDynamicServiceBonus(state,order,now);
+  assert.equal(locked.totalCoins,0);
+  assert.equal(locked.state.coins,state.coins);
+  const unlocked=structuredClone(state);unlocked.placeUpgrades=['lights','counter','menu'];
+  assert.equal(isDynamicServiceUnlocked(unlocked),true);
+  const result=applyDynamicServiceBonus(unlocked,order,now);
+  assert.ok(result.totalCoins>0&&result.totalCoins<=25);
+  assert.equal(result.state.coins,unlocked.coins+result.totalCoins);
+  assert.equal(result.state.stars,unlocked.stars);
 });
 
 test('guest dynamics stay a single lightweight metadata line on short phones',()=>{
