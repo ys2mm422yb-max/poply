@@ -34,15 +34,17 @@ const prepareOrder=async orderId=>{await page.evaluate(id=>{const key='poply-v2-
 let report={},failure=null;
 try{
   await page.goto(baseURL,{waitUntil:'networkidle'});await reset();await forceReady();await openOrders();
-  const readyStrip=page.locator('.view-orders>.service-call-strip.is-ready'),readyPanel=page.locator('.service-card .service-call-panel.is-ready');
-  await readyStrip.waitFor();await readyPanel.waitFor();
+  const readyPanel=page.locator('.view-orders>.service-call-choice-panel.is-ready');
+  await readyPanel.waitFor();
+  assert(await page.locator('.view-orders>.service-call-strip').count()===0,'Orders ready must not duplicate Service-Ruf in a top strip');
+  assert(await page.locator('.service-card>.service-call-panel').count()===0,'ready Service-Ruf must not be layered inside the service card');
   const readyText=(await readyPanel.textContent())||'';assert(readyText.includes('Direkt')&&readyText.includes('Nachschub')&&readyText.includes('2× Generator'),`ready choice missing: ${readyText}`);
   assert(await readyPanel.locator('[data-service-call-mode="direct"]').count()===1,'Direkt choice missing');assert(await readyPanel.locator('[data-service-call-mode="stock"]').count()===1,'Nachschub choice missing');
-  await assertWithin(readyPanel,'Service-Ruf ready panel 390x844');await assertNoScroll('Service-Ruf ready 390x844');await shot('110-service-call-ready-390x844');
+  await assertWithin(readyPanel,'Service-Ruf ready choice 390x844');await assertNoScroll('Service-Ruf ready 390x844');await shot('110-service-call-ready-390x844');
 
   const targetId=await page.locator('.service-card').getAttribute('data-service-order');
   await readyPanel.locator('[data-service-call-mode="stock"]').click();
-  await page.waitForSelector('.service-call-strip.is-active.mode-stock');
+  await page.waitForSelector('.view-orders.has-service-call-active .service-call-panel.is-active.mode-stock');
   let save=await readSave();assert(save.serviceCallState.orderId===targetId&&save.serviceCallState.mode==='stock','Nachschub choice not persisted');assert(save.serviceCallState.generatorProgress===0,'Nachschub should start at 0');
   await page.locator('.nav-tab[data-view="board"]').click();await page.waitForSelector('.view-board .board-cell.generator');
   const generator=page.locator('.view-board .board-cell.generator').first();await generator.click();await page.waitForTimeout(120);await generator.click();await page.waitForTimeout(160);
@@ -50,7 +52,8 @@ try{
   const boardStrip=page.locator('.view-board>.service-call-strip.mode-stock');await boardStrip.waitFor();assert(((await boardStrip.textContent())||'').includes('2/2'),'board strip does not show completed Nachschub');await assertWithin(boardStrip,'active board strip');await assertNoScroll('Service-Ruf active board 390x844');await shot('111-service-call-stock-ready-390x844');
 
   await prepareOrder(targetId);await openOrders();await selectOrder(targetId);
-  const activePanel=page.locator(`.service-card[data-service-order="${targetId}"] .service-call-panel.is-active`);await activePanel.waitFor();assert(((await activePanel.textContent())||'').includes('2/2'),'active target panel lost Nachschub progress');
+  const activePanel=page.locator(`.service-card[data-service-order="${targetId}"] .service-call-panel.is-active`);await activePanel.waitFor();assert(((await activePanel.textContent())||'').includes('Nachschub 2/2'),'active target panel lost Nachschub progress');
+  assert(await page.locator('.view-orders>.service-call-strip').count()===0,'active Orders must not duplicate Ruf in a top strip');
   const beforeSuccess=await readSave(),beforeCoins=beforeSuccess.coins,callsCompleted=beforeSuccess.serviceCallState.callsCompleted;
   await page.locator(`.service-card[data-service-order="${targetId}"] button[data-order="${targetId}"]`).click();
   await waitForCallCounter('callsCompleted',callsCompleted+1);
@@ -58,16 +61,17 @@ try{
   await shot('112-service-call-success-390x844');
 
   await forceReady();await openOrders();const directTarget=await page.locator('.service-card').getAttribute('data-service-order');
-  await page.locator('.service-card .service-call-panel [data-service-call-mode="direct"]').click();await page.waitForSelector('.service-call-strip.is-active.mode-direct');
+  await page.locator('.view-orders>.service-call-choice-panel [data-service-call-mode="direct"]').click();await page.waitForSelector('.view-orders.has-service-call-active .service-call-panel.is-active.mode-direct');
   save=await readSave();const other=save.currentOrders.find(order=>order.id!==directTarget);assert(other,'no second order available for expiry path');const expiredBefore=save.serviceCallState.callsExpired;
   await prepareOrder(other.id);await openOrders();await selectOrder(other.id);await page.locator(`.service-card[data-service-order="${other.id}"] button[data-order="${other.id}"]`).click();
   await waitForCallCounter('callsExpired',expiredBefore+1);await page.waitForTimeout(380);save=await readSave();assert(save.serviceCallState.callsExpired===expiredBefore+1,'other delivery did not expire the call');assert(save.serviceCallState.orderId===null,'expired call stayed active');
 
   await page.setViewportSize({width:390,height:720});await forceReady();await openOrders();
-  const shortPanel=page.locator('.service-card .service-call-panel.is-ready'),shortStrip=page.locator('.view-orders>.service-call-strip.is-ready'),shortDeliver=page.locator('.service-deliver');await shortPanel.waitFor();await shortStrip.waitFor();
-  assert(((await shortPanel.textContent())||'').includes('Nachschub'),'390x720 lost Service-Ruf choices');await assertWithin(shortStrip,'Service-Ruf strip 390x720');await assertWithin(shortPanel,'Service-Ruf panel 390x720');await assertWithin(shortDeliver,'service button 390x720');await assertAboveNav(shortDeliver,'service button 390x720');await assertNoScroll('Service-Ruf ready 390x720');await shot('113-service-call-ready-390x720');
+  const shortPanel=page.locator('.view-orders>.service-call-choice-panel.is-ready'),shortDeliver=page.locator('.service-card>.service-deliver');await shortPanel.waitFor();
+  assert(await page.locator('.view-orders>.service-call-strip').count()===0,'390x720 reintroduced duplicate Orders Ruf strip');
+  assert(((await shortPanel.textContent())||'').includes('Nachschub'),'390x720 lost Service-Ruf choices');await assertWithin(shortPanel,'Service-Ruf choice 390x720');await assertWithin(shortDeliver,'service button 390x720');await assertAboveNav(shortDeliver,'service button 390x720');await assertNoScroll('Service-Ruf ready 390x720');await shot('113-service-call-ready-390x720');
 
-  report={readyAfterOrders:3,modes:['direct','stock'],stockGeneratorTarget:2,successfulBonus:true,otherDeliveryExpiresOnlyBonus:true,shortViewportNoScroll:true,shortViewportNoNavOverlap:true,persistedDeliveryAssertions:true};
+  report={readyAfterOrders:3,modes:['direct','stock'],stockGeneratorTarget:2,successfulBonus:true,otherDeliveryExpiresOnlyBonus:true,ordersSingleFocus:true,shortViewportNoScroll:true,shortViewportNoNavOverlap:true,persistedDeliveryAssertions:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('114-service-call-failure');}catch{}}
 finally{await writeFile(`${outDir}/service-call-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}

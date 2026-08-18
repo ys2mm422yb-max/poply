@@ -1,6 +1,7 @@
 import { getState } from './aaa-session.js';
 import { PLACE_UPGRADES } from './v2-game.js';
 import { purposeGoal, purposeLine, purposeRewardLine } from './aaa-purpose.js';
+import { serviceCallStatus, serviceCallModeLabel } from './aaa-service-call.js';
 import { placeSceneMarkup } from './aaa-place-art.js';
 import { sunsetPlaceSceneMarkup } from './aaa-sunset-place.js';
 import { gardenPlaceSceneMarkup } from './aaa-garden-place.js';
@@ -49,8 +50,21 @@ function decorateOrders(root,state,goal){
   if(goal.complete)return;
   const hero=root.querySelector('.service-hero');
   const heading=hero?.querySelector('h2'),intro=hero?.querySelector('p');
-  if(heading)heading.textContent=goal.ready?'Das Café ist baubereit.':'Wähle deinen nächsten Auftrag.';
-  if(intro)intro.textContent=goal.ready?`„${goal.label}“ ist bereit – jetzt bauen.`:`Noch ${goal.missing} ★ bis „${goal.label}“. Kombis bringen mehr.`;
+  const call=serviceCallStatus(state),activeOrder=call.active?state.currentOrders.find(order=>order.id===call.orderId):null;
+  hero?.classList.toggle('is-service-call-ready-context',call.ready);
+  hero?.classList.toggle('is-service-call-active-context',Boolean(call.active&&activeOrder));
+  if(call.active&&activeOrder){
+    if(heading)heading.textContent=call.mode==='stock'?`${activeOrder.title} vorbereiten.`:`${activeOrder.title} zuerst.`;
+    if(intro)intro.textContent=call.mode==='stock'
+      ?`Service-Ruf · ${serviceCallModeLabel(call.mode)} ${call.generatorProgress}/${call.generatorTarget} · dann servieren.`
+      :`Service-Ruf · ${serviceCallModeLabel(call.mode)} · als nächste Lieferung servieren.`;
+  }else if(call.ready){
+    if(heading)heading.textContent=goal.ready?`${goal.label} ist baubereit.`:`Noch ${goal.missing} ★ bis „${goal.label}“.`;
+    if(intro)intro.textContent='Service-Ruf ist optional · Gast wählen und Bonusweg festlegen.';
+  }else{
+    if(heading)heading.textContent=goal.ready?'Das Café ist baubereit.':'Wähle deinen nächsten Auftrag.';
+    if(intro)intro.textContent=goal.ready?`„${goal.label}“ ist bereit – jetzt bauen.`:`Noch ${goal.missing} ★ bis „${goal.label}“. Kombis bringen mehr.`;
+  }
   const goalNode=hero?.querySelector('.service-goal');
   if(goalNode){
     goalNode.classList.add('purpose-service-goal');delete goalNode.dataset.purposeGoOrders;goalNode.dataset.purposeGoPlace='';goalNode.setAttribute('role','button');goalNode.setAttribute('tabindex','0');goalNode.setAttribute('aria-label',`${goal.label}: ${goal.current} von ${goal.cost} Sterne. Place öffnen.`);
@@ -87,12 +101,12 @@ function afterLabel(goal){
 function decoratePlace(root,goal){
   const hero=root.querySelector('.world-hero'),svg=hero?.querySelector('.place-scene-svg');
   if(!hero||!svg)return;
+  // The objective tray is the single next-upgrade message; no duplicate scene badge.
   root.querySelectorAll('.purpose-blueprint-tag').forEach(node=>node.remove());
   svg.querySelectorAll('.scene-upgrade-preview').forEach(node=>node.remove());
   if(goal.complete)return;
   const layer=previewLayer(goal);
   if(layer){layer.classList.add('scene-upgrade-preview');layer.dataset.previewUpgrade=goal.upgrade.id;svg.append(layer);}
-  const tag=document.createElement('div');tag.className='purpose-blueprint-tag';tag.innerHTML=`<small>ALS NÄCHSTES</small><strong>${goal.label}</strong>`;hero.append(tag);
   const current=root.querySelector('.place-current-goal');
   if(current){
     current.classList.add('purpose-place-goal');
@@ -124,8 +138,8 @@ export function installPurposeUI(root,ui){
   };
   const decorate=()=>{
     if(decorating)return;
-    const state=getState(),viewNode=root.querySelector('.game-view');
-    const signature=`${root.dataset.view}|${state.stars}|${state.placeUpgrades.join(',')}|${state.currentOrders.map(order=>`${order.id}:${order.title}`).join(',')}`;
+    const state=getState(),viewNode=root.querySelector('.game-view'),call=serviceCallStatus(state);
+    const signature=`${root.dataset.view}|${state.stars}|${state.placeUpgrades.join(',')}|${state.currentOrders.map(order=>`${order.id}:${order.title}`).join(',')}|${call.ready}:${call.active}:${call.orderId??''}:${call.mode??''}:${call.generatorProgress??0}`;
     if(viewNode===lastViewNode&&signature===lastSignature)return;
     decorating=true;lastViewNode=viewNode;lastSignature=signature;
     try{

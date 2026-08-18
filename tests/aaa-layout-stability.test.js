@@ -5,10 +5,10 @@ import { readFile } from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 
-test('layout stability layer is loaded last with explicit release key',async()=>{
+test('layout foundation is followed by explicit real-device hierarchy release layers',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-place-powers\.css\?v=20260815-powers1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-layout-stability\.css\?v=20260818-layout1/);
-  assert.match(html,/aaa-main\.js\?v=20260818-layout1/);
+  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4/);
+  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy4/);
   assert.match(main,/installLayoutStability/);
 });
 
@@ -19,11 +19,12 @@ test('mobile shell budgets bottom safe area and keeps the dock in its own row',a
   assert.match(css,/\.main-nav\{[\s\S]*min-height:calc\(var\(--poply-dock-base\) \+ var\(--poply-safe-bottom,0px\)\)/);
 });
 
-test('Place action tray sizes to content and preserves dock clearance',async()=>{
-  const css=await read('src/aaa-layout-stability.css');
-  assert.match(css,/\.production-place\{[\s\S]*grid-template-rows:minmax\(0,1fr\) auto!important/);
-  assert.match(css,/\.production-place \.place-current-goal\{[\s\S]*height:auto!important[\s\S]*min-height:112px!important/);
-  assert.match(css,/padding:6px 8px var\(--poply-dock-clearance\)!important/);
+test('Place action tray stays content-safe and duplicate scene-next badge is suppressed',async()=>{
+  const [layout,hierarchy,purpose]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-ui-hierarchy.css'),read('src/aaa-purpose-ui.js')]);
+  assert.match(layout,/\.production-place\{[\s\S]*grid-template-rows:minmax\(0,1fr\) auto!important/);
+  assert.match(layout,/padding:6px 8px var\(--poply-dock-clearance\)!important/);
+  assert.match(hierarchy,/\.production-place \.purpose-blueprint-tag\{display:none!important\}/);
+  assert.doesNotMatch(purpose,/tag\.innerHTML=`<small>ALS NÄCHSTES/);
 });
 
 test('mobile guest choices reserve enough text track for full German order titles',async()=>{
@@ -32,35 +33,62 @@ test('mobile guest choices reserve enough text track for full German order title
   assert.match(css,/\.customer-choice \.choice-avatar img\{width:31px!important;height:31px!important\}/);
 });
 
-test('Service-Ruf owns an explicit Orders row and becomes the single selected-card focus layer',async()=>{
-  const [css,ui]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-service-call-ui.js')]);
-  assert.match(ui,/classList\.toggle\('has-service-call-strip',hasStrip\)/);
-  assert.match(ui,/card\.querySelector\(':scope > \.service-content'\)/);
+test('Service-Ruf ready is a direct Orders choice row while active Ruf stays content-sized',async()=>{
+  const [hierarchy,activeFix,ui]=await Promise.all([read('src/aaa-ui-hierarchy.css'),read('src/aaa-ui-hierarchy-active.css'),read('src/aaa-service-call-ui.js')]);
+  assert.match(ui,/view\.classList\.toggle\('has-service-call-ready',status\.ready\)/);
+  assert.match(ui,/view\.classList\.remove\('has-service-call-strip'\)/);
+  assert.match(ui,/panel\.className='service-call-choice-panel is-ready'/);
+  assert.match(ui,/queue\.after\(panel\)/);
+  assert.match(ui,/const shouldShow=status\.active&&status\.orderId===orderId/);
   assert.match(ui,/content\.after\(panel\)/);
-  assert.match(css,/\.service-orders\.has-daily-ribbon\.has-service-call-strip\{\s*grid-template-rows:auto auto auto auto minmax\(0,1fr\) auto!important/);
-  assert.match(css,/\.service-card\.has-service-call:before\{display:none!important\}/);
-  assert.match(css,/\.service-card\.has-service-call>\.service-call-panel\{[\s\S]*grid-area:panel!important[\s\S]*z-index:2!important/);
-  assert.match(css,/\.service-card\.has-service-call \.service-special-panel,[\s\S]*\.service-card\.has-service-call \.service-purpose\{display:none!important\}/);
+  assert.match(hierarchy,/\.service-orders\.has-service-call-ready\.has-daily-ribbon\{\s*grid-template-rows:auto auto auto auto minmax\(0,1fr\) auto!important/);
+  assert.match(hierarchy,/\.view-orders>\.service-call-strip\{display:none!important\}/);
+  assert.match(hierarchy,/\.service-call-choice-panel\{[\s\S]*display:grid!important/);
+  assert.match(activeFix,/\.service-orders\.has-service-call-active\.has-daily-ribbon\{\s*grid-template-rows:auto auto auto auto minmax\(0,1fr\)!important/);
+  assert.match(activeFix,/height:auto!important;[\s\S]*align-self:start!important;[\s\S]*grid-template-rows:auto auto 10px auto!important/);
+  assert.match(activeFix,/"panel panel"[\s\S]*"\. \."[\s\S]*"deliver deliver"/);
+  assert.match(activeFix,/max-height:72px!important/);
 });
 
-test('Board square is measured from the actual remaining Board area and one pixel side owns both axes',async()=>{
-  const [css,layout]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-layout-stability.js')]);
-  assert.match(css,/\.view-board\.has-service-call-strip\{\s*grid-template-rows:auto auto auto minmax\(0,1fr\)!important/);
-  assert.match(css,/\.board-frame\{[\s\S]*box-sizing:border-box!important[\s\S]*width:var\(--board-square,320px\)!important[\s\S]*height:var\(--board-square,320px\)!important[\s\S]*max-width:none!important[\s\S]*max-height:none!important[\s\S]*aspect-ratio:1\/1!important/);
-  assert.match(layout,/areaBox\.height-titleBox\.height-gap/);
+test('transient feedback clears the complete mobile dock and installed safe area',async()=>{
+  const css=await read('src/aaa-ui-hierarchy-active.css');
+  assert.match(css,/\.toast\{[\s\S]*bottom:max\(70px,calc\(var\(--poply-dock-base,58px\) \+ var\(--poply-safe-bottom,0px\) \+ 8px\)\)!important/);
+});
+
+test('Orders purpose hero becomes contextual after a Ruf commitment',async()=>{
+  const purpose=await read('src/aaa-purpose-ui.js');
+  assert.match(purpose,/serviceCallStatus\(state\)/);
+  assert.match(purpose,/activeOrder\.title} zuerst\./);
+  assert.match(purpose,/activeOrder\.title} vorbereiten\./);
+  assert.match(purpose,/Service-Ruf ist optional/);
+  assert.match(purpose,/call\.ready}:\$\{call\.active}/);
+});
+
+test('Board square still has one geometry owner while active Ruf chrome is compressed',async()=>{
+  const [css,layout,hierarchy]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-layout-stability.js'),read('src/aaa-ui-hierarchy.css')]);
+  assert.match(css,/\.board-frame\{[\s\S]*width:var\(--board-square,320px\)!important[\s\S]*height:var\(--board-square,320px\)!important[\s\S]*aspect-ratio:1\/1!important/);
   assert.match(layout,/Math\.floor\(Math\.min\(availableWidth,availableHeight\)\)/);
   assert.match(layout,/--board-square/);
   assert.doesNotMatch(layout,/--app-height/);
+  assert.match(hierarchy,/\.view-board>\.service-call-strip\{[\s\S]*min-height:48px!important/);
+  assert.match(hierarchy,/\.view-board\.has-service-call-strip \.purpose-board-after\{display:none!important\}/);
+  assert.match(hierarchy,/\.board-job:not\(\.service-call-active\)\{opacity:\.72!important/);
 });
 
-test('dedicated Browser QA covers Place Orders Board at both mobile heights with installed safe areas',async()=>{
+test('dedicated Browser QA reproduces and rejects the real-device hierarchy defects at both phone heights',async()=>{
   const [workflow,qa]=await Promise.all([read('.github/workflows/browser-qa.yml'),read('scripts/mobile-layout-stability-qa.mjs')]);
   assert.match(workflow,/Run mobile layout stability WebKit QA/);
   assert.match(workflow,/node scripts\/mobile-layout-stability-qa\.mjs/);
   assert.match(qa,/SAFE_TOP=47,SAFE_BOTTOM=34/);
-  assert.match(qa,/Meerterrasse 10\/11/);
-  assert.match(qa,/Service-Ruf panel is not a direct card layout row/);
-  assert.match(qa,/Board workbench/);
+  assert.match(qa,/duplicate next-upgrade scene badge still exists/);
+  assert.match(qa,/ready Ruf panel is still nested inside service card/);
+  assert.match(qa,/stale choose-order hero survived/);
+  assert.match(qa,/selected order card stretches into dead space/);
+  assert.match(qa,/Ruf status stretches instead of staying content-height/);
+  assert.match(qa,/Orders active toast/);
+  assert.match(qa,/Board active toast/);
+  assert.match(qa,/meta chrome pushes workbench too small/);
+  assert.match(qa,/screenshots:8/);
   assert.match(qa,/390x844/);
   assert.match(qa,/390x720/);
 });
