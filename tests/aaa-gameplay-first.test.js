@@ -7,9 +7,9 @@ const read=path=>readFile(new URL(path,root),'utf8');
 
 test('gameplay-first layers are loaded last and decorator is installed',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay2[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay3/);
-  assert.match(html,/data-build="aaa-foundation-20260818-gameplay3"/);
-  assert.match(html,/aaa-main\.js\?v=20260818-gameplay3/);
+  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay2[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
+  assert.match(html,/data-build="aaa-foundation-20260818-gameplay4"/);
+  assert.match(html,/aaa-main\.js\?v=20260818-gameplay4/);
   assert.match(main,/installGameplayFirst/);
 });
 
@@ -35,17 +35,18 @@ test('Board meta is compressed while measured workbench stays the primary surfac
   assert.match(css,/\.view-board \.board-title small\{display:none!important\}/);
 });
 
-test('Place keeps one compact build ticket and only a slim progress rail',async()=>{
-  const [behavior,css,polish]=await Promise.all([read('src/aaa-gameplay-first.js'),read('src/aaa-gameplay-first.css'),read('src/aaa-gameplay-first-polish.css')]);
+test('Place keeps one compact build ticket, preserves purpose promises, and uses a slim progress rail',async()=>{
+  const [behavior,css,polish,purpose]=await Promise.all([read('src/aaa-gameplay-first.js'),read('src/aaa-gameplay-first.css'),read('src/aaa-gameplay-first-polish.css'),read('src/aaa-purpose-ui.js')]);
   assert.match(behavior,/NÄCHSTER AUSBAU/);
   assert.match(css,/\.place-current-goal[\s\S]*min-height:82px/);
   assert.match(css,/\.place-current-goal \.goal-copy>p\{display:none!important\}/);
-  assert.match(css,/\.purpose-place-unlock\{display:none!important\}/);
   assert.match(css,/\.journey-wrap\{height:9px/);
   assert.match(css,/\.journey-head\{display:none!important\}/);
   assert.match(polish,/grid-template-rows:auto 32px!important/);
-  assert.match(polish,/\.purpose-place-after\{display:none!important\}/);
-  assert.match(polish,/height:32px!important/);
+  assert.match(polish,/\.purpose-place-unlock\{[\s\S]*display:flex!important/);
+  assert.match(polish,/\.purpose-place-after\{[\s\S]*display:flex!important/);
+  assert.match(polish,/\.purpose-place-after\.is-next-place>strong/);
+  assert.match(purpose,/after\.classList\.toggle\('is-next-place',goal\.after\?\.kind==='place'\)/);
 });
 
 test('Collection album makes discovery cards primary and meta compact',async()=>{
