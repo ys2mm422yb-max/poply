@@ -6,9 +6,10 @@ const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 
 test('layout stability layer is loaded last with explicit release key',async()=>{
-  const html=await read('index.html');
+  const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
   assert.match(html,/aaa-place-powers\.css\?v=20260815-powers1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-layout-stability\.css\?v=20260818-layout1/);
   assert.match(html,/aaa-main\.js\?v=20260818-layout1/);
+  assert.match(main,/installLayoutStability/);
 });
 
 test('mobile shell budgets bottom safe area and keeps the dock in its own row',async()=>{
@@ -25,21 +26,25 @@ test('Place action tray sizes to content and preserves dock clearance',async()=>
   assert.match(css,/padding:6px 8px var\(--poply-dock-clearance\)!important/);
 });
 
-test('Service-Ruf owns an explicit Orders row and panel is a direct service-card child',async()=>{
+test('Service-Ruf owns an explicit Orders row and becomes the single selected-card focus layer',async()=>{
   const [css,ui]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-service-call-ui.js')]);
   assert.match(ui,/classList\.toggle\('has-service-call-strip',hasStrip\)/);
   assert.match(ui,/card\.querySelector\(':scope > \.service-content'\)/);
   assert.match(ui,/content\.after\(panel\)/);
   assert.match(css,/\.service-orders\.has-daily-ribbon\.has-service-call-strip\{\s*grid-template-rows:auto auto auto auto minmax\(0,1fr\) auto!important/);
-  assert.match(css,/\.service-card\.has-service-call>\.service-call-panel\{[\s\S]*grid-area:panel!important/);
-  assert.match(css,/\.service-card\.has-service-call \.service-rewards,[\s\S]*\.service-card\.has-service-call \.service-purpose\{display:none!important\}/);
+  assert.match(css,/\.service-card\.has-service-call:before\{display:none!important\}/);
+  assert.match(css,/\.service-card\.has-service-call>\.service-call-panel\{[\s\S]*grid-area:panel!important[\s\S]*z-index:2!important/);
+  assert.match(css,/\.service-card\.has-service-call \.service-special-panel,[\s\S]*\.service-card\.has-service-call \.service-purpose\{display:none!important\}/);
 });
 
-test('Board square uses the remaining grid track instead of viewport subtraction',async()=>{
-  const css=await read('src/aaa-layout-stability.css');
+test('Board square is measured from the actual remaining Board area rather than viewport subtraction',async()=>{
+  const [css,layout]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-layout-stability.js')]);
   assert.match(css,/\.view-board\.has-service-call-strip\{\s*grid-template-rows:auto auto auto minmax\(0,1fr\)!important/);
-  assert.match(css,/\.board-frame\{[\s\S]*width:auto!important[\s\S]*height:100%!important[\s\S]*aspect-ratio:1\/1!important/);
-  assert.doesNotMatch(css,/var\(--app-height\)\s*-\s*278px/);
+  assert.match(css,/\.board-frame\{[\s\S]*width:var\(--board-square[\s\S]*height:var\(--board-square[\s\S]*aspect-ratio:1\/1!important/);
+  assert.match(layout,/areaBox\.height-titleBox\.height-gap/);
+  assert.match(layout,/Math\.floor\(Math\.min\(availableWidth,availableHeight\)\)/);
+  assert.match(layout,/--board-square/);
+  assert.doesNotMatch(layout,/--app-height/);
 });
 
 test('dedicated Browser QA covers Place Orders Board at both mobile heights with installed safe areas',async()=>{
