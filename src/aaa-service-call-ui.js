@@ -25,12 +25,16 @@ export function installServiceCallUI(root,ui){
   };
   const upsertPanel=(card,status,state)=>{
     if(!card)return;
-    let panel=card.querySelector('.service-call-panel');
+    let panel=card.querySelector(':scope > .service-call-panel');
     const orderId=card.dataset.serviceOrder,order=state.currentOrders?.find(entry=>entry.id===orderId);
     const shouldShow=status.ready||status.active&&status.orderId===orderId;
     card.classList.toggle('has-service-call',shouldShow);
     if(!shouldShow){panel?.remove();return;}
-    if(!panel){panel=document.createElement('section');panel.className='service-call-panel';card.querySelector('.service-rewards')?.before(panel);}
+    if(!panel){
+      panel=document.createElement('section');panel.className='service-call-panel';
+      const content=card.querySelector(':scope > .service-content');
+      if(content)content.after(panel);else card.querySelector(':scope > .service-deliver')?.before(panel);
+    }
     if(status.ready){
       const direct=serviceCallReward(order,'direct'),stock=serviceCallReward(order,'stock'),signature=`ready:${orderId}:${direct}:${stock}`;
       setMarkup(panel,signature,`<div class="service-call-copy"><small>FREIWILLIGER SERVICE-RUF</small><strong>${order?.title||'Diesen Gast'} priorisieren?</strong><p>Der gewählte Gast muss deine nächste Lieferung sein.</p></div><div class="service-call-actions"><button type="button" data-service-call-mode="direct" data-service-call-order="${orderId}"><span><b>Direkt</b><small>Nächste Lieferung</small></span><strong>+${direct} ●</strong></button><button type="button" data-service-call-mode="stock" data-service-call-order="${orderId}"><span><b>Nachschub</b><small>2× Generator zuerst</small></span><strong>+${stock} ●</strong></button></div>`);
@@ -43,6 +47,8 @@ export function installServiceCallUI(root,ui){
   };
   const decorateOrders=(status,state)=>{
     const view=root.querySelector('.view-orders');if(!view)return;
+    const hasStrip=status.ready||status.active;
+    view.classList.toggle('has-service-call-strip',hasStrip);
     upsertStrip(view,status,state);
     root.querySelectorAll('.customer-choice').forEach(node=>{
       const orderId=node.dataset.selectOrder,isActive=status.active&&status.orderId===orderId;
@@ -57,6 +63,8 @@ export function installServiceCallUI(root,ui){
   };
   const decorateBoard=(status,state)=>{
     const view=root.querySelector('.view-board');if(!view)return;
+    const hasStrip=status.ready||status.active;
+    view.classList.toggle('has-service-call-strip',hasStrip);
     upsertStrip(view,status,state);
     root.querySelectorAll('.board-job').forEach(node=>{
       const active=status.active&&node.dataset.focusOrder===status.orderId;node.classList.toggle('service-call-active',active);
