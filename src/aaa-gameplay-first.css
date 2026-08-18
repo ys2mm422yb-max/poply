@@ -1,0 +1,162 @@
+/* Gameplay-first pass: the play surface wins; status/meta becomes compact context. */
+@media(max-width:430px){
+  /* ORDERS — selected guest + missing item/action is the primary task. */
+  .service-orders{gap:5px!important;padding:7px 9px 6px!important}
+  .service-orders .service-hero{min-height:62px!important;padding:7px 10px!important;border-radius:16px!important;border-color:rgba(142,217,209,.14)!important;background:linear-gradient(135deg,rgba(17,80,88,.88),rgba(9,52,65,.9))!important;box-shadow:none!important}
+  .service-orders .service-hero h2{font-size:18px!important;line-height:1.02!important}
+  .service-orders .service-hero p{font-size:7.5px!important;line-height:1.08!important;white-space:normal!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .service-orders .service-hero .purpose-orders-after{display:none!important}
+  .service-orders .service-goal{padding:5px 7px!important;border-radius:11px!important;gap:4px!important;background:rgba(244,199,93,.08)!important;box-shadow:none!important}
+  .service-orders .service-goal>.ui-icon{width:15px!important;height:15px!important}
+  .service-orders .service-goal small{font-size:5.5px!important}
+  .service-orders .service-goal strong{font-size:10px!important}
+  .service-orders .daily-ribbon{min-height:39px!important;padding-block:4px!important}
+  .service-orders .customer-queue{gap:4px!important}
+  .service-orders .customer-choice{min-height:46px!important;height:46px!important;padding:4px 5px!important;grid-template-columns:30px minmax(0,1fr)!important;column-gap:3px!important;border-radius:12px!important}
+  .service-orders .customer-choice .choice-avatar img{width:29px!important;height:29px!important}
+  .service-orders .customer-choice strong{font-size:7.4px!important;line-height:1!important}
+  .service-orders .customer-choice small{font-size:5.6px!important;line-height:1!important}
+
+  .service-orders .service-card{align-self:start!important;padding:9px 10px!important;gap:7px!important;border-radius:18px!important;border-color:rgba(124,198,192,.12)!important;background:linear-gradient(145deg,rgba(14,70,80,.84),rgba(8,48,61,.88))!important;box-shadow:none!important}
+  .service-orders .service-card:before{display:none!important}
+  .service-orders .service-avatar-ring{width:60px!important;height:60px!important;padding:3px!important;box-shadow:none!important}
+  .service-orders .service-customer{gap:4px!important}
+  .service-orders .service-customer>span{font-size:5.8px!important;letter-spacing:.08em!important}
+  .service-orders .service-content{gap:6px!important}
+  .service-orders .service-heading{padding-right:43px!important}
+  .service-orders .service-heading>small{font-size:6.5px!important;letter-spacing:.05em!important}
+  .service-orders .service-heading h2{font-size:18px!important}
+  .service-orders .service-status{min-width:38px!important;height:20px!important;padding-inline:5px!important;font-size:6.5px!important}
+  .service-orders .service-needs{gap:5px!important}
+  .service-orders .service-card .need{width:52px!important;height:48px!important;border-radius:12px!important;box-shadow:inset 0 1px rgba(255,255,255,.65)!important}
+  .service-orders .service-card .need .item-art{width:39px!important;height:39px!important}
+  .service-orders .service-card .need b{font-size:7.5px!important}
+  .service-orders .service-call-panel.is-active{min-height:44px!important;max-height:56px!important;padding:5px 7px!important;border-radius:11px!important}
+  .service-orders .service-call-panel.is-active .service-call-copy strong{font-size:10px!important}
+  .service-orders .service-call-panel.is-active .service-call-copy p{font-size:6px!important}
+  .service-orders .service-deliver{height:42px!important;border-radius:13px!important;font-size:10px!important;box-shadow:none!important}
+  .service-orders .service-deliver.service-missing-action{display:grid!important;place-content:center!important;gap:1px!important;background:linear-gradient(180deg,#f5c45b,#e49a32)!important;color:#51331e!important;box-shadow:0 3px 0 rgba(145,83,28,.28)!important}
+  .service-orders .service-deliver.service-missing-action span{display:block;font-size:7px!important;line-height:1!important;font-weight:850!important;opacity:.78}
+  .service-orders .service-deliver.service-missing-action strong{display:block;font-size:10px!important;line-height:1.05!important}
+  .service-orders .service-footnote{display:none!important}
+
+  /* BOARD — merge play starts sooner; context is compressed, not duplicated. */
+  .view-board.has-service-call-strip{grid-template-rows:auto auto auto minmax(0,1fr)!important;gap:3px!important}
+  .view-board>.service-call-strip{min-height:36px!important;grid-template-columns:26px minmax(0,1fr) auto!important;padding:4px 7px!important;border-radius:11px!important;background:rgba(222,249,241,.86)!important}
+  .view-board>.service-call-strip .service-call-mark{width:24px!important;height:24px!important;font-size:13px!important}
+  .view-board>.service-call-strip small{font-size:5px!important}
+  .view-board>.service-call-strip strong{font-size:9px!important}
+  .view-board>.service-call-strip em{font-size:5.5px!important}
+  .view-board>.service-call-strip .service-call-strip-reward{font-size:9px!important}
+  .view-board.has-service-call-strip .mission-card.compact{min-height:30px!important;grid-template-columns:minmax(0,1fr) auto!important;padding:3px 7px!important;border:0!important;border-radius:9px!important;background:rgba(7,75,80,.88)!important;box-shadow:none!important}
+  .view-board.has-service-call-strip .mission-card.compact .mission-progress,
+  .view-board.has-service-call-strip .mission-card.compact button,
+  .view-board.has-service-call-strip .mission-card.compact .purpose-board-after{display:none!important}
+  .view-board.has-service-call-strip .mission-card.compact .mission-copy{display:flex!important;align-items:center!important;gap:7px!important}
+  .view-board.has-service-call-strip .mission-card.compact .mission-copy>small{font-size:5px!important;flex:0 0 auto}
+  .view-board.has-service-call-strip .mission-card.compact .mission-copy>strong{font-size:10px!important;flex:0 1 auto}
+  .view-board.has-service-call-strip .mission-card.compact .mission-copy>span{margin:0!important;font-size:6px!important;white-space:nowrap!important}
+  .view-board.has-service-call-strip .board-jobs{gap:3px!important;padding:1px 7px 2px!important}
+  .view-board.has-service-call-strip .board-job{min-height:38px!important;height:38px!important;padding:3px!important;border-radius:10px!important}
+  .view-board.has-service-call-strip .board-job:not(.service-call-active){opacity:.52!important;filter:saturate(.6)!important}
+  .view-board.has-service-call-strip .board-job.service-call-active{transform:translateY(-1px);border-color:rgba(244,199,93,.58)!important}
+  .view-board.has-service-call-strip .board-job .job-avatar,
+  .view-board.has-service-call-strip .board-job .board-job-avatar{width:24px!important;height:24px!important}
+  .view-board.has-service-call-strip .board-job .job-need,
+  .view-board.has-service-call-strip .board-job .need{width:23px!important;min-width:23px!important;height:22px!important}
+  .view-board.has-service-call-strip .board-job .job-need .item-art,
+  .view-board.has-service-call-strip .board-job .need .item-art{width:18px!important;height:18px!important}
+  .view-board .board-area{border-radius:18px 18px 0 0!important}
+  .view-board .board-title{min-height:31px!important;padding-block:3px!important}
+  .view-board .board-title strong{font-size:14px!important}
+  .view-board .board-title small{display:none!important}
+
+  /* PLACE — café + one compact build ticket. */
+  .production-place{grid-template-rows:minmax(0,1fr) auto!important}
+  .production-place .place-command{padding-top:5px!important}
+  .production-place .place-current-goal{min-height:82px!important;padding:7px 9px 6px!important;border-radius:17px!important;box-shadow:none!important}
+  .production-place .place-current-goal .goal-copy>small{font-size:5.8px!important;letter-spacing:.08em!important}
+  .production-place .place-current-goal .goal-copy>strong{font-size:17px!important;line-height:1!important}
+  .production-place .place-current-goal .goal-copy>p{display:none!important}
+  .production-place .purpose-place-unlock{display:none!important}
+  .production-place .purpose-place-after{margin-top:2px!important;padding-top:2px!important;min-height:0!important;font-size:6px!important}
+  .production-place .purpose-place-after span{font-size:5px!important}
+  .production-place .purpose-place-after strong{font-size:6px!important;line-height:1!important}
+  .production-place .place-current-goal>button{height:36px!important;border-radius:12px!important}
+  .production-place .journey-wrap{height:9px!important;min-height:9px!important;padding:0 9px!important}
+  .production-place .journey-head{display:none!important}
+  .production-place .journey-line{height:4px!important;margin:2px 0 0!important}
+  .production-place .journey-steps{display:none!important}
+
+  /* COLLECTION — item cards are the album; totals/tabs/mastery are quiet context. */
+  .view-collection{padding:7px 9px 6px!important;grid-template-rows:auto auto minmax(0,1fr) auto!important;gap:5px!important;background:radial-gradient(circle at 50% 0,rgba(70,181,164,.1),transparent 34%),linear-gradient(180deg,#07333f,#062936)!important}
+  .collection-hero{min-height:50px!important;padding:7px 9px!important;border:0!important;border-radius:14px!important;background:rgba(7,58,68,.62)!important;box-shadow:none!important}
+  .collection-hero small{font-size:5.5px!important;letter-spacing:.1em!important}
+  .collection-hero h1{margin:1px 0!important;font-size:18px!important}
+  .collection-hero p{display:none!important}
+  .collection-total{width:auto!important;height:auto!important;min-width:70px!important;padding:6px 9px!important;display:flex!important;align-items:baseline!important;justify-content:center!important;gap:5px!important;border-radius:12px!important;background:rgba(255,215,97,.08)!important;box-shadow:none!important}
+  .collection-total strong{font-size:11px!important}
+  .collection-total span{font-size:6px!important}
+  .collection-families{gap:3px!important}
+  .collection-family{min-height:34px!important;padding:4px 2px!important;border-color:transparent!important;border-radius:9px!important;background:rgba(7,48,60,.46)!important;box-shadow:none!important}
+  .collection-family strong{font-size:7px!important}
+  .collection-family small{font-size:5.5px!important;margin-top:1px!important}
+  .collection-family.active{border-color:rgba(255,214,94,.38)!important;background:rgba(91,82,38,.26)!important;box-shadow:inset 0 -2px #e7c15a!important}
+  .collection-focus{padding:4px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;gap:5px!important}
+  .collection-focus header{min-height:31px!important;align-items:center!important;padding-inline:2px!important}
+  .collection-focus header>div>small{font-size:5px!important;letter-spacing:.08em!important}
+  .collection-focus h2{font-size:15px!important;line-height:1!important}
+  .collection-mastery{min-width:0!important;max-width:132px!important;padding:3px 6px!important;border-color:rgba(255,215,97,.12)!important;border-radius:9px!important;background:rgba(75,67,32,.16)!important;box-shadow:none!important}
+  .collection-focus header .collection-mastery small{font-size:4.6px!important}
+  .collection-mastery strong{font-size:7.5px!important}
+  .collection-mastery span{font-size:4.8px!important}
+  .collection-tier-grid{gap:5px!important}
+  .collection-tier{border-radius:15px!important;padding:4px!important;box-shadow:0 3px 8px rgba(0,16,23,.14)!important}
+  .collection-tier.discovered{border-color:rgba(255,218,110,.36)!important}
+  .collection-tier.locked{background:linear-gradient(165deg,rgba(28,83,94,.72),rgba(16,58,70,.78))!important;box-shadow:none!important}
+  .collection-art .item-art{width:min(82px,92%)!important;height:min(82px,92%)!important}
+  .collection-art.silhouette .item-art{filter:grayscale(1) brightness(.28) opacity(.5)!important;transform:scale(.9)!important}
+  .collection-tier-copy{padding:2px 3px 1px!important}
+  .collection-tier-copy span{font-size:5px!important;letter-spacing:.08em!important}
+  .collection-tier-copy strong{font-size:8.5px!important}
+  .collection-tier-copy small{font-size:5.5px!important}
+  .collection-world{gap:2px!important}
+  .world-discovery{min-height:36px!important;padding:3px 1px!important;border-color:transparent!important;border-radius:8px!important;background:rgba(7,48,61,.44)!important}
+  .world-discovery>span{width:16px!important;height:16px!important;font-size:6px!important}
+  .world-discovery small{font-size:4px!important}
+  .world-discovery strong{font-size:4.5px!important}
+}
+
+@media(max-width:430px) and (max-height:760px){
+  .service-orders{gap:3px!important;padding-top:4px!important}
+  .service-orders .service-hero{min-height:52px!important;padding:5px 8px!important}
+  .service-orders .service-hero h2{font-size:15px!important}
+  .service-orders .daily-ribbon{min-height:34px!important}
+  .service-orders .customer-choice{min-height:40px!important;height:40px!important}
+  .service-orders .customer-choice .choice-avatar img{width:25px!important;height:25px!important}
+  .service-orders .service-card{padding:7px 8px!important}
+  .service-orders .service-avatar-ring{width:52px!important;height:52px!important}
+  .service-orders .service-heading h2{font-size:16px!important}
+  .service-orders .service-card .need{width:46px!important;height:42px!important}
+  .service-orders .service-card .need .item-art{width:34px!important;height:34px!important}
+  .service-orders .service-call-panel.is-active{min-height:40px!important;max-height:48px!important}
+  .service-orders .service-deliver{height:38px!important}
+
+  .view-board>.service-call-strip{min-height:32px!important}
+  .view-board.has-service-call-strip .mission-card.compact{min-height:27px!important}
+  .view-board.has-service-call-strip .board-job{min-height:34px!important;height:34px!important}
+
+  .production-place .place-current-goal{min-height:74px!important;padding:5px 7px!important}
+  .production-place .place-current-goal .goal-copy>strong{font-size:15px!important}
+  .production-place .place-current-goal>button{height:32px!important}
+
+  .view-collection{padding-top:4px!important;gap:3px!important}
+  .collection-hero{min-height:42px!important;padding:5px 7px!important}
+  .collection-hero h1{font-size:15px!important}
+  .collection-total{padding:4px 7px!important}
+  .collection-family{min-height:30px!important}
+  .collection-focus header{min-height:26px!important}
+  .collection-tier-grid{gap:4px!important}
+  .collection-world .world-discovery{min-height:30px!important}
+  .world-discovery strong{display:none!important}
+}

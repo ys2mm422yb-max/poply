@@ -41,6 +41,9 @@ jobs:
       - name: Run mobile layout stability WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/mobile-layout-stability-qa.mjs
+      - name: Run gameplay-first real-device WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/gameplay-first-qa.mjs
       - name: Run family-color and living-Place WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/visual-vibrance-qa.mjs
