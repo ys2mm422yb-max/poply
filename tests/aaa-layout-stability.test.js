@@ -37,11 +37,10 @@ test('Service-Ruf owns an explicit Orders row and becomes the single selected-ca
   assert.match(css,/\.service-card\.has-service-call \.service-special-panel,[\s\S]*\.service-card\.has-service-call \.service-purpose\{display:none!important\}/);
 });
 
-test('Board square is measured from the actual remaining Board area and cannot be distorted by a parent width clamp',async()=>{
+test('Board square is measured from the actual remaining Board area and one pixel side owns both axes',async()=>{
   const [css,layout]=await Promise.all([read('src/aaa-layout-stability.css'),read('src/aaa-layout-stability.js')]);
   assert.match(css,/\.view-board\.has-service-call-strip\{\s*grid-template-rows:auto auto auto minmax\(0,1fr\)!important/);
-  assert.match(css,/\.board-frame\{[\s\S]*width:min\(var\(--board-square,520px\),100%\)!important[\s\S]*height:auto!important[\s\S]*aspect-ratio:1\/1!important/);
-  assert.match(css,/max-height:none!important/);
+  assert.match(css,/\.board-frame\{[\s\S]*box-sizing:border-box!important[\s\S]*width:var\(--board-square,320px\)!important[\s\S]*height:var\(--board-square,320px\)!important[\s\S]*max-width:none!important[\s\S]*max-height:none!important[\s\S]*aspect-ratio:1\/1!important/);
   assert.match(layout,/areaBox\.height-titleBox\.height-gap/);
   assert.match(layout,/Math\.floor\(Math\.min\(availableWidth,availableHeight\)\)/);
   assert.match(layout,/--board-square/);
