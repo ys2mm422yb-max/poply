@@ -7,8 +7,8 @@ const read=path=>readFile(new URL(path,root),'utf8');
 
 test('layout foundation is followed by explicit real-device hierarchy release layers',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy3/);
-  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy3/);
+  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4/);
+  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy4/);
   assert.match(main,/installLayoutStability/);
 });
 
@@ -33,7 +33,7 @@ test('mobile guest choices reserve enough text track for full German order title
   assert.match(css,/\.customer-choice \.choice-avatar img\{width:31px!important;height:31px!important\}/);
 });
 
-test('Service-Ruf ready is a direct Orders choice row while active Ruf keeps one compact content-sized card status',async()=>{
+test('Service-Ruf ready is a direct Orders choice row while active Ruf stays content-sized',async()=>{
   const [hierarchy,activeFix,ui]=await Promise.all([read('src/aaa-ui-hierarchy.css'),read('src/aaa-ui-hierarchy-active.css'),read('src/aaa-service-call-ui.js')]);
   assert.match(ui,/view\.classList\.toggle\('has-service-call-ready',status\.ready\)/);
   assert.match(ui,/view\.classList\.remove\('has-service-call-strip'\)/);
@@ -48,6 +48,11 @@ test('Service-Ruf ready is a direct Orders choice row while active Ruf keeps one
   assert.match(activeFix,/height:auto!important;[\s\S]*align-self:start!important;[\s\S]*grid-template-rows:auto auto 10px auto!important/);
   assert.match(activeFix,/"panel panel"[\s\S]*"\. \."[\s\S]*"deliver deliver"/);
   assert.match(activeFix,/max-height:72px!important/);
+});
+
+test('transient feedback clears the complete mobile dock and installed safe area',async()=>{
+  const css=await read('src/aaa-ui-hierarchy-active.css');
+  assert.match(css,/\.toast\{[\s\S]*bottom:max\(70px,calc\(var\(--poply-dock-base,58px\) \+ var\(--poply-safe-bottom,0px\) \+ 8px\)\)!important/);
 });
 
 test('Orders purpose hero becomes contextual after a Ruf commitment',async()=>{
@@ -70,7 +75,7 @@ test('Board square still has one geometry owner while active Ruf chrome is compr
   assert.match(hierarchy,/\.board-job:not\(\.service-call-active\)\{opacity:\.72!important/);
 });
 
-test('dedicated Browser QA reproduces four real-device hierarchy states at both phone heights',async()=>{
+test('dedicated Browser QA reproduces and rejects the real-device hierarchy defects at both phone heights',async()=>{
   const [workflow,qa]=await Promise.all([read('.github/workflows/browser-qa.yml'),read('scripts/mobile-layout-stability-qa.mjs')]);
   assert.match(workflow,/Run mobile layout stability WebKit QA/);
   assert.match(workflow,/node scripts\/mobile-layout-stability-qa\.mjs/);
@@ -78,6 +83,10 @@ test('dedicated Browser QA reproduces four real-device hierarchy states at both 
   assert.match(qa,/duplicate next-upgrade scene badge still exists/);
   assert.match(qa,/ready Ruf panel is still nested inside service card/);
   assert.match(qa,/stale choose-order hero survived/);
+  assert.match(qa,/selected order card stretches into dead space/);
+  assert.match(qa,/Ruf status stretches instead of staying content-height/);
+  assert.match(qa,/Orders active toast/);
+  assert.match(qa,/Board active toast/);
   assert.match(qa,/meta chrome pushes workbench too small/);
   assert.match(qa,/screenshots:8/);
   assert.match(qa,/390x844/);
