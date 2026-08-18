@@ -6,6 +6,7 @@ import { ensureCollectionState, recordItemDiscovery, recordGeneratorDiscovery, r
 import { ensureInventoryState, storeBoardItem, restoreStoredItem, recycleStoredItem, upgradeStorage } from './aaa-inventory.js';
 import { ensureDailyState, progressDailyEvent, claimDailyGoal, fulfillDailyBonus } from './aaa-daily.js';
 import { ensureGuestState, recordGuestService } from './aaa-guests.js';
+import { applyDynamicServiceBonus } from './aaa-guest-dynamics.js';
 import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flow.js';
 import { ensureServiceSpecials, progressServiceSpecials, awardServiceSpecialBonus } from './aaa-specials.js';
 import { ensurePlacePowerState, applyPreparationBonus, recordServicePlacePowers, replaceOrderWithGuestChoice, unlockPlacePowerForUpgrade } from './aaa-place-powers.js';
@@ -94,7 +95,9 @@ export function deliverOrder(id){
   const baseRewards={...result.rewards},special=awardServiceSpecialBonus(result.state,order);
   result.state=special.state;result.specialBonus=special.changed?{coins:special.bonusCoins,special:special.special}:null;
   result.serviceCall=serviceCall;result.serviceCallBonus=serviceCall.completed?{coins:serviceCall.bonusCoins,mode:serviceCall.mode}:null;
-  result.rewards={...baseRewards,coins:baseRewards.coins+special.bonusCoins+serviceCall.bonusCoins};
+  const dynamics=applyDynamicServiceBonus(result.state,order);
+  result.state=dynamics.state;result.guestDynamic=dynamics;
+  result.rewards={...baseRewards,coins:baseRewards.coins+special.bonusCoins+serviceCall.bonusCoins+dynamics.totalCoins};
   result.state=ensureServiceSpecials(result.state).state;
   const progression=awardPlayerXp(result.state,xpForOrder(order));
   result.state=progression.state;result.progression=progression;
