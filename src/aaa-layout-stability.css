@@ -43,15 +43,20 @@
     padding:0 3px 2px!important;
   }
 
-  /* ORDERS — Service-Ruf is an explicit row/focus state, never an extra implicit grid row. */
+  /* ORDERS — dynamic ribbons are explicit rows; the selected service task remains the one flexible row. */
   .service-orders{
     grid-template-rows:auto auto minmax(0,1fr) auto!important;
     gap:8px!important;
     padding:9px 10px var(--poply-dock-clearance)!important;
   }
+  .service-orders.has-daily-ribbon,
   .service-orders.has-service-call-strip{
     grid-template-rows:auto auto auto minmax(0,1fr) auto!important;
     gap:7px!important;
+  }
+  .service-orders.has-daily-ribbon.has-service-call-strip{
+    grid-template-rows:auto auto auto auto minmax(0,1fr) auto!important;
+    gap:6px!important;
   }
   .service-orders>.service-call-strip{min-width:0;margin:0!important}
   .customer-queue{min-height:0;gap:7px!important}
@@ -166,7 +171,9 @@
   .production-place .journey-wrap{height:18px!important;min-height:16px!important}
 
   .service-orders{gap:5px!important;padding:6px 9px var(--poply-dock-clearance)!important}
-  .service-orders.has-service-call-strip{gap:5px!important}
+  .service-orders.has-daily-ribbon,
+  .service-orders.has-service-call-strip,
+  .service-orders.has-daily-ribbon.has-service-call-strip{gap:5px!important}
   .service-orders .service-hero{padding:7px 9px!important}
   .customer-queue{gap:5px!important}
   .customer-choice{height:auto!important;min-height:54px!important}
@@ -181,7 +188,6 @@
   .service-card.has-service-call .service-customer>span{display:none!important}
   .service-card.has-service-call .service-heading small{display:none!important}
   .service-card.has-service-call .service-heading h2{font-size:16px!important;line-height:1!important}
-  .service-card.has-service-call .service-card .need,
   .service-card.has-service-call .need{width:46px!important;height:42px!important}
   .service-card.has-service-call>.service-call-panel{padding:8px 9px!important;gap:7px!important}
   .service-card.has-service-call>.service-call-panel .service-call-copy p{display:none!important}
