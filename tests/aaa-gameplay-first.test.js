@@ -7,14 +7,14 @@ const read=path=>readFile(new URL(path,root),'utf8');
 
 test('gameplay-first layers are loaded last and decorator is installed',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay2[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
-  assert.match(html,/data-build="aaa-foundation-20260818-gameplay4"/);
-  assert.match(html,/aaa-main\.js\?v=20260818-gameplay4/);
+  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay5[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
+  assert.match(html,/data-build="aaa-foundation-20260818-gameplay5"/);
+  assert.match(html,/aaa-main\.js\?v=20260818-gameplay5/);
   assert.match(main,/installGameplayFirst/);
 });
 
-test('Orders missing item becomes an active Board route instead of a disabled dominant CTA',async()=>{
-  const [behavior,css,tune]=await Promise.all([read('src/aaa-gameplay-first.js'),read('src/aaa-gameplay-first.css'),read('src/aaa-gameplay-first-orders.css')]);
+test('Orders missing item becomes an active Board route and Ruf-ready task card cannot stretch',async()=>{
+  const [behavior,css,tune,qa]=await Promise.all([read('src/aaa-gameplay-first.js'),read('src/aaa-gameplay-first.css'),read('src/aaa-gameplay-first-orders.css'),read('scripts/gameplay-first-qa.mjs')]);
   assert.match(behavior,/firstMissingRequirement/);
   assert.match(behavior,/button\.disabled=false/);
   assert.match(behavior,/button\.removeAttribute\('data-order'\)/);
@@ -22,9 +22,12 @@ test('Orders missing item becomes an active Board route instead of a disabled do
   assert.match(behavior,/Auf dem Board herstellen/);
   assert.match(behavior,/nav-tab\[data-view="board"\]/);
   assert.match(css,/\.service-deliver\.service-missing-action/);
+  assert.match(tune,/\.service-orders\.has-service-call-ready \.service-card\{[\s\S]*height:auto!important[\s\S]*grid-template-rows:auto 36px!important/);
+  assert.match(tune,/\.service-orders\.has-service-call-ready \.service-card \.service-purpose\{display:none!important\}/);
   assert.match(tune,/grid-template-rows:auto auto 4px auto!important/);
   assert.match(tune,/min-height:36px!important;max-height:42px!important/);
   assert.match(tune,/background:rgba\(24,92,91,\.28\)!important/);
+  assert.match(qa,/Orders Ruf-ready \$\{height\}: selected task card stretches into dead dashboard space/);
 });
 
 test('Board meta is compressed while measured workbench stays the primary surface',async()=>{
@@ -59,10 +62,11 @@ test('Collection album makes discovery cards primary and meta compact',async()=>
   assert.match(css,/\.world-discovery\{[\s\S]*min-height:36px/);
 });
 
-test('gameplay-first QA covers the four physical-device states at both heights',async()=>{
+test('gameplay-first QA covers the four physical-device states at both heights plus Ruf-ready compactness',async()=>{
   const [workflow,qa]=await Promise.all([read('.github/workflows/browser-qa.yml'),read('scripts/gameplay-first-qa.mjs')]);
   assert.match(workflow,/Run gameplay-first real-device WebKit QA/);
   assert.match(qa,/SAFE_TOP=47,SAFE_BOTTOM=34/);
+  assert.match(qa,/Orders Ruf-ready compact precondition/);
   assert.match(qa,/collection drinks 3\/6/);
   assert.match(qa,/Orders active Direct missing item/);
   assert.match(qa,/Board active Direct/);
