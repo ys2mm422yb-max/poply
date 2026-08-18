@@ -64,9 +64,9 @@ The bonus is deliberately small: it creates a reason to choose between waiting g
 
 At Café stage 4 and later, the old stiff foreground placeholder people are hidden and replaced by an additive SVG life layer:
 
-- two primary seated guests anchored to the inner café chairs;
-- table/chair geometry remains above relevant body parts so guests read as seated in the scene rather than pasted on top;
-- authored heads, hair, arms, bent legs, shoes and ground shadows;
+- two primary authored guests positioned with the existing seating/table cluster rather than as free-floating foreground figures;
+- bent legs, shoes and ground shadows make the sitting posture read against the café furniture;
+- authored heads, hair, arms and distinct clothing;
 - one guest has a subtle cup/sip loop;
 - stage 5+ gains one quieter background visitor;
 - all motion respects `prefers-reduced-motion`.
