@@ -37,3 +37,11 @@ test('guest dynamics decorator is idempotent under its child-list observer',asyn
   assert.match(source,/if\(!line\)\{[\s\S]*heading\.append\(line\);return;\}/);
   assert.match(source,/if\(line\.innerHTML!==markup\)line\.innerHTML=markup/);
 });
+
+test('guest dynamics are mechanically and visually gated behind the Menüwand',async()=>{
+  const [model,ui]=await Promise.all([read('src/aaa-guest-dynamics.js'),read('src/aaa-guest-dynamics-ui.js')]);
+  assert.match(model,/isDynamicServiceUnlocked=state=>\(state\?\.placeUpgrades\|\|\[\]\)\.includes\('menu'\)/);
+  assert.match(model,/traitCoins=unlocked&&guestTraitQualifies/);
+  assert.match(model,/dailyCoins=unlocked&&/);
+  assert.match(ui,/if\(!unlocked\)\{heading\.querySelector\('\.guest-dynamic-line'\)\?\.remove\(\);return;\}/);
+});
