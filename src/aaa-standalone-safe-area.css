@@ -1,9 +1,10 @@
-:root{--poply-safe-top:env(safe-area-inset-top,0px);--poply-safe-left:env(safe-area-inset-left,0px);--poply-safe-right:env(safe-area-inset-right,0px)}
+:root{--poply-safe-top:env(safe-area-inset-top,0px);--poply-safe-bottom:env(safe-area-inset-bottom,0px);--poply-safe-left:env(safe-area-inset-left,0px);--poply-safe-right:env(safe-area-inset-right,0px)}
 
-/* Installed iOS/PWA: black-translucent intentionally paints behind the status bar, but interactive HUD content must begin below the safe area. */
+/* Installed iOS/PWA: black-translucent intentionally paints behind the status bar, but interactive HUD content must begin below the safe area. The dock also owns the home-indicator inset instead of stealing it from the game view. */
 @media(max-width:649px){
-  .app-shell{grid-template-rows:calc(56px + var(--poply-safe-top)) minmax(0,1fr) 58px}
+  .app-shell{grid-template-rows:calc(56px + var(--poply-safe-top)) minmax(0,1fr) calc(58px + var(--poply-safe-bottom))}
   .topbar{min-width:0;padding-top:calc(6px + var(--poply-safe-top));padding-right:max(8px,var(--poply-safe-right));padding-bottom:6px;padding-left:max(8px,var(--poply-safe-left));gap:5px}
+  .main-nav{min-height:calc(58px + var(--poply-safe-bottom));padding-bottom:calc(4px + var(--poply-safe-bottom))}
   .brand{flex:0 0 88px;min-width:88px;padding-right:27px;font-size:1.36rem;line-height:.74}
   .brand small{margin-top:4px;font-size:.4rem}
   .player-level-badge{left:auto;right:0;top:-2px;min-width:27px;height:17px;padding:0 4px;font-size:.39rem}
