@@ -7,8 +7,8 @@ const read=path=>readFile(new URL(path,root),'utf8');
 
 test('layout foundation is followed by explicit real-device hierarchy release layers',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy2/);
-  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy2/);
+  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy3/);
+  assert.match(html,/aaa-main\.js\?v=20260818-hierarchy3/);
   assert.match(main,/installLayoutStability/);
 });
 
@@ -33,7 +33,7 @@ test('mobile guest choices reserve enough text track for full German order title
   assert.match(css,/\.customer-choice \.choice-avatar img\{width:31px!important;height:31px!important\}/);
 });
 
-test('Service-Ruf ready is a direct Orders choice row while active Ruf keeps one compact card status',async()=>{
+test('Service-Ruf ready is a direct Orders choice row while active Ruf keeps one compact content-sized card status',async()=>{
   const [hierarchy,activeFix,ui]=await Promise.all([read('src/aaa-ui-hierarchy.css'),read('src/aaa-ui-hierarchy-active.css'),read('src/aaa-service-call-ui.js')]);
   assert.match(ui,/view\.classList\.toggle\('has-service-call-ready',status\.ready\)/);
   assert.match(ui,/view\.classList\.remove\('has-service-call-strip'\)/);
@@ -44,10 +44,10 @@ test('Service-Ruf ready is a direct Orders choice row while active Ruf keeps one
   assert.match(hierarchy,/\.service-orders\.has-service-call-ready\.has-daily-ribbon\{\s*grid-template-rows:auto auto auto auto minmax\(0,1fr\) auto!important/);
   assert.match(hierarchy,/\.view-orders>\.service-call-strip\{display:none!important\}/);
   assert.match(hierarchy,/\.service-call-choice-panel\{[\s\S]*display:grid!important/);
-  assert.match(activeFix,/grid-template-rows:auto auto minmax\(12px,1fr\) auto!important/);
+  assert.match(activeFix,/\.service-orders\.has-service-call-active\.has-daily-ribbon\{\s*grid-template-rows:auto auto auto auto minmax\(0,1fr\)!important/);
+  assert.match(activeFix,/height:auto!important;[\s\S]*align-self:start!important;[\s\S]*grid-template-rows:auto auto 10px auto!important/);
   assert.match(activeFix,/"panel panel"[\s\S]*"\. \."[\s\S]*"deliver deliver"/);
   assert.match(activeFix,/max-height:72px!important/);
-  assert.match(activeFix,/align-self:start!important/);
 });
 
 test('Orders purpose hero becomes contextual after a Ruf commitment',async()=>{
