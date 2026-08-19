@@ -5,7 +5,7 @@ const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
 test('living Place pass hides the old stiff guests and installs furniture-aware authored poses',async()=>{
   const [source,css]=await Promise.all([read('src/aaa-place-life-v2.js'),read('src/aaa-place-life-v2.css')]);
-  assert.match(css,/\.view-place \.cafe-guest\{display:none!important\}/);
+  assert.match(css,/\.view-place \.cafe-guest,\.place-map-preview\.place-coast \.cafe-guest\{display:none!important\}/);
   assert.match(source,/place-life-guests-v2/);
   assert.match(source,/place-life-guests-v2-front/);
   assert.match(source,/guest-left/);
@@ -26,10 +26,11 @@ test('living guests derive coast stage from rendered scene so completed revisits
 });
 
 test('completed coast map previews receive the same authored living guests',async()=>{
-  const source=await read('src/aaa-place-life-v2.js');
+  const [source,css]=await Promise.all([read('src/aaa-place-life-v2.js'),read('src/aaa-place-life-v2.css')]);
   assert.match(source,/place-map-preview\.place-coast \.place-scene-svg/);
   assert.match(source,/MutationObserver\(refresh\)\.observe\(document\.body\|\|root/);
   assert.match(source,/scenes\.forEach\(decorateScene\)/);
+  assert.match(css,/\.place-map-preview\.place-coast \.cafe-guest\{display:none!important\}/);
 });
 
 test('Place guests use subtle idle life with reduced-motion safety',async()=>{
