@@ -89,20 +89,38 @@
   .production-place .place-unlock-summary{
     margin-top:7px!important;
     min-width:0!important;
-    display:flex!important;
+    display:grid!important;
+    grid-template-columns:12px minmax(0,1fr)!important;
+    grid-template-areas:'icon title' 'icon detail'!important;
+    column-gap:6px!important;
+    row-gap:1px!important;
     align-items:center!important;
-    gap:5px!important;
     color:#315e55!important;
-    font-size:9.5px!important;
     font-weight:900!important;
-    line-height:1.1!important;
-    white-space:nowrap!important;
-    overflow:hidden!important;
+    line-height:1.05!important;
   }
-  .production-place .place-unlock-summary>span{flex:0 0 auto;font-size:10px!important;color:#2e8e6e!important}
-  .production-place .place-unlock-summary>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:9.5px!important}
-  .production-place .place-unlock-summary>small{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:8.5px!important;color:#668079!important;font-weight:850!important}
-  .production-place .place-unlock-summary.has-place-power>strong:after{content:' ·';color:#88a099}
+  .production-place .place-unlock-summary>span{
+    grid-area:icon!important;
+    align-self:center!important;
+    font-size:10px!important;
+    color:#2e8e6e!important;
+  }
+  .production-place .place-unlock-summary>strong{
+    grid-area:title!important;
+    min-width:0!important;
+    font-size:10.5px!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+  }
+  .production-place .place-unlock-summary>small{
+    grid-area:detail!important;
+    min-width:0!important;
+    font-size:8.8px!important;
+    line-height:1.05!important;
+    color:#668079!important;
+    font-weight:850!important;
+    white-space:nowrap!important;
+  }
 
   .production-place .place-goal-status{
     align-self:center!important;
@@ -168,9 +186,9 @@
   .production-place .place-current-goal .goal-copy>small{font-size:7.5px!important}
   .production-place .place-current-goal .goal-copy>strong{font-size:20px!important}
   .production-place .place-current-goal .goal-copy>span{font-size:12px!important}
-  .production-place .place-unlock-summary{margin-top:5px!important;font-size:9px!important;gap:4px!important}
-  .production-place .place-unlock-summary>strong{font-size:9px!important}
-  .production-place .place-unlock-summary>small{font-size:8px!important}
+  .production-place .place-unlock-summary{margin-top:5px!important;column-gap:5px!important}
+  .production-place .place-unlock-summary>strong{font-size:10px!important}
+  .production-place .place-unlock-summary>small{font-size:8.5px!important}
   .production-place .place-goal-status{padding:6px 8px!important}
   .production-place .place-goal-status>strong{font-size:8.5px!important}
   .production-place .place-current-goal>button{height:42px!important;font-size:11px!important}
