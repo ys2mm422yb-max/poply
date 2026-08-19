@@ -16,6 +16,7 @@ const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-s
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const rect=locator=>locator.evaluate(node=>{const b=node.getBoundingClientRect();return {top:b.top,bottom:b.bottom,left:b.left,right:b.right,width:b.width,height:b.height};});
 const assertContained=async(child,parent,label)=>{const [c,p]=await Promise.all([rect(child),rect(parent)]);assert(c.top>=p.top-1&&c.bottom<=p.bottom+1&&c.left>=p.left-1&&c.right<=p.right+1,`${label}: child escapes surface ${JSON.stringify({child:c,parent:p})}`);};
+const assertHiddenContext=async(locator,label)=>{assert(await locator.count()===1,`${label}: semantic context missing from DOM`);assert(!(await locator.isVisible()),`${label}: secondary micro-copy should be hidden on physical-iPhone layout`);};
 
 let report={},failure=null;
 try{
@@ -41,13 +42,15 @@ try{
   assert(await page.locator('.scene-upgrade-preview.lights').count()===1,'next authored Lichter group is not previewed');
   assert(await page.locator('.purpose-blueprint-tag').count()===0,'Place must not duplicate the next-upgrade objective in a scene badge');
   assert((await page.locator('.place-current-goal').textContent())?.includes('Lichter'),'single Place objective missing Lichter');
-  assert((await page.locator('.purpose-place-after').textContent())?.includes('Neue Theke'),'Danach teaser missing next upgrade');
-  assert((await page.locator('.purpose-place-unlock').textContent())?.includes('Kombi-Aufträge'),'current upgrade does not explain its gameplay unlock');
-  const story=await page.locator('.purpose-place-goal .goal-copy>p').evaluate(node=>({text:node.textContent,scroll:node.scrollHeight,client:node.clientHeight}));
-  assert(story.text?.includes('Abends sichtbar'),'goal story copy missing');
-  assert(story.scroll<=story.client+1,`goal story is visually clipped ${JSON.stringify(story)}`);
-  await assertContained(page.locator('.purpose-place-after'),page.locator('.place-current-goal'),'390x844 Place Danach');
-  await assertContained(page.locator('.purpose-place-unlock'),page.locator('.place-current-goal'),'390x844 Place unlock');
+  const placeAfter=page.locator('.purpose-place-after'),placeUnlock=page.locator('.purpose-place-unlock');
+  assert((await placeAfter.textContent())?.includes('Neue Theke'),'Danach semantic context missing next upgrade');
+  assert((await placeUnlock.textContent())?.includes('Kombi-Aufträge'),'current upgrade does not retain its gameplay unlock semantics');
+  const story=await page.locator('.purpose-place-goal .goal-copy>p').evaluate(node=>({text:node.textContent,display:getComputedStyle(node).display}));
+  assert(story.text?.includes('Abends sichtbar'),'goal story copy missing from semantic model');
+  assert(story.display==='none','physical-iPhone Place should hide secondary story micro-copy');
+  await assertHiddenContext(placeAfter,'390x844 Place Danach');
+  await assertHiddenContext(placeUnlock,'390x844 Place unlock');
+  await assertContained(page.locator('.place-current-goal > button'),page.locator('.place-current-goal'),'390x844 Place primary CTA');
   await assertNoScroll('390x844 Place preview');
   await shot('71-purpose-place-preview-390x844');
 
@@ -64,9 +67,11 @@ try{
   await page.waitForSelector('.scene-upgrade.lights.fx-purpose-built');
   assert(await page.locator('.scene-upgrade-preview.counter').count()===1,'after build, exact next authored counter group should become preview');
   assert(await page.locator('.purpose-blueprint-tag').count()===0,'post-build Place reintroduced duplicate scene objective');
-  assert((await page.locator('.purpose-place-after').textContent())?.includes('Menüwand'),'post-build Danach teaser did not advance');
-  assert((await page.locator('.purpose-place-unlock').textContent())?.includes('Tier-3'),'post-build goal did not expose the next gameplay unlock');
-  await assertContained(page.locator('.purpose-place-after'),page.locator('.place-current-goal'),'390x844 post-build Danach');
+  const postAfter=page.locator('.purpose-place-after'),postUnlock=page.locator('.purpose-place-unlock');
+  assert((await postAfter.textContent())?.includes('Menüwand'),'post-build Danach semantic context did not advance');
+  assert((await postUnlock.textContent())?.includes('Tier-3'),'post-build goal lost the next gameplay unlock semantics');
+  await assertHiddenContext(postAfter,'390x844 post-build Danach');
+  await assertHiddenContext(postUnlock,'390x844 post-build unlock');
   await shot('72-purpose-place-built-390x844');
 
   await page.locator('.nav-tab[data-view="orders"]').click();
@@ -90,13 +95,16 @@ try{
   if(await page.locator('.view-orders').count())await page.locator('.purpose-service-goal').click();
   await page.waitForSelector('.view-place .place-current-goal');
   assert(await page.locator('.purpose-blueprint-tag').count()===0,'390x720 Place reintroduced duplicate scene objective');
-  await assertContained(page.locator('.purpose-place-after'),page.locator('.place-current-goal'),'390x720 Place Danach');
-  await assertContained(page.locator('.purpose-place-unlock'),page.locator('.place-current-goal'),'390x720 Place unlock');
+  assert((await page.locator('.purpose-place-after').textContent())?.includes('Menüwand'),'390x720 Place lost next-upgrade semantic context');
+  assert((await page.locator('.purpose-place-unlock').textContent())?.includes('Tier-3'),'390x720 Place lost unlock semantic context');
+  await assertHiddenContext(page.locator('.purpose-place-after'),'390x720 Place Danach');
+  await assertHiddenContext(page.locator('.purpose-place-unlock'),'390x720 Place unlock');
+  await assertContained(page.locator('.place-current-goal > button'),page.locator('.place-current-goal'),'390x720 Place primary CTA');
   await assertNoScroll('390x720 Place purpose');
   await shot('75-purpose-place-preview-390x720');
 
   const saved=await readSave();
-  report={boardGoal:'Lichter',built:saved.placeUpgrades.includes('lights'),nextGoal:'Neue Theke',singlePlaceObjective:true,shortViewportNoScroll:true,hierarchyContained:true,actionableRouting:true};
+  report={boardGoal:'Lichter',built:saved.placeUpgrades.includes('lights'),nextGoal:'Neue Theke',singlePlaceObjective:true,shortViewportNoScroll:true,secondaryPlaceContextHidden:true,semanticPlaceContextRetained:true,actionableRouting:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){
   failure=error;try{await shot('79-purpose-failure');}catch{}
