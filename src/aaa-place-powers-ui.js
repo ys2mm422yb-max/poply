@@ -10,13 +10,20 @@ const unlockToast=power=>({
 }[power?.key]||`${power?.label||'Fähigkeit'} frei`);
 
 function decoratePlace(root,state){
-  const goal=purposeGoal(state),power=placePowerForUpgrade(goal.upgrade?.id),unlock=root.querySelector('.place-current-goal .purpose-place-unlock');
+  const goal=purposeGoal(state),power=placePowerForUpgrade(goal.upgrade?.id),unlock=root.querySelector('.place-current-goal .purpose-place-unlock'),summary=root.querySelector('.place-current-goal .place-unlock-summary');
   root.querySelectorAll('.place-power-inline').forEach(node=>node.remove());
   root.querySelector('.place-current-goal')?.classList.toggle('has-place-power-preview',Boolean(power));
-  if(!power||!unlock)return;
-  const strong=unlock.querySelector('strong');if(!strong)return;
-  const inline=document.createElement('em');inline.className='place-power-inline';inline.dataset.power=power.key;inline.textContent=` · Fähigkeit: ${power.label} — ${power.short}`;strong.append(inline);
-  unlock.setAttribute('aria-label',`${unlock.textContent}. Neue Fähigkeit ${power.label}: ${power.copy}`);
+  if(!power)return;
+  if(unlock){
+    const strong=unlock.querySelector('strong');
+    if(strong){const inline=document.createElement('em');inline.className='place-power-inline';inline.dataset.power=power.key;inline.textContent=` · Fähigkeit: ${power.label} — ${power.short}`;strong.append(inline);}
+    unlock.setAttribute('aria-label',`${unlock.textContent}. Neue Fähigkeit ${power.label}: ${power.copy}`);
+  }
+  if(summary){
+    summary.classList.add('has-place-power');summary.dataset.power=power.key;
+    summary.innerHTML=`<span aria-hidden="true">◆</span><strong>${power.label}</strong><small>${power.short}</small>`;
+    summary.setAttribute('aria-label',`Schaltet ${power.label} frei. ${power.copy}`);
+  }
 }
 
 function decorateBoard(root,state){
