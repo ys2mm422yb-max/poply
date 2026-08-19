@@ -25,6 +25,13 @@ test('living guests derive coast stage from rendered scene so completed revisits
   assert.match(source,/\?6:[\s\S]*\?5:4/);
 });
 
+test('completed coast map previews receive the same authored living guests',async()=>{
+  const source=await read('src/aaa-place-life-v2.js');
+  assert.match(source,/place-map-preview\.place-coast \.place-scene-svg/);
+  assert.match(source,/MutationObserver\(refresh\)\.observe\(document\.body\|\|root/);
+  assert.match(source,/scenes\.forEach\(decorateScene\)/);
+});
+
 test('Place guests use subtle idle life with reduced-motion safety',async()=>{
   const css=await read('src/aaa-place-life-v2.css');
   assert.match(css,/placeGuestBreathe/);

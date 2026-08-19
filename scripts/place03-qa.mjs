@@ -9,10 +9,11 @@ const context=await browser.newContext({viewport:{width:390,height:844},screen:{
 const page=await context.newPage();
 const problems=[],badResponses=[],requestFailures=[];
 const benignLocalServiceWorkerError=message=>/\/(?:127\.0\.0\.1|localhost)(?::\d+)?\/sw\.js due to access control checks\.?$/.test(String(message||''));
+const benignLocalServiceWorkerRequestFailure=request=>{const url=new URL(request.url()),failure=request.failure()?.errorText||'';return ['127.0.0.1','localhost'].includes(url.hostname)&&url.pathname==='/sw.js'&&/cancel/i.test(failure);};
 page.on('console',msg=>{if(['error','warning'].includes(msg.type()))problems.push(`${msg.type()}: ${msg.text()}`);});
 page.on('pageerror',error=>{if(!benignLocalServiceWorkerError(error.message))problems.push(`pageerror: ${error.message}`);});
 page.on('response',response=>{if(response.status()>=400)badResponses.push({status:response.status(),url:response.url(),resourceType:response.request().resourceType()});});
-page.on('requestfailed',request=>requestFailures.push({url:request.url(),resourceType:request.resourceType(),failure:request.failure()?.errorText||'unknown'}));
+page.on('requestfailed',request=>{if(!benignLocalServiceWorkerRequestFailure(request))requestFailures.push({url:request.url(),resourceType:request.resourceType(),failure:request.failure()?.errorText||'unknown'});});
 const assert=(value,message)=>{if(!value)throw new Error(message);};
 const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const readSave=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'null'));

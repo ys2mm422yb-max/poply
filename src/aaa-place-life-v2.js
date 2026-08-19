@@ -50,8 +50,8 @@ function parseGroup(markup){
   const container=document.createElementNS(NS,'g');container.innerHTML=markup;return container.firstElementChild;
 }
 
-function decorate(root){
-  const svg=root.querySelector('.view-place .place-scene-svg');if(!svg||svg.querySelector('.place-life-guests-v2'))return;
+function decorateScene(svg){
+  if(!svg||svg.querySelector('.place-life-guests-v2'))return;
   const seating=svg.querySelector('.scene-upgrade.seating');if(!seating)return;
   const stage=svg.querySelector('.scene-upgrade.sign')?6:svg.querySelector('.scene-upgrade.terrace')?5:4;
   const back=parseGroup(guestBackMarkup()),front=parseGroup(guestFrontMarkup(stage));
@@ -59,8 +59,13 @@ function decorate(root){
   if(front)seating.parentNode.insertBefore(front,seating.nextSibling);
 }
 
+function decorate(root){
+  const scenes=[root.querySelector('.view-place.place-coast .place-scene-svg'),...document.querySelectorAll('.place-map-preview.place-coast .place-scene-svg')];
+  scenes.forEach(decorateScene);
+}
+
 export function installPlaceLifeV2(root){
   let queued=false;const refresh=()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate(root);});};
-  new MutationObserver(refresh).observe(root,{childList:true,subtree:true});refresh();
+  new MutationObserver(refresh).observe(document.body||root,{childList:true,subtree:true});refresh();
   return {refresh};
 }
