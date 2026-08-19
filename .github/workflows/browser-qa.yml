@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - name: Install Playwright WebKit for QA
         run: |
+          # GitHub-hosted Ubuntu runners can stall on the Azure apt mirror. Pin the healthy archive fallback before Playwright installs OS deps.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null; fi
           npm install --no-save playwright@1.54.2
           npx playwright install --with-deps webkit
       - name: Start static app
