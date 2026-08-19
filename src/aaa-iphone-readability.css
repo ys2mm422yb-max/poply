@@ -86,6 +86,23 @@
     width:14px!important;
     height:14px!important;
   }
+  .production-place .place-unlock-summary{
+    margin-top:7px!important;
+    min-width:0!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    color:#315e55!important;
+    font-size:9.5px!important;
+    font-weight:900!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+  .production-place .place-unlock-summary>span{flex:0 0 auto;font-size:10px!important;color:#2e8e6e!important}
+  .production-place .place-unlock-summary>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:9.5px!important}
+  .production-place .place-unlock-summary>small{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:8.5px!important;color:#668079!important;font-weight:850!important}
+  .production-place .place-unlock-summary.has-place-power>strong:after{content:' ·';color:#88a099}
 
   .production-place .place-goal-status{
     align-self:center!important;
@@ -99,7 +116,7 @@
     line-height:1.1!important;
   }
 
-  /* These details are useful elsewhere, but they are not primary decisions on this screen. */
+  /* Long secondary detail remains semantic but hidden; the concise unlock summary above is the visible benefit line. */
   .production-place .purpose-place-unlock,
   .production-place .purpose-place-after,
   .production-place .place-goal-orders{
@@ -151,6 +168,9 @@
   .production-place .place-current-goal .goal-copy>small{font-size:7.5px!important}
   .production-place .place-current-goal .goal-copy>strong{font-size:20px!important}
   .production-place .place-current-goal .goal-copy>span{font-size:12px!important}
+  .production-place .place-unlock-summary{margin-top:5px!important;font-size:9px!important;gap:4px!important}
+  .production-place .place-unlock-summary>strong{font-size:9px!important}
+  .production-place .place-unlock-summary>small{font-size:8px!important}
   .production-place .place-goal-status{padding:6px 8px!important}
   .production-place .place-goal-status>strong{font-size:8.5px!important}
   .production-place .place-current-goal>button{height:42px!important;font-size:11px!important}
@@ -160,6 +180,7 @@
 
 @media(max-width:365px){
   .production-place .place-current-goal .goal-copy>strong{font-size:19px!important}
+  .production-place .place-unlock-summary>small{display:none!important}
   .production-place .place-goal-status{padding-inline:7px!important}
   .production-place .place-goal-status>strong{font-size:8px!important}
 }
