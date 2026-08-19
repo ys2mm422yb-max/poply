@@ -113,6 +113,9 @@ function decoratePlace(root,goal){
     const copy=current.querySelector('.goal-copy');
     const small=copy?.querySelector(':scope > small');if(small)small.textContent=`NÄCHSTES ZIEL · SCHRITT ${goal.step}/${goal.total}`;
     let unlock=current.querySelector('.purpose-place-unlock');if(goal.upgrade?.unlock&&!unlock){unlock=document.createElement('div');unlock.className='purpose-place-unlock';copy?.append(unlock);}if(unlock)unlock.innerHTML=`<span>🔓</span><strong>Schaltet frei: ${goal.upgrade.unlock}</strong>`;
+    let unlockSummary=current.querySelector('.place-unlock-summary');
+    if(goal.upgrade?.unlock&&copy&&!unlockSummary){unlockSummary=document.createElement('div');unlockSummary.className='place-unlock-summary';copy.append(unlockSummary);}
+    if(unlockSummary){unlockSummary.innerHTML=`<span aria-hidden="true">🔓</span><strong>${goal.upgrade.unlock}</strong>`;unlockSummary.setAttribute('aria-label',`Schaltet frei: ${goal.upgrade.unlock}`);}
     let after=current.querySelector('.purpose-after');if(!after){after=document.createElement('div');after.className='purpose-after purpose-place-after';copy?.append(after);}
     if(after){
       after.classList.toggle('is-next-place',goal.after?.kind==='place');
