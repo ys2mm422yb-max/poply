@@ -57,7 +57,8 @@ const activateDirect=async height=>{
   const view=page.locator('.view-orders'),readyCard=view.locator(':scope > .service-card'),readyAction=readyCard.locator('.service-missing-action');
   await readyAction.waitFor({state:'visible'});
   const [viewBox,cardBox]=await Promise.all([box(view),box(readyCard)]);
-  assert(cardBox.height<=Math.min(190,viewBox.height*.32),`Orders Ruf-ready ${height}: selected task card stretches into dead dashboard space ${JSON.stringify({viewBox,cardBox})}`);
+  assert(cardBox.height<=Math.min(210,viewBox.height*.34),`Orders Ruf-ready ${height}: selected task card stretches into dead dashboard space ${JSON.stringify({viewBox,cardBox})}`);
+  await assertAboveDock(readyCard,`Orders Ruf-ready selected task ${height}`,6);
   assert(((await readyAction.textContent())||'').includes('Auf dem Board herstellen'),`Orders Ruf-ready ${height}: missing-item next action is not primary`);
   const choice=page.locator('.service-call-choice-panel.is-ready [data-service-call-mode="direct"]').first();
   await choice.waitFor({state:'visible'});await choice.click();

@@ -91,10 +91,11 @@ export function createUI(root,toast){
       const card=order.closest('.service-card,.board-job,.mini-order,.focus-order'),orderId=order.dataset.order,result=deliverOrder(orderId);
       if(!result.changed){playFeedback('invalid');message('Auftrag ist noch nicht fertig.','bad');}
       else{
-        const rewardOrigin=rewardOriginSnapshot(card),specialBonus=result.specialBonus?.coins||0,callBonus=result.serviceCallBonus?.coins||0;
+        const rewardOrigin=rewardOriginSnapshot(card),specialBonus=result.specialBonus?.coins||0,callBonus=result.serviceCallBonus?.coins||0,dynamicBonus=result.guestDynamic?.totalCoins||0;
         const specialNote=specialBonus?` inkl. +${specialBonus} Bonus`:'';
         const callNote=callBonus?` · Service-Ruf +${callBonus}`:result.serviceCall?.expired?' · Service-Ruf verfallen':'';
-        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}`);
+        const dynamicNote=dynamicBonus?` · Gast/Tag +${dynamicBonus}`:'';
+        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}${dynamicNote}`);
         if(selectedOrderId===orderId)selectedOrderId=null;
         setTimeout(()=>{render();playRewards(result.rewards,rewardOrigin);emitProgression(result,'order');},320);
       }

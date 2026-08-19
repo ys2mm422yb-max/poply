@@ -5,12 +5,13 @@ import { readFile } from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 
-test('layout foundation is followed by hierarchy and gameplay-first release layers',async()=>{
+test('layout foundation is followed by hierarchy, gameplay-first and guidance release layers',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay5[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
-  assert.match(html,/aaa-main\.js\?v=20260818-gameplay5/);
+  assert.match(html,/aaa-layout-stability\.css\?v=20260818-layout1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay5[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-item-guidance\.css\?v=20260818-guidance1/);
+  assert.match(html,/aaa-main\.js\?v=20260818-guidance1/);
   assert.match(main,/installLayoutStability/);
   assert.match(main,/installGameplayFirst/);
+  assert.match(main,/installItemGuidance/);
 });
 
 test('mobile shell budgets bottom safe area and keeps the dock in its own row',async()=>{

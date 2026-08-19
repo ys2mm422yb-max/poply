@@ -5,12 +5,13 @@ import { readFile } from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 
-test('gameplay-first layers are loaded last and decorator is installed',async()=>{
+test('gameplay-first layers stay ordered before the guidance extension',async()=>{
   const [html,main]=await Promise.all([read('index.html'),read('src/aaa-main.js')]);
-  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay5[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
-  assert.match(html,/data-build="aaa-foundation-20260818-gameplay5"/);
-  assert.match(html,/aaa-main\.js\?v=20260818-gameplay5/);
+  assert.match(html,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first\.css\?v=20260818-gameplay1[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-orders\.css\?v=20260818-gameplay5[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4[^<]*"><link rel="stylesheet" href="\.\/src\/aaa-item-guidance\.css\?v=20260818-guidance1/);
+  assert.match(html,/data-build="aaa-foundation-20260818-guidance1"/);
+  assert.match(html,/aaa-main\.js\?v=20260818-guidance1/);
   assert.match(main,/installGameplayFirst/);
+  assert.match(main,/installItemGuidance/);
 });
 
 test('Orders missing item becomes an active Board route and Ruf-ready task card cannot stretch',async()=>{

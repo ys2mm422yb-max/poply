@@ -20,6 +20,8 @@ jobs:
       - run: npm ci
       - name: Install Playwright WebKit for QA
         run: |
+          # GitHub-hosted Ubuntu runners can stall on the Azure apt mirror. Pin the healthy archive fallback before Playwright installs OS deps.
+          if [ -f /etc/apt/apt-mirrors.txt ]; then printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null; fi
           npm install --no-save playwright@1.54.2
           npx playwright install --with-deps webkit
       - name: Start static app
@@ -44,6 +46,9 @@ jobs:
       - name: Run gameplay-first real-device WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/gameplay-first-qa.mjs
+      - name: Run item provenance and living Place WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/item-guidance-place-life-qa.mjs
       - name: Run family-color and living-Place WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/visual-vibrance-qa.mjs

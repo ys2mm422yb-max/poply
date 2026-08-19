@@ -87,9 +87,11 @@ try{
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);state.stars=0;});
   await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.place-coast .scene-upgrade.seating');
   assert(await page.locator('.cafe-barista').count()===1,'mid-stage Café has no worker life');
-  assert(await page.locator('.cafe-guest').count()===2,'mid-stage seating is not inhabited');
+  assert(await page.locator('.place-life-guests-v2').count()===1,'mid-stage living guest layer missing');
+  assert(await page.locator('.place-life-person').count()===2,'mid-stage seating is not inhabited by the authored guests');
+  const oldGuestVisible=await page.locator('.cafe-guest').evaluateAll(nodes=>nodes.some(node=>getComputedStyle(node).display!=='none'));assert(!oldGuestVisible,'mid-stage old stiff guests are still visible');
   assert(await page.locator('.cafe-steam').count()===1,'mid-stage counter has no steam detail');
-  const motion=await page.locator('.cafe-guest').first().evaluate(node=>getComputedStyle(node).animationName);
+  const motion=await page.locator('.place-life-person .guest-idle').first().evaluate(node=>getComputedStyle(node).animationName);
   assert(motion&&motion!=='none','authored Café guests are static');
   await assertNotClipped(page.locator('.purpose-place-unlock strong'),'mid-stage unlock copy');
   await assertNoScroll('living coast stage4 390x844');
@@ -101,7 +103,7 @@ try{
   const finalPreview=page.locator('.place-map-preview.place-coast');
   assert(await finalPreview.locator('.scene-upgrade.lights').count()===1,'final coast lost lights');
   assert(await finalPreview.locator('.cafe-barista').count()===1,'final coast lost barista');
-  assert(await finalPreview.locator('.cafe-guest').count()===2,'final coast lost guests');
+  assert(await finalPreview.locator('.place-life-person').count()===2,'final coast lost authored living guests');
   assert(await finalPreview.locator('.scene-upgrade.terrace').count()===1,'final coast lost terrace');
   assert(await finalPreview.locator('.scene-upgrade.sign').count()===1,'final coast lost final identity');
   await shot('87-complete-cafe-map-390x844');
@@ -111,10 +113,10 @@ try{
   await seed(()=>{});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board .purpose-card');
   await assertNoScroll('fresh board 390x720');await shot('88-first-session-board-390x720');
   await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNoEllipsisStyle(page.locator('.service-hero p'),'short Orders purpose line');await assertNotClipped(page.locator('.service-hero p'),'short Orders purpose line');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
-  await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.cafe-guest');
+  await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.place-life-guests-v2 .place-life-person');
   await assertNotClipped(page.locator('.purpose-place-unlock strong'),'short mid-stage unlock copy');await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
 
-  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,readyOrderPurpose:readyPurpose,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true,deliveryTransitionWaited:true};
+  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,readyOrderPurpose:readyPurpose,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true,deliveryTransitionWaited:true,livingGuestLayer:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('98-first-session-failure');}catch{}}
 finally{await writeFile(`${outDir}/first-session-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
