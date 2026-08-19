@@ -8,8 +8,9 @@ test('shell loads guidance and installs it after the gameplay-first stack',async
   assert.match(html,/aaa-item-guidance\.css\?v=20260818-guidance1/);
   assert.match(html,/aaa-guest-dynamics\.css\?v=20260818-guidance1/);
   assert.match(html,/aaa-place-life-v2\.css\?v=20260818-guidance1/);
-  assert.match(html,/aaa-main\.js\?v=20260818-guidance1/);
-  assert.match(html,/data-build="aaa-foundation-20260818-guidance1"/);
+  assert.match(html,/aaa-iphone-readability\.css\?v=20260819-iphone1/);
+  assert.match(html,/aaa-main\.js\?v=20260819-iphone1/);
+  assert.match(html,/data-build="aaa-foundation-20260819-iphone1"/);
   assert.match(main,/installItemGuidance\(root,ui\)/);
   assert.match(main,/installGuestDynamicsUI\(root\)/);
   assert.match(main,/installPlaceLifeV2\(root\)/);
