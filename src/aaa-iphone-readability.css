@@ -4,7 +4,7 @@
   .production-place{
     grid-template-rows:minmax(0,1fr) minmax(176px,34%)!important;
     gap:8px!important;
-    padding:7px 8px 5px!important;
+    padding:7px 8px 8px!important;
   }
 
   .production-place .world-hero{
@@ -133,7 +133,7 @@
   .production-place{
     grid-template-rows:minmax(0,1fr) minmax(166px,38%)!important;
     gap:6px!important;
-    padding:5px 7px 3px!important;
+    padding:5px 7px 7px!important;
   }
   .production-place .world-copy{left:13px!important;right:52px!important;bottom:10px!important}
   .production-place .world-kicker{font-size:7px!important}
