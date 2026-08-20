@@ -26,10 +26,11 @@ test('unknown and duplicate requirements cannot invent visual family identities'
   assert.equal(result.secondary,'coffee');
 });
 
-test('Orders Stage V2 is a visual-only idempotent decorator with reduced-motion safety',async()=>{
-  const [main,module,css,index,workflow,qa]=await Promise.all([
+test('Orders Stage V2 is a visual-only idempotent decorator with synchronized reward payoff and reduced-motion safety',async()=>{
+  const [main,module,ui,css,index,workflow,qa]=await Promise.all([
     read('src/aaa-main.js'),
     read('src/aaa-orders-stage-v2.js'),
+    read('src/aaa-ui.js'),
     read('src/aaa-orders-stage-v2.css'),
     read('index.html'),
     read('.github/workflows/browser-qa.yml'),
@@ -43,8 +44,10 @@ test('Orders Stage V2 is a visual-only idempotent decorator with reduced-motion 
   for(const family of ['coffee','bakery','sweet','fruit','herb'])assert.match(css,new RegExp(`data-service-primary="${family}"`));
   assert.match(css,/\.orders-stage-set\{[^}]*pointer-events:none/s);
   assert.match(css,/\.view-orders\[data-service-primary\] \.service-card:after/);
-  assert.match(css,/\.service-reward-origin:before/);
-  assert.match(css,/\.service-reward-origin:after/);
+  assert.match(css,/\.service-reward-origin\.fx-reward-source:before/);
+  assert.match(css,/\.service-reward-origin\.fx-reward-source:after/);
+  assert.match(ui,/source\?\.classList\.add\('fx-reward-source'\)/);
+  assert.match(ui,/setTimeout\(\(\)=>node\.remove\(\),1800\)/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
   assert.match(index,/aaa-orders-stage-v2\.css\?v=20260820-ordersstage1/);
   assert.match(index,/aaa-main\.js\?v=20260819-iphone1/);
