@@ -36,7 +36,7 @@ test('Orders Stage V2 is a visual-only idempotent decorator with reduced-motion 
     read('scripts/orders-stage-v2-qa.mjs'),
   ]);
   assert.match(main,/installOrdersStageV2\(root\)/);
-  assert.match(module,/data\.servicePrimary/);
+  assert.match(module,/dataset\.servicePrimary/);
   assert.match(module,/orders-stage-set/);
   assert.match(module,/querySelector\(':scope > \.orders-stage-set'\)/);
   assert.doesNotMatch(module,/saveGameState|localStorage|coins|stars|energy|rewards\s*=/i);
