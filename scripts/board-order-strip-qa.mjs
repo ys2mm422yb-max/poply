@@ -76,14 +76,14 @@ try{
       });
     });
 
+    const viewport=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));
+    assert(viewport.scroll<=viewport.inner+1,`Board strip causes document scroll at ${height}: ${JSON.stringify(viewport)}`);
+    await shot(`310-board-order-strip-clean-390x${height}`);
+
     const firstNeed=page.locator('.board-job .need').first();await firstNeed.tap();await page.waitForSelector('.production-guide-sheet');
     const guide=((await page.locator('.production-guide-sheet').textContent())||'').replace(/\s+/g,' ');
     assert(guide.includes('WOHER KOMMT DAS?')&&guide.includes('Generator auf Board zeigen'),`Board need tap lost production guidance at ${height}: ${guide}`);
     await page.locator('[data-guide-close]').last().tap();
-
-    const viewport=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));
-    assert(viewport.scroll<=viewport.inner+1,`Board strip causes document scroll at ${height}: ${JSON.stringify(viewport)}`);
-    await shot(`310-board-order-strip-clean-390x${height}`);
   }
   report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:2,serviceSpecialsStayOutOfBoardStrip:true,twoRequirementGeometry:true,itemGuidanceTap:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
