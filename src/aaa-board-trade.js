@@ -60,10 +60,10 @@ export function boardTradeSourceIndexes(state){
 
 export function tradeBoardItem(inputState,sourceIndex,targetFamily){
   const ensured=ensureBoardTradeState(inputState),status=ensured.status,index=Number(sourceIndex),source=sourceAt(ensured.state,index);
-  if(!status.ready)return {state:ensured.state,changed:ensured.changed,reason:'not-ready',status};
-  if(!Number.isInteger(index)||index<0||index>=(ensured.state.board||[]).length||source?.kind!=='item')return {state:ensured.state,changed:ensured.changed,reason:'invalid-source',status};
+  if(!status.ready)return {state:ensured.state,changed:false,reason:'not-ready',status};
+  if(!Number.isInteger(index)||index<0||index>=(ensured.state.board||[]).length||source?.kind!=='item')return {state:ensured.state,changed:false,reason:'invalid-source',status};
   const option=boardTradeTargetOptions(ensured.state,index).find(entry=>entry.family===targetFamily);
-  if(!option)return {state:ensured.state,changed:ensured.changed,reason:'invalid-target',status};
+  if(!option)return {state:ensured.state,changed:false,reason:'invalid-target',status};
   const state=structuredClone(ensured.state),before=structuredClone(source);
   state.board[index]={...state.board[index],family:option.family,level:source.level};
   state.boardTradeState={serviceProgress:0,ready:false,uses:status.uses+1};state.updatedAt=Date.now();
