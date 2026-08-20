@@ -26,12 +26,13 @@ test('unknown and duplicate requirements cannot invent visual family identities'
   assert.equal(result.secondary,'coffee');
 });
 
-test('Orders Stage V2 is a visual-only idempotent decorator with synchronized reward payoff and reduced-motion safety',async()=>{
-  const [main,module,ui,css,index,workflow,qa]=await Promise.all([
+test('Orders Stage V2 is a visual-only idempotent decorator with synchronized viewport-safe reward payoff and reduced-motion safety',async()=>{
+  const [main,module,ui,css,purposeCss,index,workflow,qa]=await Promise.all([
     read('src/aaa-main.js'),
     read('src/aaa-orders-stage-v2.js'),
     read('src/aaa-ui.js'),
     read('src/aaa-orders-stage-v2.css'),
+    read('src/aaa-purpose.css'),
     read('index.html'),
     read('.github/workflows/browser-qa.yml'),
     read('scripts/orders-stage-v2-qa.mjs'),
@@ -48,6 +49,8 @@ test('Orders Stage V2 is a visual-only idempotent decorator with synchronized re
   assert.match(css,/\.service-reward-origin\.fx-reward-source:after/);
   assert.match(ui,/source\?\.classList\.add\('fx-reward-source'\)/);
   assert.match(ui,/setTimeout\(\(\)=>node\.remove\(\),1800\)/);
+  assert.match(purposeCss,/\.purpose-service-goal \.purpose-reward-link\{[^}]*right:0[^}]*max-width:min\(310px,calc\(100vw - 32px\)\)[^}]*white-space:normal/s);
+  assert.match(purposeCss,/@keyframes purpose-reward-link-orders/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
   assert.match(index,/aaa-orders-stage-v2\.css\?v=20260820-ordersstage1/);
   assert.match(index,/aaa-main\.js\?v=20260819-iphone1/);
@@ -57,5 +60,6 @@ test('Orders Stage V2 is a visual-only idempotent decorator with synchronized re
   assert.match(qa,/330-orders-stage-missing/);
   assert.match(qa,/331-orders-stage-ready/);
   assert.match(qa,/332-orders-stage-reward/);
+  assert.match(qa,/assertWithinViewport\(pulse/);
   assert.match(qa,/390x\$\{height\}/);
 });
