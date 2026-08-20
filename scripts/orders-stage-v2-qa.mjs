@@ -17,6 +17,7 @@ const box=async locator=>{const value=await locator.boundingBox();assert(value,`
 const applyInsets=()=>page.evaluate(({top,bottom})=>{document.documentElement.style.setProperty('--poply-safe-top',`${top}px`);document.documentElement.style.setProperty('--poply-safe-bottom',`${bottom}px`);},{top:SAFE_TOP,bottom:SAFE_BOTTOM});
 const assertNoScroll=async label=>{const metrics=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight}));assert(metrics.scroll<=metrics.inner+1,`${label}: document scrolls ${JSON.stringify(metrics)}`);};
 const assertAboveDock=async(locator,label,clearance=5)=>{const [item,nav]=await Promise.all([box(locator),box(page.locator('.main-nav'))]);assert(item.y+item.height<=nav.y-clearance,`${label}: overlaps dock ${JSON.stringify({item,nav})}`);};
+const assertWithinViewport=async(locator,label,clearance=4)=>{const item=await box(locator);assert(item.x>=clearance&&item.x+item.width<=390-clearance,`${label}: clips phone viewport ${JSON.stringify(item)}`);};
 
 const seed=async ready=>{
   await page.evaluate(async readyState=>{
@@ -82,10 +83,12 @@ const inspectReward=async height=>{
   const deliver=page.locator('.view-orders .service-card .service-deliver[data-order]');
   await deliver.click();
   await page.waitForFunction(()=>document.querySelector('.resource.coin')?.classList.contains('fx-reward-arrive')&&document.querySelector('.view-orders .service-goal')?.classList.contains('fx-reward-arrive'),null,{timeout:1800});
-  const coin=page.locator('.resource.coin'),goal=page.locator('.view-orders .service-goal');
+  const coin=page.locator('.resource.coin'),goal=page.locator('.view-orders .service-goal'),pulse=page.locator('.view-orders .purpose-service-goal .purpose-reward-link');
   assert(await coin.evaluate(node=>node.classList.contains('fx-reward-arrive')),`Orders reward ${height}: Coin arrival feedback missing`);
   assert(await goal.evaluate(node=>node.classList.contains('fx-reward-arrive')),`Orders reward ${height}: Star/goal arrival feedback missing`);
   assert((await page.locator('.service-reward-origin').count())>=1,`Orders reward ${height}: reward origin missing during payoff`);
+  await pulse.waitFor({state:'visible'});
+  await assertWithinViewport(pulse,`Orders reward purpose pulse ${height}`,4);
   await assertAboveDock(page.locator('.view-orders .service-card'),`Orders reward replacement card ${height}`,6);
   await assertNoScroll(`Orders reward ${height}`);
   await shot(`332-orders-stage-reward-390x${height}`);
@@ -99,7 +102,7 @@ try{
     await seed(false);await inspectStage(height,false);
     await seed(true);await inspectStage(height,true);await inspectReward(height);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,familyAware:true,missingBoardAction:true,readyPayoff:true,rewardArrival:true,noDocumentScroll:true};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,familyAware:true,missingBoardAction:true,readyPayoff:true,rewardArrival:true,rewardPulseViewportSafe:true,noDocumentScroll:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('339-orders-stage-v2-failure');}catch{}}
 finally{await writeFile(`${outDir}/orders-stage-v2-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
