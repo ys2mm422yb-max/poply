@@ -233,8 +233,8 @@
   .view-board .board-job{height:50px!important;min-height:50px!important;padding:5px!important}
   .view-board .board-job-person{left:5px!important;top:6px!important}
   .view-board .board-job-avatar{width:25px!important;height:25px!important}
-  .view-board .board-job-reward{left:35px!important;top:6px!important}
-  .view-board .board-job-needs{left:35px!important;right:5px!important;bottom:4px!important;gap:3px!important}
+  .view-board .board-job-reward{left:35px!important;top:4px!important}
+  .view-board .board-job-needs{left:35px!important;right:5px!important;bottom:2px!important;gap:3px!important}
   .view-board .board-job .need{flex-basis:29px!important;width:29px!important;min-width:29px!important;height:28px!important;grid-template-rows:19px 7px!important;padding:1px 2px!important}
   .view-board .board-job .need .item-art,
   .view-board .board-job .need .item-art.compact{width:19px!important;height:19px!important;min-width:19px!important;flex-basis:19px!important}
