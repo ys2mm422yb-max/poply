@@ -81,7 +81,7 @@ const inspectStage=async(height,ready)=>{
 const inspectReward=async height=>{
   const deliver=page.locator('.view-orders .service-card .service-deliver[data-order]');
   await deliver.click();
-  await page.waitForTimeout(690);
+  await page.waitForFunction(()=>document.querySelector('.resource.coin')?.classList.contains('fx-reward-arrive')&&document.querySelector('.view-orders .service-goal')?.classList.contains('fx-reward-arrive'),null,{timeout:1800});
   const coin=page.locator('.resource.coin'),goal=page.locator('.view-orders .service-goal');
   assert(await coin.evaluate(node=>node.classList.contains('fx-reward-arrive')),`Orders reward ${height}: Coin arrival feedback missing`);
   assert(await goal.evaluate(node=>node.classList.contains('fx-reward-arrive')),`Orders reward ${height}: Star/goal arrival feedback missing`);
