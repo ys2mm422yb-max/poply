@@ -53,7 +53,8 @@ const seed=async ready=>{
 };
 
 const inspectStage=async(height,ready)=>{
-  const view=page.locator('.view-orders'),card=view.locator('.service-card[data-service-order]'),stage=card.locator(':scope > .orders-stage-set'),deliver=card.locator('.service-deliver[data-order]');
+  const view=page.locator('.view-orders'),card=view.locator('.service-card[data-service-order]'),stage=card.locator(':scope > .orders-stage-set');
+  const deliver=card.locator('.service-deliver[data-order]'),missingAction=card.locator('.service-missing-action');
   await stage.waitFor({state:'visible'});
   assert((await view.getAttribute('data-service-primary'))==='bakery',`Orders Stage ${height}: expected bakery primary family`);
   assert((await view.getAttribute('data-service-secondary'))==='coffee',`Orders Stage ${height}: expected coffee secondary family`);
@@ -61,7 +62,17 @@ const inspectStage=async(height,ready)=>{
   assert((await stage.locator('.orders-stage-glint').count())===4,`Orders Stage ${height}: expected four stage glints`);
   assert((await card.evaluate(node=>getComputedStyle(node).overflow))==='hidden',`Orders Stage ${height}: decorative scene escapes service card`);
   assert(ready?(await card.evaluate(node=>node.classList.contains('ready'))):!(await card.evaluate(node=>node.classList.contains('ready'))),`Orders Stage ${height}: wrong ready state`);
-  assert(ready?!(await deliver.isDisabled()):(await deliver.isDisabled()),`Orders Stage ${height}: delivery control state mismatch`);
+  if(ready){
+    await deliver.waitFor({state:'visible'});
+    assert(!(await deliver.isDisabled()),`Orders Stage ${height}: ready delivery control is disabled`);
+    assert((await missingAction.count())===0,`Orders Stage ${height}: stale missing-item action remains in ready state`);
+  }else{
+    await missingAction.waitFor({state:'visible'});
+    const actionText=((await missingAction.textContent())||'').replace(/\s+/g,' ');
+    assert(actionText.includes('Auf dem Board herstellen'),`Orders Stage ${height}: missing-item Board action is not primary: ${actionText}`);
+    assert(!(await missingAction.isDisabled()),`Orders Stage ${height}: missing-item Board action is disabled`);
+    assert((await deliver.count())===0,`Orders Stage ${height}: stale delivery control remains in missing-item state`);
+  }
   await assertAboveDock(card,`Orders Stage card ${height}`,6);
   await assertNoScroll(`Orders Stage ${ready?'ready':'missing'} ${height}`);
   await shot(`${ready?'331-orders-stage-ready':'330-orders-stage-missing'}-390x${height}`);
@@ -88,7 +99,7 @@ try{
     await seed(false);await inspectStage(height,false);
     await seed(true);await inspectStage(height,true);await inspectReward(height);
   }
-  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,familyAware:true,readyPayoff:true,rewardArrival:true,noDocumentScroll:true};
+  report={viewports:['390x844','390x720'],safeInsets:{top:SAFE_TOP,bottom:SAFE_BOTTOM},screenshots:6,familyAware:true,missingBoardAction:true,readyPayoff:true,rewardArrival:true,noDocumentScroll:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('339-orders-stage-v2-failure');}catch{}}
 finally{await writeFile(`${outDir}/orders-stage-v2-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
