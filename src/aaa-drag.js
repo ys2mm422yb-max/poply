@@ -10,7 +10,7 @@ export function installDrag({root,ghost,ui}){
   const move=(x,y)=>{ghost.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-60%)`;};
 
   root.addEventListener('pointerdown',event=>{
-    if(ui.getView()!=='board')return;
+    if(ui.getView()!=='board'||root.classList.contains('board-trade-active'))return;
     if(event.target instanceof Element&&event.target.closest('[data-generator-info]'))return;
     const cell=event.target.closest('.board-cell.occupied');if(!cell)return;
     const index=Number(cell.dataset.index),item=getState().board[index];if(!item)return;
