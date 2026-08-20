@@ -122,9 +122,10 @@ const inspectPlace=async height=>{
   assert(text.includes('Meerterrasse')&&text.includes('10/11'),`Place 10/11 ${height}: expected Meerterrasse state missing: ${text}`);
   assert(text.includes('NÄCHSTER AUSBAU'),`Place 10/11 ${height}: compact objective label missing: ${text}`);
   const [viewBox,heroBox,commandBox,goalBox,journeyBox]=await Promise.all([box(view),box(hero),box(command),box(goal),box(journey)]);
-  assert(goalBox.height<=98,`Place 10/11 ${height}: objective ticket too tall ${JSON.stringify(goalBox)}`);
-  assert(journeyBox.height<=12,`Place 10/11 ${height}: secondary progress rail too tall ${JSON.stringify(journeyBox)}`);
-  assert(heroBox.height>=viewBox.height*.7,`Place 10/11 ${height}: café scene is no longer primary ${JSON.stringify({viewBox,heroBox,commandBox})}`);
+  assert(goalBox.height<=Math.min(195,viewBox.height*.32),`Place 10/11 ${height}: readable objective tray dominates screen ${JSON.stringify({viewBox,goalBox})}`);
+  assert(journeyBox.height<=22,`Place 10/11 ${height}: secondary progress rail too tall ${JSON.stringify(journeyBox)}`);
+  assert(commandBox.height<=viewBox.height*.4,`Place 10/11 ${height}: build controls own too much of the screen ${JSON.stringify({viewBox,commandBox})}`);
+  assert(heroBox.height>=viewBox.height*.56&&heroBox.height>=goalBox.height*1.65,`Place 10/11 ${height}: café scene is no longer visually primary ${JSON.stringify({viewBox,heroBox,commandBox,goalBox})}`);
   await assertAboveDock(journey,`Place slim progress ${height}`,4);
   await assertNoScroll(`Place 10/11 ${height}`);
   await shot(`213-gameplay-place-10of11-390x${height}`);

@@ -28,6 +28,19 @@ test('Place Screen V4 turns missing stars into an active Orders CTA',async()=>{
   assert.match(behavior,/aria-describedby/);
 });
 
+test('Physical iPhone layer protects readable Place controls after all older CSS',async()=>{
+  const css=await read('../src/aaa-iphone-readability.css');
+  assert.match(css,/@media\(max-width:520px\)/);
+  assert.match(css,/minmax\(176px,34%\)/);
+  assert.match(css,/\.production-place \.place-current-goal\{[\s\S]*min-height:148px!important/);
+  assert.match(css,/goal-copy>small\{[\s\S]*font-size:8px!important/);
+  assert.match(css,/goal-copy>strong\{[\s\S]*font-size:22px!important/);
+  assert.match(css,/place-current-goal>button\{[\s\S]*height:46px!important[\s\S]*font-size:12px!important/);
+  assert.match(css,/purpose-place-unlock,[\s\S]*purpose-place-after,[\s\S]*place-goal-orders\{[\s\S]*display:none!important/);
+  assert.match(css,/@media\(max-width:520px\) and \(max-height:760px\)/);
+  assert.match(css,/minmax\(166px,38%\)/);
+});
+
 test('Place map launcher remains a scene utility, not a command-panel row',async()=>{
   const map=await read('../src/aaa-place-map.js');
   assert.match(map,/const hero=root\.querySelector\('\.world-hero'\)/);
@@ -36,16 +49,10 @@ test('Place map launcher remains a scene utility, not a command-panel row',async
   assert.doesNotMatch(map,/const command=root\.querySelector\('\.place-command'\)/);
 });
 
-test('Place Screen V4 remains loaded under the current guidance shell release',async()=>{
-  const index=await read('../index.html');
-  assert.match(index,/aaa-place-screen-v3\.css\?v=20260816-placev4/);
-  assert.match(index,/aaa-layout-stability\.css\?v=20260818-layout1/);
-  assert.match(index,/aaa-ui-hierarchy\.css\?v=20260818-hierarchy1/);
-  assert.match(index,/aaa-ui-hierarchy-active\.css\?v=20260818-hierarchy4/);
-  assert.match(index,/aaa-gameplay-first\.css\?v=20260818-gameplay1/);
-  assert.match(index,/aaa-gameplay-first-orders\.css\?v=20260818-gameplay5/);
-  assert.match(index,/aaa-gameplay-first-polish\.css\?v=20260818-gameplay4/);
-  assert.match(index,/aaa-place-life-v2\.css\?v=20260818-guidance1/);
-  assert.match(index,/aaa-main\.js\?v=20260818-guidance1/);
-  assert.match(index,/data-build="aaa-foundation-20260818-guidance1"/);
+test('Physical iPhone release is loaded last and rotates the runtime cache',async()=>{
+  const [index,worker]=await Promise.all([read('../index.html'),read('../sw.js')]);
+  assert.match(index,/aaa-place-life-v2\.css\?v=20260818-guidance1[^]*aaa-iphone-readability\.css\?v=20260819-iphone1/);
+  assert.match(index,/aaa-main\.js\?v=20260819-iphone1/);
+  assert.match(index,/data-build="aaa-foundation-20260819-iphone1"/);
+  assert.match(worker,/CACHE_NAME='poply-runtime-v2'/);
 });
