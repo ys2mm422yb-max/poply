@@ -19,14 +19,6 @@ export function installServiceSpecialsUI(root){
     node.querySelector(':scope > small')?.classList.add('service-special-choice-line');
     pulse(node,order);
   };
-  const decorateBoardJob=(order,special)=>{
-    const node=root.querySelector(`.board-job[data-focus-order="${order.id}"]`);if(!node)return;
-    node.classList.add('has-service-special',`special-${tone(special)}`);node.classList.toggle('special-complete',special.completed);
-    let badge=node.querySelector('.board-special-badge');if(!badge){badge=document.createElement('span');badge.className='board-special-badge';node.append(badge);}
-    const signature=`${special.tag}:${special.progress}:${special.target}:${special.completed}`;
-    if(badge.dataset.signature!==signature){badge.dataset.signature=signature;badge.innerHTML=special.completed?check:`<b>${special.tag}</b>`;}
-    pulse(node,order);
-  };
   const decorateServiceCard=(order,special)=>{
     const card=root.querySelector(`.service-card[data-service-order="${order.id}"]`);if(!card)return;
     card.classList.add('has-service-special',`special-${tone(special)}`);card.classList.toggle('special-complete',special.completed);
@@ -46,7 +38,9 @@ export function installServiceSpecialsUI(root){
       const state=getState();
       for(const order of state.currentOrders||[]){
         if(!order.special)continue;
-        decorateChoice(order,order.special);decorateBoardJob(order,order.special);decorateServiceCard(order,order.special);
+        // The Board strip is intentionally decision-only: guest, stars and requirements.
+        // Bonusziel progress stays in the Orders view where it has enough space and context.
+        decorateChoice(order,order.special);decorateServiceCard(order,order.special);
       }
     }finally{decorating=false;}
   };
