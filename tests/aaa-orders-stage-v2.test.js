@@ -51,7 +51,8 @@ test('Orders Stage V2 is a visual-only idempotent decorator with reduced-motion 
   assert.match(index,/data-build="aaa-foundation-20260819-iphone1"/);
   assert.match(workflow,/Run Orders Stage V2 WebKit QA/);
   assert.match(workflow,/node scripts\/orders-stage-v2-qa\.mjs/);
-  assert.match(qa,/330-orders-stage-missing-390x/);
-  assert.match(qa,/331-orders-stage-ready-390x/);
-  assert.match(qa,/332-orders-stage-reward-390x/);
+  assert.match(qa,/330-orders-stage-missing/);
+  assert.match(qa,/331-orders-stage-ready/);
+  assert.match(qa,/332-orders-stage-reward/);
+  assert.match(qa,/390x\$\{height\}/);
 });
