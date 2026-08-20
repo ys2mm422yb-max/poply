@@ -140,7 +140,7 @@
 .service-card.ready .service-avatar-ring{box-shadow:0 0 0 5px rgba(116,229,89,.13),0 12px 24px rgba(0,19,25,.35),0 0 34px rgba(var(--orders-primary),.24)!important}
 .service-card.fx-order-deliver .orders-stage-set{animation:orders-stage-deliver .34s cubic-bezier(.2,.8,.2,1) both}
 
-.service-reward-origin:before{
+.service-reward-origin.fx-reward-source:before{
   content:"";
   position:absolute;
   inset:-20px;
@@ -149,7 +149,7 @@
   box-shadow:0 0 22px rgba(255,211,82,.34);
   animation:orders-reward-ring .72s ease-out both;
 }
-.service-reward-origin:after{
+.service-reward-origin.fx-reward-source:after{
   content:"";
   position:absolute;
   inset:-30px;
@@ -190,7 +190,7 @@
   .orders-stage-lamp.lamp-left{left:6%}.orders-stage-lamp.lamp-right{right:6%}
 }
 @media(prefers-reduced-motion:reduce){
-  .orders-stage-lamp,.service-card.ready .orders-stage-glint,.service-card.fx-order-deliver .orders-stage-set,.service-reward-origin:before,.service-reward-origin:after{animation:none!important;transition:none!important}
+  .orders-stage-lamp,.service-card.ready .orders-stage-glint,.service-card.fx-order-deliver .orders-stage-set,.service-reward-origin.fx-reward-source:before,.service-reward-origin.fx-reward-source:after{animation:none!important;transition:none!important}
   .orders-stage-lamp{transform:none!important;opacity:.65}
   .service-card.ready .orders-stage-glint{opacity:.56;transform:none!important}
 }
