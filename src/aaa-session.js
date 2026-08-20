@@ -11,8 +11,9 @@ import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flo
 import { ensureServiceSpecials, progressServiceSpecials, awardServiceSpecialBonus } from './aaa-specials.js';
 import { ensurePlacePowerState, applyPreparationBonus, recordServicePlacePowers, replaceOrderWithGuestChoice, unlockPlacePowerForUpgrade } from './aaa-place-powers.js';
 import { ensureServiceCallState, serviceCallStatus, chooseServiceCall, progressServiceCallGenerator, recordServiceCallDelivery } from './aaa-service-call.js';
+import { ensureBoardTradeState, recordBoardTradeService, tradeBoardItem } from './aaa-board-trade.js';
 
-const ensureMeta=source=>ensurePlacePowerState(ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceCallState(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state).state).state;
+const ensureMeta=source=>ensureBoardTradeState(ensurePlacePowerState(ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceCallState(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state).state).state).state;
 let state=ensureMeta(loadSavedState());
 const keep=next=>{state=next;saveGameState(state);return state;};
 const collectSpecialProgress=(result,event)=>{
@@ -40,6 +41,11 @@ export function resetSession(){
 }
 export function chooseServiceCallAt(orderId,mode){
   const result=chooseServiceCall(getState(),orderId,mode);
+  if(result.changed)keep(result.state);
+  return result;
+}
+export function tradeBoardItemAt(index,targetFamily){
+  const result=tradeBoardItem(getState(),index,targetFamily);
   if(result.changed)keep(result.state);
   return result;
 }
@@ -105,6 +111,7 @@ export function deliverOrder(id){
   const guest=recordGuestService(result.state,order.sequence);
   result.state=guest.state;result.guest=guest;
   const powers=recordServicePlacePowers(result.state,order);result.state=powers.state;result.placePowers=powers.effects;result.placePowerStatus=powers.status;result.serviceCallStatus=serviceCallStatus(result.state);
+  const boardTrade=recordBoardTradeService(result.state);result.state=boardTrade.state;result.boardTrade=boardTrade.status;result.boardTradeReady=boardTrade.becameReady;
   keep(result.state);return result;
 }
 export function buildUpgrade(){
