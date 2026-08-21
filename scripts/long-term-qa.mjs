@@ -21,8 +21,11 @@ try{
   for(const height of [844,720]){
     await page.setViewportSize({width:390,height});
     await seed('mastery');await openView('collection');
+    const masteryDomain=await page.evaluate(async()=>{const mastery=await import('./src/aaa-generator-mastery.js');const state=JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}');return {coffee:mastery.generatorMastery(state,'coffee-gen'),pantry:mastery.generatorMastery(state,'pantry-gen')};});
+    assert(masteryDomain.coffee.uses===50&&masteryDomain.coffee.completed&&masteryDomain.coffee.title==='Meister',`coffee generator domain mastery wrong ${JSON.stringify(masteryDomain.coffee)}`);
+    assert(masteryDomain.pantry.uses===24&&!masteryDomain.pantry.completed&&masteryDomain.pantry.title==='Geübt'&&masteryDomain.pantry.nextAt===50,`pantry generator domain mastery wrong ${JSON.stringify(masteryDomain.pantry)}`);
     const coffee=page.locator('[data-generator-mastery="coffee-gen"]'),pantry=page.locator('[data-generator-mastery="pantry-gen"]');
-    await coffee.waitFor();let text=(await coffee.textContent())||'';assert(text.includes('MEISTER')&&text.includes('50'),'coffee generator mastery missing');text=(await pantry.textContent())||'';assert(text.includes('GEÜBT')&&text.includes('24/50'),'pantry generator mastery missing');assert(await page.locator('.generator-discovery.known').count()>=2,'known generators missing from Collection rail');assert(await page.locator('.generator-discovery.mastered').count()===1,'mastered generator state is not unique');
+    await coffee.waitFor();let text=(await coffee.textContent())||'';assert(text.includes('MEISTER')&&text.includes('Kaffeemaschine'),'coffee generator mastery UI missing');text=(await pantry.textContent())||'';assert(text.includes('GEÜBT')&&text.includes('24/50'),'pantry generator mastery UI missing');assert(await page.locator('.generator-discovery.known').count()>=2,'known generators missing from Collection rail');assert(await page.locator('.generator-discovery.mastered').count()===1,'mastered generator state is not unique');
     await page.locator('[data-collection-family="fruit"]').click();await page.waitForSelector('.view-collection[data-collection-family-active="fruit"]');assert(await page.locator('.collection-tier.locked .collection-art.silhouette').count()>0,'unknown Collection item is not a silhouette');
     await assertNoScroll(`Collection mastery 390x${height}`);await assertAboveNav(page.locator('.collection-world'),`Collection world 390x${height}`);await shot(height===844?'360-long-term-collection-390x844':'363-long-term-collection-390x720');
 
@@ -32,7 +35,7 @@ try{
 
     await seed('complete');await openView('place');const payoff=page.locator('.world-complete-payoff');await payoff.waitFor();text=(await payoff.textContent())||'';assert(text.includes('POPLY-WELT KOMPLETT')&&text.includes('Alle drei Places leuchten'),'completed-world payoff missing');assert(text.includes('18/18'),'completed upgrades summary missing');assert((await payoff.evaluate(node=>getComputedStyle(node).animationName))==='none','reduced motion still animates completion payoff');await assertNoScroll(`World complete 390x${height}`);await assertAboveNav(payoff,`World complete payoff 390x${height}`);await shot(height===844?'362-long-term-world-complete-390x844':'365-long-term-world-complete-390x720');
   }
-  report={generatorMastery:true,dailyStories:true,collectionSilhouettesOnly:true,activeOrdersNoUnknownPlaceholder:true,worldCompletion:true,reducedMotion:true,viewports:['390x844','390x720'],noDocumentScroll:true};
+  report={generatorMastery:true,generatorMasteryDomain:true,dailyStories:true,collectionSilhouettesOnly:true,activeOrdersNoUnknownPlaceholder:true,worldCompletion:true,reducedMotion:true,viewports:['390x844','390x720'],noDocumentScroll:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('366-long-term-failure');}catch{}}
 finally{await writeFile(`${outDir}/long-term-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
