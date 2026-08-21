@@ -95,7 +95,8 @@ export function createUI(root,toast){
         const specialNote=specialBonus?` inkl. +${specialBonus} Bonus`:'';
         const callNote=callBonus?` · Service-Ruf +${callBonus}`:result.serviceCall?.expired?' · Service-Ruf verfallen':'';
         const dynamicNote=dynamicBonus?` · Gast/Tag +${dynamicBonus}`:'';
-        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}${dynamicNote}`);
+        const momentNote=result.serviceMoment?.completed?` · ${result.serviceMoment.moment.label}: ${result.serviceMoment.bonusLabel}`:'';
+        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}${dynamicNote}${momentNote}`);
         if(selectedOrderId===orderId)selectedOrderId=null;
         setTimeout(()=>{render();playRewards(result.rewards,rewardOrigin);emitProgression(result,'order');},320);
       }
@@ -108,9 +109,9 @@ export function createUI(root,toast){
     if(!result.changed){playFeedback('invalid');message(result.reason==='board-full'?'Board voll – merge zuerst Items.':'Keine Energie.','bad');return;}
     lastFx={type:'spawn',sourceIndex:index,index:result.spawnedIndex,boosted:result.flowBoosted};
     if(result.flowBoosted)playFeedback('reward');else playFeedback('spawn');
-    const completedSpecial=result.specialUpdates?.find(update=>update.becameCompleted),specialUpdate=completedSpecial||result.specialUpdates?.[0],call=result.serviceCallProgress;
+    const completedSpecial=result.specialUpdates?.find(update=>update.becameCompleted),specialUpdate=completedSpecial||result.specialUpdates?.[0],call=result.serviceCallProgress,moment=result.serviceMomentProgress;
     const baseMessage=result.flowBoosted?'FLOW-BOOST! Stärkerer Drop.':result.mastery?`Familie gemeistert! +${result.mastery.rewardCoins} Coins`:result.bonus?'Erntebonus! Kräuterbund':result.discovery?'Neue Entdeckung!':'Neues Item';
-    const callText=call?`Service-Ruf Nachschub ${call.status.generatorProgress}/${call.status.generatorTarget}`:'';
+    const callText=moment?`Kaffee-Tag · Nachschub ${moment.moment.call.generatorProgress}/${moment.moment.call.generatorTarget}`:call?`Service-Ruf Nachschub ${call.status.generatorProgress}/${call.status.generatorTarget}`:'';
     message(completedSpecial?`${baseMessage} · ${serviceSpecialUpdateText(completedSpecial)}`:callText?`${baseMessage} · ${callText}`:specialUpdate&&!result.discovery?serviceSpecialUpdateText(specialUpdate):baseMessage);
     render();emitDiscovery(result);
   };
