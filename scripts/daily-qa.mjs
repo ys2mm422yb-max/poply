@@ -47,8 +47,11 @@ try{
   await page.locator('[data-index="0"]').evaluate(element=>element.click());await page.waitForTimeout(180);
   state=await readSave();assert(goal(state,'generate').progress===1,'real generator action did not progress daily generate goal');
 
-  await page.locator('.nav-tab[data-view="orders"]').click();await page.waitForSelector('.daily-ribbon');
-  assert((await page.locator('.daily-ribbon').textContent())?.includes('3/3 ZIELE'),'daily ribbon does not show completed goals');assert((await page.locator('.daily-ribbon strong').textContent())==='Tagesziele & Gast','daily ribbon label is clipped or stale');await page.locator('.daily-ribbon').click();await page.waitForSelector('.daily-sheet');await assertSheetFits('390x844 daily');assert((await page.locator('.daily-bonus-copy p').textContent())?.includes('1/1 vorbereitet'),'daily bonus readiness must cap at requirement target');await shot('50-daily-goals-ready');
+  await page.locator('.nav-tab[data-view="orders"]').click();await page.waitForSelector('.daily-ribbon[data-daily-toggle]');
+  const ribbonCopy=await page.locator('.daily-ribbon').evaluate(node=>({small:node.querySelector('.daily-ribbon-copy small')?.textContent?.trim()||'',strong:node.querySelector('.daily-ribbon-copy strong')?.textContent?.trim()||'',text:node.textContent?.replace(/\s+/g,' ').trim()||''}));
+  assert(ribbonCopy.small.includes('3/3'),`daily story ribbon does not show completed goals: ${JSON.stringify(ribbonCopy)}`);
+  assert(ribbonCopy.strong&&ribbonCopy.strong!=='Tagesziele & Gast'&&!ribbonCopy.text.includes('Tagesziele & Gast'),`daily ribbon did not switch to story framing: ${JSON.stringify(ribbonCopy)}`);
+  await page.locator('.daily-ribbon').click();await page.waitForSelector('.daily-sheet.daily-story-sheet');await assertSheetFits('390x844 daily');assert((await page.locator('.daily-bonus-copy p').textContent())?.includes('1/1 vorbereitet'),'daily bonus readiness must cap at requirement target');await shot('50-daily-goals-ready');
 
   const beforeClaims=(await readSave()).coins;
   for(const id of ['goal-merge-0','goal-serve-1','goal-generate-2']){const button=page.locator(`[data-daily-claim="${id}"]`);assert(await button.isVisible(),`claim button missing for ${id}`);await button.click();await page.waitForTimeout(100);}
@@ -62,7 +65,7 @@ try{
 
   await page.setViewportSize({width:390,height:720});await page.waitForTimeout(140);if(!(await page.locator('.daily-sheet').isVisible()))await page.locator('.daily-ribbon').click();await assertSheetFits('390x720 daily');await shot('52-daily-short-safari');
   await page.reload({waitUntil:'networkidle'});state=await readSave();assert(state.daily.goals.every(entry=>entry.claimed)&&state.daily.bonus.served,'daily completion was lost after reload');
-  report={dateKey:state.daily.dateKey,coins:state.coins,stars:state.stars,playerXp:state.playerXp,claimed:state.daily.goals.filter(entry=>entry.claimed).length,bonusServed:state.daily.bonus.served};
+  report={dateKey:state.daily.dateKey,coins:state.coins,stars:state.stars,playerXp:state.playerXp,claimed:state.daily.goals.filter(entry=>entry.claimed).length,bonusServed:state.daily.bonus.served,dailyStoryRibbon:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('59-daily-failure');}catch{}}
 finally{await writeFile(`${outDir}/daily-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
