@@ -1,4 +1,5 @@
 import { PLACE_CHAPTERS, activePlaceChapter, currentChapterProgress, restorationStatus } from './v2-game.js';
+import { placeUpgradeBenefit } from './aaa-place-benefits.js';
 
 const PLACE_UNLOCK_DETAIL={
   sunset:'Neuer Place + Tropenbar + Sonnenfrüchte',
@@ -17,23 +18,25 @@ export function purposeGoal(state){
       kind:'complete',complete:true,ready:true,chapter,upgrade:null,
       label:'Alle Places aufgebaut',story:'Deine aktuelle Poply-Welt ist vollständig restauriert.',
       step:chapter.upgrades.length,total:chapter.upgrades.length,current:0,cost:0,missing:0,ratio:1,
-      after:null,
+      benefit:null,after:null,
     };
   }
   const index=Math.max(0,chapter.upgrades.findIndex(entry=>entry.id===upgrade.id));
   const nextUpgrade=chapter.upgrades[index+1]??null;
   const nextChapter=nextChapterAfter(chapter);
+  const benefit=placeUpgradeBenefit(upgrade);
+  const nextBenefit=nextUpgrade?placeUpgradeBenefit(nextUpgrade):null;
   const after=nextUpgrade
-    ?{kind:'upgrade',label:nextUpgrade.label,detail:nextUpgrade.copy}
+    ?{kind:'upgrade',label:nextUpgrade.label,detail:nextBenefit?`${nextBenefit.label} · ${nextBenefit.detail}`:nextUpgrade.copy,benefit:nextBenefit}
     :nextChapter
-      ?{kind:'place',label:`Place 0${nextChapter.number}: ${nextChapter.label}`,detail:PLACE_UNLOCK_DETAIL[nextChapter.id]??'Neuer Place und neue Inhalte'}
-      :{kind:'complete',label:'Alle drei Places fertig',detail:'Deine Poply-Welt ist vollständig restauriert.'};
+      ?{kind:'place',label:`Place 0${nextChapter.number}: ${nextChapter.label}`,detail:PLACE_UNLOCK_DETAIL[nextChapter.id]??'Neuer Place und neue Inhalte',benefit:null}
+      :{kind:'complete',label:'Alle drei Places fertig',detail:'Deine Poply-Welt ist vollständig restauriert.',benefit:null};
   return {
     kind:'restoration',complete:false,ready:status.missing===0,chapter,upgrade,
-    label:upgrade.label,story:upgrade.copy,
+    label:upgrade.label,story:benefit?`${benefit.label}: ${benefit.detail}`:upgrade.copy,
     step:index+1,total:chapter.upgrades.length,
     current:status.current,cost:status.cost,missing:status.missing,ratio:status.ratio,
-    after,
+    benefit,after,
   };
 }
 
