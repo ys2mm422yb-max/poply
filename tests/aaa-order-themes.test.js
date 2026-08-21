@@ -51,6 +51,7 @@ test('thematic layer is presentation-only, loaded after the existing Orders stag
   assert.match(module,/\.service-card\[data-service-order\]/);
   assert.doesNotMatch(module,/saveGameState|localStorage|coins\s*=|stars\s*=|energy\s*=|Math\.random|setInterval/i);
   assert.match(css,/\.service-order-theme>p\{[^}]*font-size:11\.5px/s);
+  assert.match(css,/\.service-orders\.has-service-call-ready \.service-order-theme,\.service-orders\.has-service-call-active \.service-order-theme\{display:none!important\}/);
   assert.match(main,/installOrdersStageV2\(root\);\ninstallOrderThemes\(root\);/);
   assert.match(index,/aaa-order-themes\.css\?v=20260821-themes1/);
   assert.match(workflow,/Run thematic Orders WebKit QA/);
