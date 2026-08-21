@@ -49,8 +49,17 @@ try{
   assert(await page.locator('button[data-order="order-1"]').isEnabled(),'recipe should be ready after the two Series merges');
   await assertNoScroll('completed Merge-Serie 390x844');await shot('102-service-special-complete-390x844');
 
-  await page.locator('button[data-order="order-1"]').click();await page.waitForFunction(()=>document.querySelector('#toast')?.textContent?.includes('inkl. +40 Bonus'));
-  const toast=(await page.locator('#toast').textContent())||'';assert(toast.includes('+130')&&toast.includes('inkl. +40 Bonus'),`delivery did not communicate bonus payout: ${toast}`);
+  await page.evaluate(()=>{
+    window.__poplyQaToastLog=[];
+    const toast=document.querySelector('#toast');
+    const capture=()=>{const text=toast?.textContent||'';if(text)window.__poplyQaToastLog.push(text);};
+    capture();
+    if(toast)new MutationObserver(capture).observe(toast,{childList:true,subtree:true,characterData:true});
+  });
+  await page.locator('button[data-order="order-1"]').click();
+  await page.waitForFunction(()=>window.__poplyQaToastLog?.some(text=>text.includes('inkl. +40 Bonus')));
+  const toast=await page.evaluate(()=>window.__poplyQaToastLog.find(text=>text.includes('inkl. +40 Bonus'))||'');
+  assert(toast.includes('+130')&&toast.includes('inkl. +40 Bonus'),`delivery did not communicate bonus payout: ${toast}`);
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').currentOrders?.some(order=>order.id==='order-3'&&order.special?.type==='flow-tip'));
   await page.waitForTimeout(380);
   const afterDelivery=await readSave(),replacement=afterDelivery.currentOrders.find(order=>order.id==='order-3');
