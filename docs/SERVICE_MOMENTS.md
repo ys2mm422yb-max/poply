@@ -20,10 +20,11 @@ Die Auswahl rotiert deterministisch über `callsCompleted + callsExpired` innerh
 ## UI-Vertrag
 
 - Der Moment erscheint nur bei bereitstehendem Service-Ruf.
-- Er nennt `Moment → Gast → empfohlener Ruf-Weg → Nutzen`.
-- Die vorhandene Gästekarte wird markiert; `Gast wählen` fokussiert denselben normalen Auftrag.
-- Ist der Zielgast fokussiert, wird nur der passende bestehende Service-Ruf-Button als Empfehlung markiert.
-- Bei aktivem passenden Ruf sitzt der Moment kompakt im vorhandenen Ruf-Panel.
+- Er nennt innerhalb der **bestehenden Service-Ruf-Zeile** `Moment → Gast → empfohlener Ruf-Weg → Nutzen`.
+- Es wird **keine zusätzliche Orders-Zeile** und keine zweite Event-Karte erzeugt; die bestehende One-Screen-Geometrie bleibt Eigentümer der Fläche.
+- Die vorhandene Gästekarte des Moment-Ziels wird markiert. Der Spieler fokussiert sie weiterhin über die normale Gästeauswahl.
+- Erst wenn der Zielgast fokussiert ist, wird nur der passende bestehende Service-Ruf-Button als Empfehlung markiert.
+- Bei aktivem passenden Ruf wird der Moment in der bereits vorhandenen Statuszeile des Ruf-Panels angezeigt; auch dort entsteht keine zusätzliche Zeile.
 - Board-Minikarten erhalten keinen neuen Mikrotext; nur das aktive Ziel bekommt einen Rahmen.
 - Auf 390×720 wird die erklärende Nebenzeile ausgeblendet, nicht die Entscheidung.
 - `prefers-reduced-motion` deaktiviert alle neuen Bewegungen.
@@ -38,8 +39,9 @@ Die bestehenden Coin-/Star-/XP-Tabellen bleiben unangetastet. Der einzige neue U
 
 `scripts/service-moments-qa.mjs` läuft verpflichtend in Browser QA und prüft WebKit auf 390×844 sowie 390×720:
 
-- Kaffee-Tag ist sichtbar und empfiehlt Nachschub;
+- Kaffee-Tag ist in der vorhandenen Ruf-Zeile sichtbar und empfiehlt Nachschub;
 - Zielgast und empfohlener bestehender Ruf-Weg sind eindeutig;
+- es existiert keine zusätzliche `.service-moment-card`-Direktzeile;
 - ein Kaffee-Generator-Tap ergibt im passenden Moment exakt `2/2` Nachschub;
 - Sonnenuntergang-Service zeigt die bestehende Abendservice-Synergie;
 - ein Stammgast erzeugt den authored Stammgast-Moment;
