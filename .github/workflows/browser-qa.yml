@@ -115,6 +115,9 @@ jobs:
       - name: Run Collection Book WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/collection-qa.mjs
+      - name: Run long-term motivation WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/long-term-qa.mjs
       - name: Run Storage WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/storage-qa.mjs
