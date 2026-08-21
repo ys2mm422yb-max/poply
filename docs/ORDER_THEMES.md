@@ -8,6 +8,7 @@ Arbeitsblock 2 makes orders read like understandable café moments rather than a
 - The mapping changes presentation only: visible title, concise theme label and a short explanation of why the concrete required products belong together.
 - Raw or intermediate items are never presented as already-finished dishes. Examples: `Mehl` is described as preparation for baked goods; `Zucker` as preparation for a sweet component; `Fruchtmix` is not called a lime.
 - Compact Board order cards stay unchanged in information density: guest, stars, item art and quantity/status only. Theme/story context belongs to the focused Orders service card where there is room to read it.
+- When Service-Ruf is ready or active, its immediate production task remains primary: the corrected thematic title stays visible, while the extra story row is hidden for that temporary compact state. This preserves the established gameplay-first height contract instead of stacking another dashboard row.
 - Existing requirement sets, difficulty bands and base Coin/Star rewards remain unchanged in this block. The block improves semantic coherence without hidden balance inflation.
 - The presentation mapping is not persisted into the save. Existing/legacy saves therefore inherit the corrected wording automatically without a save-version bump.
 - No RNG, timers, new currency, Neon/backend dependency or PWA release-marker change.
@@ -34,10 +35,11 @@ Higher-tier combinations retain their authored names when the required products 
 
 ## QA
 The dedicated thematic-order WebKit gate runs at 390×844 and 390×720 and proves:
-1. the focused order visibly shows exactly one concise theme label and readable story;
+1. the focused normal order visibly shows exactly one concise theme label and readable story;
 2. the concrete requirement art/counts remain readable and tappable and still open item provenance;
 3. compact Board jobs do not gain theme microcopy;
-4. no document scroll or Bottom Dock overlap is introduced.
+4. no document scroll or Bottom Dock overlap is introduced;
+5. the pre-existing gameplay-first Service-Ruf gate remains green, so thematic context never displaces the primary production action.
 
 Canonical screenshots:
 - `340-thematic-order-focus-390x844.png`
