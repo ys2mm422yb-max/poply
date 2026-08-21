@@ -94,6 +94,9 @@ jobs:
       - name: Run Service-Ruf WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/service-call-qa.mjs
+      - name: Run Service moments WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/service-moments-qa.mjs
       - name: Run Cafe Place Powers WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/place-powers-qa.mjs

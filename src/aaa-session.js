@@ -11,6 +11,7 @@ import { ensureFlowState, recordMergeFlow, applyGeneratorBoost } from './aaa-flo
 import { ensureServiceSpecials, progressServiceSpecials, awardServiceSpecialBonus } from './aaa-specials.js';
 import { ensurePlacePowerState, applyPreparationBonus, recordServicePlacePowers, replaceOrderWithGuestChoice, unlockPlacePowerForUpgrade } from './aaa-place-powers.js';
 import { ensureServiceCallState, serviceCallStatus, chooseServiceCall, progressServiceCallGenerator, recordServiceCallDelivery } from './aaa-service-call.js';
+import { serviceMomentStatus, progressServiceMomentGenerator, applyServiceMomentDelivery } from './aaa-service-moments.js';
 import { ensureBoardTradeState, recordBoardTradeService, tradeBoardItem } from './aaa-board-trade.js';
 
 const ensureMeta=source=>ensureBoardTradeState(ensurePlacePowerState(ensureGuestState(ensureDailyState(ensureInventoryState(ensureCollectionState(ensurePlayerProgress(ensureServiceCallState(ensureServiceSpecials(ensureFlowState(source).state).state).state).state).state).state).state).state).state).state;
@@ -66,6 +67,7 @@ export function generateAt(index){
     collectSpecialProgress(result,{type:'item-created',family:item.family});
     if(boost.boosted)collectSpecialProgress(result,{type:'flow-boost',family:item.family});
     const serviceCall=progressServiceCallGenerator(result.state);result.state=serviceCall.state;result.serviceCall=serviceCall;result.serviceCallProgress=serviceCall.gained?serviceCall:null;
+    const serviceMomentProgress=progressServiceMomentGenerator(result.state,item.family);result.state=serviceMomentProgress.state;result.serviceMomentProgress=serviceMomentProgress.extraProgress?serviceMomentProgress:null;
     keep(result.state);
   }
   return result;
@@ -95,7 +97,7 @@ export function replaceOrder(id){
   keep(result.state);return result;
 }
 export function deliverOrder(id){
-  const current=getState(),order=current.currentOrders.find(entry=>entry.id===id),preview=fulfillOrder(current,id);
+  const current=getState(),order=current.currentOrders.find(entry=>entry.id===id),serviceMoment=serviceMomentStatus(current),preview=fulfillOrder(current,id);
   if(!preview.changed)return preview;
   const serviceCall=recordServiceCallDelivery(current,id),result=serviceCall.changed?fulfillOrder(serviceCall.state,id):preview;
   const baseRewards={...result.rewards},special=awardServiceSpecialBonus(result.state,order);
@@ -110,7 +112,9 @@ export function deliverOrder(id){
   result.state=progressDailyEvent(result.state,'serve').state;
   const guest=recordGuestService(result.state,order.sequence);
   result.state=guest.state;result.guest=guest;
-  const powers=recordServicePlacePowers(result.state,order);result.state=powers.state;result.placePowers=powers.effects;result.placePowerStatus=powers.status;result.serviceCallStatus=serviceCallStatus(result.state);
+  const powers=recordServicePlacePowers(result.state,order);result.state=powers.state;result.placePowers=powers.effects;result.placePowerStatus=powers.status;
+  const momentResult=applyServiceMomentDelivery(result.state,serviceMoment,serviceCall,powers.effects);result.state=momentResult.state;result.serviceMoment=momentResult;
+  result.serviceCallStatus=serviceCallStatus(result.state);
   const boardTrade=recordBoardTradeService(result.state);result.state=boardTrade.state;result.boardTrade=boardTrade.status;result.boardTradeReady=boardTrade.becameReady;
   keep(result.state);return result;
 }
