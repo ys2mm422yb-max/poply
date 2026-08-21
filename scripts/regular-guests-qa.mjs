@@ -74,7 +74,7 @@ const inspectPlace=async height=>{
   assert(nameText.includes('Mika · Stammgast')&&nameText.includes('Nora · Bekannt')&&nameText.includes('Sam'),`Regular Place ${height}: visible guest names/ranks missing ${nameText}`);
   const nameplates=scene.locator('.regular-guest-nameplate');
   for(let i=0;i<await nameplates.count();i+=1){const box=await nameplates.nth(i).boundingBox();assert(box&&box.width>=38&&box.height>=8,`Regular Place ${height}: nameplate ${i} not visible ${JSON.stringify(box)}`);}
-  await assertAboveDock(page.locator('.place-stage'),`Regular Place stage ${height}`);
+  await assertAboveDock(scene,`Regular Place scene ${height}`);
   await assertNoScroll(`Regular Place ${height}`);
   await shot(`351-regular-guests-place-390x${height}`);
 };
