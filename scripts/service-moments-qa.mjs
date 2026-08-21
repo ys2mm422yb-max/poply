@@ -29,9 +29,10 @@ const seed=async mode=>{
   await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.game-view');
 };
 const focusMoment=async()=>{
-  const card=page.locator('.service-moment-card');await card.waitFor();const orderId=await card.getAttribute('data-order');
-  const focus=card.locator('[data-service-moment-focus]');if(await focus.isVisible())await focus.click();
-  await page.waitForSelector(`.service-card[data-service-order="${orderId}"]`);await page.waitForSelector('.service-moment-card.is-focused');return orderId;
+  const panel=page.locator('.service-call-choice-panel.has-service-moment');await panel.waitFor();const orderId=await panel.getAttribute('data-service-moment-order');
+  const selected=await page.locator('.service-card[data-service-order]').getAttribute('data-service-order');
+  if(selected!==orderId)await page.locator(`.customer-choice[data-select-order="${orderId}"]`).click();
+  await page.waitForSelector(`.service-card[data-service-order="${orderId}"]`);await page.waitForSelector('.service-call-choice-panel.has-service-moment .service-moment-recommended');return orderId;
 };
 
 let report={},failure=null;
@@ -39,31 +40,32 @@ try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
 
   await seed('coffee');await openOrders();
-  let card=page.locator('.service-moment-card[data-moment="coffee-day"]');await card.waitFor();
-  let text=(await card.textContent())||'';assert(text.includes('Kaffee-Tag')&&text.includes('Nachschub')&&text.includes('2×'),`Kaffee-Tag copy incomplete: ${text}`);
+  let panel=page.locator('.service-call-choice-panel.has-service-moment[data-service-moment="coffee-day"]');await panel.waitFor();
+  let text=(await panel.textContent())||'';assert(text.includes('Kaffee-Tag')&&text.includes('Nachschub')&&text.includes('2×'),`Kaffee-Tag copy incomplete: ${text}`);
+  assert(await page.locator('.view-orders > .service-moment-card').count()===0,'Service moment created a seventh direct Orders row');
   const coffeeOrder=await focusMoment();assert(await page.locator(`[data-select-order="${coffeeOrder}"].service-moment-target`).count()===1,'Kaffee-Tag target not highlighted');
   const recommended=page.locator('.service-call-choice-panel [data-service-call-mode="stock"].service-moment-recommended');assert(await recommended.count()===1,'Kaffee-Tag did not recommend Nachschub');
   assert(await recommended.locator('.service-moment-recommendation').count()===1,'moment recommendation badge missing');
-  assert((await card.evaluate(node=>getComputedStyle(node).animationName))==='none','reduced motion still animates service moment');
-  await assertWithin(card,'Kaffee-Tag card 390x844');await assertNoScroll('Kaffee-Tag ready 390x844');await shot('340-service-moment-coffee-ready-390x844');
+  assert((await panel.evaluate(node=>getComputedStyle(node).animationName))==='none','reduced motion still animates service moment');
+  await assertWithin(panel,'Kaffee-Tag Ruf row 390x844');await assertNoScroll('Kaffee-Tag ready 390x844');await shot('340-service-moment-coffee-ready-390x844');
 
-  await recommended.click();await page.waitForSelector(`.service-card[data-service-order="${coffeeOrder}"] .service-moment-active[data-moment="coffee-day"]`);
-  let active=page.locator('.service-moment-active');text=(await active.textContent())||'';assert(text.includes('Kaffee-Tag')&&text.includes('2×'),'active Kaffee-Tag lost its payoff');
-  await assertWithin(page.locator('.service-call-panel'),'active Kaffee-Tag panel 390x844');await assertNoScroll('Kaffee-Tag active 390x844');await shot('341-service-moment-coffee-active-390x844');
+  await recommended.click();await page.waitForSelector(`.service-card[data-service-order="${coffeeOrder}"] .service-call-panel.has-service-moment[data-service-moment="coffee-day"]`);
+  let active=page.locator('.service-call-panel.has-service-moment');text=(await active.textContent())||'';assert(text.includes('KAFFEE-TAG')&&text.includes('2×'),'active Kaffee-Tag lost its compact payoff');
+  await assertWithin(active,'active Kaffee-Tag panel 390x844');await assertNoScroll('Kaffee-Tag active 390x844');await shot('341-service-moment-coffee-active-390x844');
   await page.locator('.nav-tab[data-view="board"]').click();await page.waitForSelector('.board-cell.generator[data-index="0"]');await page.locator('.board-cell.generator[data-index="0"]').click();
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').serviceCallState?.generatorProgress===2);
   let save=await readSave();assert(save.serviceCallState.generatorProgress===2,'one coffee generator did not count 2× during Kaffee-Tag');
   assert(await page.locator(`.board-job[data-focus-order="${coffeeOrder}"].service-moment-target`).count()===1,'active service moment target missing on Board');await assertNoScroll('Kaffee-Tag board 390x844');await shot('342-service-moment-coffee-board-390x844');
 
-  await seed('sunset');await openOrders();card=page.locator('.service-moment-card[data-moment="sunset-service"]');await card.waitFor();text=(await card.textContent())||'';assert(text.includes('Sonnenuntergang-Service')&&text.includes('Abendservice'),'sunset moment missing existing Place Power synergy');await assertWithin(card,'Sonnenuntergang moment 390x844');await assertNoScroll('sunset moment 390x844');await shot('343-service-moment-sunset-390x844');
+  await seed('sunset');await openOrders();panel=page.locator('.service-call-choice-panel.has-service-moment[data-service-moment="sunset-service"]');await panel.waitFor();text=(await panel.textContent())||'';assert(text.includes('Sonnenuntergang-Service')&&text.includes('Abendservice'),'sunset moment missing existing Place Power synergy');await assertWithin(panel,'Sonnenuntergang Ruf row 390x844');await assertNoScroll('sunset moment 390x844');await shot('343-service-moment-sunset-390x844');
 
-  await page.setViewportSize({width:390,height:720});await seed('coffee');await openOrders();card=page.locator('.service-moment-card[data-moment="coffee-day"]');await card.waitFor();const shortCoffee=await focusMoment();
-  await assertWithin(card,'Kaffee-Tag card 390x720');await assertAboveNav(page.locator('.service-card .service-deliver'),'delivery 390x720');await assertNoScroll('Kaffee-Tag ready 390x720');await shot('344-service-moment-coffee-ready-390x720');
-  await page.locator('.service-call-choice-panel [data-service-call-mode="stock"].service-moment-recommended').click();await page.waitForSelector(`.service-card[data-service-order="${shortCoffee}"] .service-moment-active`);await assertWithin(page.locator('.service-call-panel'),'active Kaffee-Tag panel 390x720');await assertAboveNav(page.locator('.service-card .service-deliver'),'active delivery 390x720');await assertNoScroll('Kaffee-Tag active 390x720');await shot('345-service-moment-coffee-active-390x720');
+  await page.setViewportSize({width:390,height:720});await seed('coffee');await openOrders();panel=page.locator('.service-call-choice-panel.has-service-moment[data-service-moment="coffee-day"]');await panel.waitFor();const shortCoffee=await focusMoment();
+  await assertWithin(panel,'Kaffee-Tag Ruf row 390x720');await assertAboveNav(page.locator('.service-card .service-deliver'),'delivery 390x720');await assertNoScroll('Kaffee-Tag ready 390x720');await shot('344-service-moment-coffee-ready-390x720');
+  await page.locator('.service-call-choice-panel [data-service-call-mode="stock"].service-moment-recommended').click();await page.waitForSelector(`.service-card[data-service-order="${shortCoffee}"] .service-call-panel.has-service-moment`);active=page.locator('.service-call-panel.has-service-moment');await assertWithin(active,'active Kaffee-Tag panel 390x720');await assertAboveNav(page.locator('.service-card .service-deliver'),'active delivery 390x720');await assertNoScroll('Kaffee-Tag active 390x720');await shot('345-service-moment-coffee-active-390x720');
 
-  await seed('regular');await openOrders();card=page.locator('.service-moment-card[data-moment="regular-guest"]');await card.waitFor();text=(await card.textContent())||'';assert(text.includes('Stammgast kommt')&&text.includes('Loyalität'),'regular-guest moment missing loyalty context');await assertWithin(card,'Stammgast moment 390x720');await assertNoScroll('Stammgast moment 390x720');await shot('346-service-moment-regular-390x720');
+  await seed('regular');await openOrders();panel=page.locator('.service-call-choice-panel.has-service-moment[data-service-moment="regular-guest"]');await panel.waitFor();text=(await panel.textContent())||'';assert(text.includes('Stammgast kommt')&&text.includes('Loyalität'),'regular-guest moment missing loyalty context');await assertWithin(panel,'Stammgast Ruf row 390x720');await assertNoScroll('Stammgast moment 390x720');await shot('346-service-moment-regular-390x720');
 
-  report={coffeeDay:{recommendedMode:'stock',singleCoffeeGeneratorProgress:2},sunsetService:true,regularGuest:true,reducedMotion:true,viewports:['390x844','390x720'],noDocumentScroll:true};
+  report={coffeeDay:{recommendedMode:'stock',singleCoffeeGeneratorProgress:2},sunsetService:true,regularGuest:true,reducedMotion:true,viewports:['390x844','390x720'],noDocumentScroll:true,noExtraOrdersRow:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('347-service-moment-failure');}catch{}}
 finally{await writeFile(`${outDir}/service-moments-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
