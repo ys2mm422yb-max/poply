@@ -57,6 +57,6 @@ test('Service moments are wired as a thin layer around Service-Ruf',async()=>{
   assert.match(index,/aaa-service-moments\.css\?v=20260821-moments1/);
   assert.match(main,/installServiceMomentsUI\(root\)/);
   assert.match(session,/progressServiceMomentGenerator/);assert.match(session,/applyServiceMomentDelivery/);
-  assert.match(ui,/data-service-moment-focus/);assert.match(ui,/service-moment-recommended/);
+  assert.match(ui,/service-call-choice-panel\.is-ready/);assert.match(ui,/service-moment-recommended/);assert.doesNotMatch(ui,/queue\.after\(card\)/);
   assert.match(workflow,/Run Service moments WebKit QA/);
 });
