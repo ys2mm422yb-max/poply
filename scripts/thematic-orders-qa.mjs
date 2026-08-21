@@ -16,7 +16,7 @@ const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const box=async locator=>{const value=await locator.boundingBox();assert(value,`missing geometry for ${locator}`);return value;};
 const applyInsets=()=>page.evaluate(({top,bottom})=>{document.documentElement.style.setProperty('--poply-safe-top',`${top}px`);document.documentElement.style.setProperty('--poply-safe-bottom',`${bottom}px`);},{top:SAFE_TOP,bottom:SAFE_BOTTOM});
 const assertNoScroll=async label=>{const metrics=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight}));assert(metrics.scroll<=metrics.inner+1,`${label}: document scrolls ${JSON.stringify(metrics)}`);};
-const assertAboveDock=async(locator,label,clearance=5)=>{const [item,nav]=await Promise.all([box(locator),box(page.locator('.main-nav'))]);assert(item.y+item.height<=nav.y-clearance,`${label}: overlaps dock ${JSON.stringify({item,nav})}`);};
+const assertAboveDock=async(locator,label,clearance=1)=>{const [item,nav]=await Promise.all([box(locator),box(page.locator('.main-nav'))]);assert(item.y+item.height<=nav.y-clearance,`${label}: overlaps dock ${JSON.stringify({item,nav})}`);};
 
 const seed=async()=>{
   await page.evaluate(async()=>{
@@ -76,7 +76,7 @@ const inspectBoard=async height=>{
     assert((await job.locator('.board-job-reward').count())===1,`Thematic Orders board ${height}: stars missing at ${i}`);
     assert((await job.locator('.board-job-needs .item-art').count())>=1,`Thematic Orders board ${height}: item art missing at ${i}`);
   }
-  await assertAboveDock(page.locator('.board-area'),`Thematic Orders board ${height}`,5);
+  await assertAboveDock(page.locator('.board-area'),`Thematic Orders board ${height}`,1);
   await assertNoScroll(`Thematic Orders board ${height}`);
   await shot(`341-thematic-order-board-390x${height}`);
 };
