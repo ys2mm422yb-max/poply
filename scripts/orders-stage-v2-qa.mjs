@@ -17,7 +17,7 @@ const box=async locator=>{const value=await locator.boundingBox();assert(value,`
 const applyInsets=()=>page.evaluate(({top,bottom})=>{document.documentElement.style.setProperty('--poply-safe-top',`${top}px`);document.documentElement.style.setProperty('--poply-safe-bottom',`${bottom}px`);},{top:SAFE_TOP,bottom:SAFE_BOTTOM});
 const assertNoScroll=async label=>{const metrics=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight}));assert(metrics.scroll<=metrics.inner+1,`${label}: document scrolls ${JSON.stringify(metrics)}`);};
 const assertAboveDock=async(locator,label,clearance=5)=>{const [item,nav]=await Promise.all([box(locator),box(page.locator('.main-nav'))]);assert(item.y+item.height<=nav.y-clearance,`${label}: overlaps dock ${JSON.stringify({item,nav})}`);};
-const assertWithinViewport=async(locator,label,clearance=4)=>{const item=await box(locator);assert(item.x>=clearance&&item.x+item.width<=390-clearance,`${label}: clips phone viewport ${JSON.stringify(item)}`);};
+const assertWithinViewport=async(locator,label,height,clearance=4)=>{const item=await box(locator);assert(item.x>=clearance&&item.x+item.width<=390-clearance,`${label}: clips phone viewport horizontally ${JSON.stringify(item)}`);assert(item.y>=clearance&&item.y+item.height<=height-clearance,`${label}: clips phone viewport vertically ${JSON.stringify(item)}`);assert(item.y>=SAFE_TOP+48,`${label}: intrudes into installed-app top shell ${JSON.stringify(item)}`);};
 
 const seed=async ready=>{
   await page.evaluate(async readyState=>{
@@ -88,7 +88,7 @@ const inspectReward=async height=>{
   assert(await goal.evaluate(node=>node.classList.contains('fx-reward-arrive')),`Orders reward ${height}: Star/goal arrival feedback missing`);
   assert((await page.locator('.service-reward-origin').count())>=1,`Orders reward ${height}: reward origin missing during payoff`);
   await pulse.waitFor({state:'visible'});
-  await assertWithinViewport(pulse,`Orders reward purpose pulse ${height}`,4);
+  await assertWithinViewport(pulse,`Orders reward purpose pulse ${height}`,height,4);
   await assertAboveDock(page.locator('.view-orders .service-card'),`Orders reward replacement card ${height}`,6);
   await assertNoScroll(`Orders reward ${height}`);
   await shot(`332-orders-stage-reward-390x${height}`);
