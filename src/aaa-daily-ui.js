@@ -1,5 +1,6 @@
 import { getState, claimTodayGoal, serveDailyGuest } from './aaa-session.js';
 import { canServeDailyBonus, dailyCompletedCount } from './aaa-daily.js';
+import { dailyStory, dailyStoryGoalLabel } from './aaa-daily-story.js';
 import { countRequirement } from './v2-game.js';
 import { itemMarkup } from './aaa-view.js';
 
@@ -11,7 +12,7 @@ const starIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.7
 function goalMarkup(goal){
   const complete=goal.progress>=goal.target;
   const action=goal.claimed?`<span class="daily-claimed">${checkIcon} Eingesammelt</span>`:complete?`<button data-daily-claim="${goal.id}">+${goal.reward.coins} Coins</button>`:`<span class="daily-progress-value">${goal.progress}/${goal.target}</span>`;
-  return `<div class="daily-goal ${complete?'complete':''} ${goal.claimed?'claimed':''}"><span class="daily-goal-mark">${goal.claimed?checkIcon:sunIcon}</span><div class="daily-goal-copy"><strong>${goal.label}</strong><div class="daily-progress"><i style="width:${Math.round(goal.progress/goal.target*100)}%"></i></div></div>${action}</div>`;
+  return `<div class="daily-goal ${complete?'complete':''} ${goal.claimed?'claimed':''}"><span class="daily-goal-mark">${goal.claimed?checkIcon:sunIcon}</span><div class="daily-goal-copy"><small class="daily-goal-story">HEUTE IM CAFÉ</small><strong>${dailyStoryGoalLabel(goal)}</strong><div class="daily-progress"><i style="width:${Math.round(goal.progress/goal.target*100)}%"></i></div></div>${action}</div>`;
 }
 
 function bonusMarkup(state){
@@ -21,12 +22,13 @@ function bonusMarkup(state){
 }
 
 function sheetMarkup(state){
-  return `<div class="daily-backdrop" data-daily-close></div><section class="daily-sheet" role="dialog" aria-modal="true" aria-label="Tagesziele"><header><div class="daily-title-icon">${sunIcon}</div><div><small>HEUTE</small><h2>Tagesziele</h2><p>Spiele wie du willst. Kein Streak, keine Strafe.</p></div><button class="daily-close" data-daily-close aria-label="Tagesziele schließen">×</button></header><div class="daily-goals">${state.daily.goals.map(goalMarkup).join('')}</div>${bonusMarkup(state)}</section>`;
+  const story=dailyStory(state,state.daily.dateKey);
+  return `<div class="daily-backdrop" data-daily-close></div><section class="daily-sheet daily-story-sheet" role="dialog" aria-modal="true" aria-label="Tagesgeschichte"><header><div class="daily-title-icon">${sunIcon}</div><div><small>${story.kicker}</small><h2>${story.title}</h2><p>${story.copy}</p><span class="daily-story-rule">Kein Streak · keine Strafe · dieselben fairen Ziele</span></div><button class="daily-close" data-daily-close aria-label="Tagesgeschichte schließen">×</button></header><div class="daily-goals">${state.daily.goals.map(goalMarkup).join('')}</div>${bonusMarkup(state)}</section>`;
 }
 
 export function installDailyUI(root,ui){
   let open=false,lastSignature='',lastSheetSignature='';
-  const signature=state=>JSON.stringify({view:root.dataset.view,date:state.daily?.dateKey,goals:state.daily?.goals?.map(g=>[g.progress,g.claimed]),served:state.daily?.bonus?.served,coins:state.coins,stars:state.stars});
+  const signature=state=>JSON.stringify({view:root.dataset.view,date:state.daily?.dateKey,places:state.placeUpgrades,goals:state.daily?.goals?.map(g=>[g.progress,g.claimed]),served:state.daily?.bonus?.served,coins:state.coins,stars:state.stars});
   const closeLayer=()=>{root.querySelector('.daily-layer')?.remove();lastSheetSignature='';};
   const decorate=()=>{
     const state=getState();
@@ -34,13 +36,13 @@ export function installDailyUI(root,ui){
       open=false;root.querySelector('.daily-ribbon')?.remove();closeLayer();lastSignature='';return;
     }
     const queue=root.querySelector('.customer-queue');if(!queue)return;
-    const completed=dailyCompletedCount(state),claimed=state.daily.goals.filter(goal=>goal.claimed).length,bonus=state.daily.bonus;
+    const completed=dailyCompletedCount(state),claimed=state.daily.goals.filter(goal=>goal.claimed).length,bonus=state.daily.bonus,story=dailyStory(state,state.daily.dateKey);
     let ribbon=root.querySelector('.daily-ribbon'),created=false;
     if(!ribbon){ribbon=document.createElement('button');ribbon.className='daily-ribbon';ribbon.dataset.dailyToggle='';queue.before(ribbon);created=true;}
     queue.closest('.service-orders')?.classList.add('has-daily-ribbon');
     const nextSignature=signature(state);
     if(created||nextSignature!==lastSignature){
-      ribbon.innerHTML=`<span class="daily-ribbon-icon">${sunIcon}</span><span class="daily-ribbon-copy"><small>HEUTE · ${completed}/3 ZIELE</small><strong>${claimed===3?'Ziele eingesammelt':'Tagesziele & Gast'}</strong></span><span class="daily-ribbon-reward">${bonus.served?checkIcon:`${coinIcon}<b>${bonus.rewards.coins}</b>`}</span><span class="daily-ribbon-chevron">›</span>`;
+      ribbon.innerHTML=`<span class="daily-ribbon-icon">${sunIcon}</span><span class="daily-ribbon-copy"><small>${story.kicker} · ${completed}/3</small><strong>${claimed===3?'Tag abgeschlossen':story.title}</strong></span><span class="daily-ribbon-reward">${bonus.served?checkIcon:`${coinIcon}<b>${bonus.rewards.coins}</b>`}</span><span class="daily-ribbon-chevron">›</span>`;
       lastSignature=nextSignature;
     }
     if(!open){closeLayer();return;}
