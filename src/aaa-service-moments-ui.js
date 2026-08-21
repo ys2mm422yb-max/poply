@@ -2,6 +2,12 @@ import { getState } from './aaa-session.js';
 import { serviceMomentStatus } from './aaa-service-moments.js';
 
 const modeLabel=mode=>mode==='stock'?'Nachschub':'Direkt';
+const activeMark=moment=>({
+  'coffee-day':`${moment.tag} · 2×`,
+  'sunset-service':`${moment.tag} · +FLOW`,
+  'regular-guest':moment.tag,
+  'rush-hour':`${moment.tag} · +FLOW`,
+}[moment.key]||moment.tag);
 
 export function installServiceMomentsUI(root){
   let decorating=false,lastSignature='';
@@ -42,9 +48,7 @@ export function installServiceMomentsUI(root){
     const panel=root.querySelector(`.service-card[data-service-order="${moment.orderId}"] .service-call-panel.is-active`),copy=panel?.querySelector('.service-call-copy');
     if(panel&&copy){
       panel.classList.add('has-service-moment');panel.dataset.serviceMoment=moment.key;panel.dataset.serviceMomentOrder=moment.orderId;
-      const small=copy.querySelector('small'),strong=copy.querySelector('strong');
-      if(small)small.textContent=`${moment.tag} · RUF AKTIV`;
-      if(strong)strong.textContent=`${moment.label} · ${strong.textContent}`;
+      const small=copy.querySelector('small');if(small)small.textContent=activeMark(moment);
       panel.setAttribute('aria-label',`${moment.label}. ${moment.copy} ${moment.bonusLabel}`);
     }
     root.querySelector(`.customer-choice[data-select-order="${moment.orderId}"]`)?.classList.add('service-moment-target');
