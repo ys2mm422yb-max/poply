@@ -1,6 +1,7 @@
 import { getState } from './aaa-session.js';
 import { PLACE_UPGRADES } from './v2-game.js';
 import { purposeGoal, purposeLine, purposeRewardLine } from './aaa-purpose.js';
+import { placeUpgradeBenefit } from './aaa-place-benefits.js';
 import { serviceCallStatus, serviceCallModeLabel } from './aaa-service-call.js';
 import { placeSceneMarkup } from './aaa-place-art.js';
 import { sunsetPlaceSceneMarkup } from './aaa-sunset-place.js';
@@ -101,7 +102,6 @@ function afterLabel(goal){
 function decoratePlace(root,goal){
   const hero=root.querySelector('.world-hero'),svg=hero?.querySelector('.place-scene-svg');
   if(!hero||!svg)return;
-  // The objective tray is the single next-upgrade message; no duplicate scene badge.
   root.querySelectorAll('.purpose-blueprint-tag').forEach(node=>node.remove());
   svg.querySelectorAll('.scene-upgrade-preview').forEach(node=>node.remove());
   if(goal.complete)return;
@@ -111,11 +111,17 @@ function decoratePlace(root,goal){
   if(current){
     current.classList.add('purpose-place-goal');
     const copy=current.querySelector('.goal-copy');
-    const small=copy?.querySelector(':scope > small');if(small)small.textContent=`NÄCHSTES ZIEL · SCHRITT ${goal.step}/${goal.total}`;
-    let unlock=current.querySelector('.purpose-place-unlock');if(goal.upgrade?.unlock&&!unlock){unlock=document.createElement('div');unlock.className='purpose-place-unlock';copy?.append(unlock);}if(unlock)unlock.innerHTML=`<span>🔓</span><strong>Schaltet frei: ${goal.upgrade.unlock}</strong>`;
+    const small=copy?.querySelector(':scope > small');if(small)small.textContent=`NÄCHSTER AUSBAU · ${goal.step}/${goal.total}`;
+    const story=copy?.querySelector(':scope > p');if(story&&goal.benefit)story.textContent=`${goal.benefit.label}: ${goal.benefit.detail}`;
+    let unlock=current.querySelector('.purpose-place-unlock');
+    if(goal.benefit&&!unlock){unlock=document.createElement('div');unlock.className='purpose-place-unlock';copy?.append(unlock);}
+    if(unlock&&goal.benefit)unlock.innerHTML=`<span>✦</span><strong>Danach spielbar: ${goal.benefit.label} · ${goal.benefit.detail}</strong>`;
     let unlockSummary=current.querySelector('.place-unlock-summary');
-    if(goal.upgrade?.unlock&&copy&&!unlockSummary){unlockSummary=document.createElement('div');unlockSummary.className='place-unlock-summary';copy.append(unlockSummary);}
-    if(unlockSummary){unlockSummary.innerHTML=`<span aria-hidden="true">🔓</span><strong>${goal.upgrade.unlock}</strong>`;unlockSummary.setAttribute('aria-label',`Schaltet frei: ${goal.upgrade.unlock}`);}
+    if(goal.benefit&&copy&&!unlockSummary){unlockSummary=document.createElement('div');unlockSummary.className='place-unlock-summary';copy.append(unlockSummary);}
+    if(unlockSummary&&goal.benefit){
+      unlockSummary.innerHTML=`<span aria-hidden="true">✦</span><strong>${goal.benefit.label}</strong><small>${goal.benefit.detail}</small>`;
+      unlockSummary.setAttribute('aria-label',`Danach spielbar: ${goal.benefit.label}. ${goal.benefit.detail}`);
+    }
     let after=current.querySelector('.purpose-after');if(!after){after=document.createElement('div');after.className='purpose-after purpose-place-after';copy?.append(after);}
     if(after){
       after.classList.toggle('is-next-place',goal.after?.kind==='place');
@@ -138,9 +144,9 @@ export function installPurposeUI(root,ui){
     const fresh=state.placeUpgrades.filter(id=>!knownUpgrades.has(id));
     knownUpgrades=new Set(state.placeUpgrades);
     if(!fresh.length||root.dataset.view!=='place')return;
-    const id=fresh.at(-1),layer=root.querySelector(`.scene-upgrade.${id}:not(.scene-upgrade-preview)`),upgrade=upgradeById(id);
+    const id=fresh.at(-1),layer=root.querySelector(`.scene-upgrade.${id}:not(.scene-upgrade-preview)`),upgrade=upgradeById(id),benefit=placeUpgradeBenefit(upgrade);
     if(layer){layer.classList.add('fx-purpose-built');setTimeout(()=>layer.classList.remove('fx-purpose-built'),1900);}
-    if(upgrade?.unlock)setTimeout(()=>pulse(`Freigeschaltet: ${upgrade.unlock}`,'level'),260);
+    if(benefit)setTimeout(()=>pulse(`Neu spielbar: ${benefit.label} · ${benefit.detail}`,'level'),260);
   };
   const decorate=()=>{
     if(decorating)return;
