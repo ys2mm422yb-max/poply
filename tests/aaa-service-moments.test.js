@@ -38,8 +38,9 @@ test('Sonnenuntergang-Service combines an existing Special with the Lichter Plac
 
 test('Rush Hour completion charges existing FLOW once and never changes the order reward table',()=>{
   let state=readyState();state.currentOrders=state.currentOrders.map((order,index)=>({...order,requirements:[{family:index?'bakery':'sweet',level:index+1,qty:1}],special:null}));
-  const moment=serviceMomentStatus(state);assert.equal(moment.key,'rush-hour');
+  let moment=serviceMomentStatus(state);assert.equal(moment.key,'rush-hour');
   const target=state.currentOrders.find(order=>order.id===moment.orderId),rewards=structuredClone(target.rewards);state=chooseServiceCall(state,target.id,'direct').state;
+  moment=serviceMomentStatus(state);assert.equal(moment.matched,true);
   const call=recordServiceCallDelivery(state,target.id);state=call.state;
   const applied=applyServiceMomentDelivery(state,moment,call,{});
   assert.equal(applied.completed,true);assert.equal(applied.flowCharged,1);assert.equal(applied.state.mergeFlow.charge,1);assert.deepEqual(target.rewards,rewards);
