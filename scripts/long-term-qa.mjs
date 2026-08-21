@@ -13,15 +13,7 @@ const shot=name=>page.screenshot({path:`${outDir}/${name}.png`,fullPage:false});
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight,visual:window.visualViewport?.height||innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertAboveNav=async(locator,label)=>{const [box,nav]=await Promise.all([locator.boundingBox(),page.locator('.main-nav').boundingBox()]);assert(box&&nav&&box.y+box.height<=nav.y-2,`${label} overlaps nav ${JSON.stringify({box,nav})}`);};
 const openView=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click();await page.waitForSelector(`.view-${view}`);};
-const seed=async mode=>{
-  await page.evaluate(async mode=>{
-    const game=await import('./src/v2-game.js');let state=game.createInitialState();state.discoveries=[];
-    for(const item of state.board||[]){if(item?.kind==='generator'&&item.generator==='coffee-gen')item.taps=50;if(item?.kind==='generator'&&item.generator==='pantry-gen')item.taps=24;}
-    if(mode==='complete')state.placeUpgrades=game.PLACE_UPGRADES.map(upgrade=>upgrade.id);
-    localStorage.setItem('poply-v2-state-1',JSON.stringify(state));localStorage.setItem('poply-v2-state-1-backup',JSON.stringify(state));
-  },mode);
-  await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.game-view');
-};
+const seed=async mode=>{await page.evaluate(async mode=>{const game=await import('./src/v2-game.js');let state=game.createInitialState();state.discoveries=[];for(const item of state.board||[]){if(item?.kind==='generator'&&item.generator==='coffee-gen')item.taps=50;if(item?.kind==='generator'&&item.generator==='pantry-gen')item.taps=24;}if(mode==='complete')state.placeUpgrades=game.PLACE_UPGRADES.map(upgrade=>upgrade.id);localStorage.setItem('poply-v2-state-1',JSON.stringify(state));localStorage.setItem('poply-v2-state-1-backup',JSON.stringify(state));},mode);await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.game-view');};
 
 let report={},failure=null;
 try{
@@ -30,8 +22,7 @@ try{
     await page.setViewportSize({width:390,height});
     await seed('mastery');await openView('collection');
     const coffee=page.locator('[data-generator-mastery="coffee-gen"]'),pantry=page.locator('[data-generator-mastery="pantry-gen"]');
-    await coffee.waitFor();let text=(await coffee.textContent())||'';assert(text.includes('MEISTER')&&text.includes('50'),'coffee generator mastery missing');text=(await pantry.textContent())||'';assert(text.includes('GEÜBT')&&text.includes('24/50'),'pantry generator mastery missing');
-    assert(((await page.locator('.collection-generator-summary').textContent())||'').includes('1/2'),'generator mastery summary wrong');
+    await coffee.waitFor();let text=(await coffee.textContent())||'';assert(text.includes('MEISTER')&&text.includes('50'),'coffee generator mastery missing');text=(await pantry.textContent())||'';assert(text.includes('GEÜBT')&&text.includes('24/50'),'pantry generator mastery missing');assert(await page.locator('.generator-discovery.known').count()>=2,'known generators missing from Collection rail');assert(await page.locator('.generator-discovery.mastered').count()===1,'mastered generator state is not unique');
     await page.locator('[data-collection-family="fruit"]').click();await page.waitForSelector('.view-collection[data-collection-family-active="fruit"]');assert(await page.locator('.collection-tier.locked .collection-art.silhouette').count()>0,'unknown Collection item is not a silhouette');
     await assertNoScroll(`Collection mastery 390x${height}`);await assertAboveNav(page.locator('.collection-world'),`Collection world 390x${height}`);await shot(height===844?'360-long-term-collection-390x844':'363-long-term-collection-390x720');
 
