@@ -55,6 +55,9 @@ jobs:
       - name: Run Orders Stage V2 WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/orders-stage-v2-qa.mjs
+      - name: Run thematic Orders WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/thematic-orders-qa.mjs
       - name: Run item provenance and living Place WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/item-guidance-place-life-qa.mjs
