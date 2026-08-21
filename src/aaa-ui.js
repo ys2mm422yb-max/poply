@@ -43,7 +43,7 @@ export function createUI(root,toast){
     if(!source)return null;
     const rect=source.getBoundingClientRect(),node=document.createElement('span');
     node.className='service-reward-origin';node.setAttribute('aria-hidden','true');node.style.left=`${rect.left+rect.width/2}px`;node.style.top=`${rect.top+rect.height/2}px`;
-    document.body.append(node);setTimeout(()=>node.remove(),1400);return node;
+    document.body.append(node);setTimeout(()=>node.remove(),1800);return node;
   };
   const playRewards=(rewards,origin)=>requestAnimationFrame(()=>{
     playFeedback('reward');
