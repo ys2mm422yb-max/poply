@@ -1,7 +1,7 @@
 export const GUEST_PROFILES=Object.freeze([
-  {id:'mika',name:'Mika',portraitIndex:0},
-  {id:'nora',name:'Nora',portraitIndex:1},
-  {id:'sam',name:'Sam',portraitIndex:2},
+  {id:'mika',name:'Mika',portraitIndex:0,personality:'Kombi-Mensch'},
+  {id:'nora',name:'Nora',portraitIndex:1,personality:'Kaffee-Fan'},
+  {id:'sam',name:'Sam',portraitIndex:2,personality:'Entdeckerin'},
 ]);
 
 export const GUEST_LOYALTY_MILESTONES=Object.freeze([
@@ -53,6 +53,16 @@ export function guestLoyalty(state,guestId){
     visitsUntilNext:next?Math.max(0,next.visits-visits):0,
     complete:!next,
   };
+}
+
+export function regularGuestsForPlace(state,limit=3){
+  const safeLimit=Math.max(0,Math.floor(Number(limit)||0));
+  return GUEST_PROFILES
+    .map((guest,index)=>({guest,loyalty:guestLoyalty(state,guest.id),index}))
+    .filter(entry=>entry.loyalty.visits>0)
+    .sort((a,b)=>b.loyalty.visits-a.loyalty.visits||a.index-b.index)
+    .slice(0,safeLimit)
+    .map(({guest,loyalty})=>({guest:clone(guest),loyalty:{...loyalty,guest:clone(loyalty.guest)}}));
 }
 
 export function recordGuestService(inputState,sequence){

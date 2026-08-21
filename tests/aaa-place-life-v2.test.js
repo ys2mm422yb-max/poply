@@ -16,25 +16,33 @@ test('living Place pass hides the old stiff guests and installs furniture-aware 
   assert.match(css,/\.place-life-guest-layer \.guest-arm/);
 });
 
-test('living guests derive coast stage from rendered scene so completed revisits keep people',async()=>{
+test('living guests keep rendered coast stage but bind identities to existing loyalty visits',async()=>{
   const source=await read('src/aaa-place-life-v2.js');
-  assert.doesNotMatch(source,/currentChapterProgress|getState/);
+  assert.match(source,/getState\(\)/);
+  assert.match(source,/regularGuestsForPlace\(state,3\)/);
+  assert.match(source,/data-regular-guest/);
+  assert.match(source,/data-regular-visits/);
   assert.match(source,/scene-upgrade\.seating/);
   assert.match(source,/scene-upgrade\.sign/);
   assert.match(source,/scene-upgrade\.terrace/);
   assert.match(source,/\?6:[\s\S]*\?5:4/);
 });
 
-test('completed coast map previews receive the same authored living guests',async()=>{
+test('completed coast map previews receive the same authored regular guest layer',async()=>{
   const [source,css]=await Promise.all([read('src/aaa-place-life-v2.js'),read('src/aaa-place-life-v2.css')]);
   assert.match(source,/place-map-preview\.place-coast \.place-scene-svg/);
   assert.match(source,/MutationObserver\(refresh\)\.observe\(document\.body\|\|root/);
-  assert.match(source,/scenes\.forEach\(decorateScene\)/);
+  assert.match(source,/scenes\.forEach\(svg=>decorateScene\(svg,regulars\)\)/);
+  assert.match(source,/regular-guest-nameplate/);
+  assert.match(css,/\.regular-guest-nameplate/);
   assert.match(css,/\.place-map-preview\.place-coast \.cafe-guest\{display:none!important\}/);
 });
 
-test('Place guests use subtle idle life with reduced-motion safety',async()=>{
+test('Place regular identities have stable visual accents with reduced-motion safety',async()=>{
   const css=await read('src/aaa-place-life-v2.css');
+  assert.match(css,/regular-mika/);
+  assert.match(css,/regular-nora/);
+  assert.match(css,/regular-sam/);
   assert.match(css,/placeGuestBreathe/);
   assert.match(css,/placeGuestSip/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.place-life-guest-layer \*\{animation:none!important\}\}/);

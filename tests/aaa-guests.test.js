@@ -7,6 +7,7 @@ import {
   guestForSequence,
   ensureGuestState,
   guestLoyalty,
+  regularGuestsForPlace,
   recordGuestService,
   totalGuestVisits,
 } from '../src/aaa-guests.js';
@@ -14,8 +15,9 @@ import {
 const root=new URL('../',import.meta.url);
 const read=path=>readFile(new URL(path,root),'utf8');
 
-test('guest identity follows the existing three-portrait order sequence',()=>{
+test('guest identity follows the existing three-portrait order sequence with stable personalities',()=>{
   assert.deepEqual(GUEST_PROFILES.map(guest=>guest.id),['mika','nora','sam']);
+  assert.deepEqual(GUEST_PROFILES.map(guest=>guest.personality),['Kombi-Mensch','Kaffee-Fan','Entdeckerin']);
   assert.equal(guestForSequence(0).id,'mika');
   assert.equal(guestForSequence(1).id,'nora');
   assert.equal(guestForSequence(2).id,'sam');
@@ -73,6 +75,20 @@ test('guest progress is independent for all three recurring guests',()=>{
   assert.equal(guestLoyalty(state,'sam').visitsUntilNext,2);
 });
 
+test('Place regulars derive deterministically from existing visits without new persistence or rewards',()=>{
+  const state={...createInitialState(),guestVisits:{mika:5,nora:2,sam:1},coins:333};
+  const regulars=regularGuestsForPlace(state,3);
+  assert.deepEqual(regulars.map(entry=>[entry.guest.id,entry.loyalty.visits,entry.loyalty.title]),[
+    ['mika',5,'Stammgast'],
+    ['nora',2,'Bekannt'],
+    ['sam',1,'Bekannt'],
+  ]);
+  assert.equal(state.coins,333);
+  assert.deepEqual(state.guestVisits,{mika:5,nora:2,sam:1});
+  assert.deepEqual(regularGuestsForPlace({...state,guestVisits:{mika:0,nora:0,sam:0}},3),[]);
+  assert.deepEqual(regularGuestsForPlace({...state,guestVisits:{mika:2,nora:2,sam:2}},2).map(entry=>entry.guest.id),['mika','nora']);
+});
+
 test('live service integration records normal and Daily Bonus guests without touching PWA code',async()=>{
   const [session,main,guestUi]=await Promise.all([
     read('src/aaa-session.js'),
@@ -84,5 +100,6 @@ test('live service integration records normal and Daily Bonus guests without tou
   assert.match(main,/installGuestUI\(root,ui\)/);
   assert.match(guestUi,/customer-choice\[data-select-order\]/);
   assert.match(guestUi,/service-card\[data-service-order\]/);
+  assert.match(guestUi,/guest-regular-chip/);
   assert.doesNotMatch(guestUi,/data-view=["']guests|nav-guest|Collection/);
 });

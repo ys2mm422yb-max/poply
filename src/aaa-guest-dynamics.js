@@ -2,9 +2,9 @@ import { GENERATORS } from './v2-game.js';
 import { guestForSequence } from './aaa-guests.js';
 
 export const GUEST_TRAITS=Object.freeze({
-  mika:Object.freeze({id:'combo',label:'Kombi-Fan',copy:'Mag Bestellungen mit mehreren Komponenten.',bonusCoins:10}),
-  nora:Object.freeze({id:'coffee',label:'Kaffee-Liebe',copy:'Freut sich besonders über Kaffee-Bestellungen.',bonusCoins:10}),
-  sam:Object.freeze({id:'variety',label:'Abwechslung',copy:'Belohnt Bestellungen aus mehreren Familien.',bonusCoins:10}),
+  mika:Object.freeze({id:'combo',label:'Kombi-Fan',short:'Kombi',copy:'Mag Bestellungen mit mehreren Komponenten.',bonusCoins:10}),
+  nora:Object.freeze({id:'coffee',label:'Kaffee-Liebe',short:'Kaffee',copy:'Freut sich besonders über Kaffee-Bestellungen.',bonusCoins:10}),
+  sam:Object.freeze({id:'variety',label:'Abwechslung',short:'Vielfalt',copy:'Belohnt Bestellungen aus mehreren Familien.',bonusCoins:10}),
 });
 
 const availableFamilies=state=>{
