@@ -7,25 +7,28 @@ export function installServiceMomentsUI(root){
   let decorating=false,lastSignature='';
 
   const clear=()=>{
-    root.querySelectorAll('.service-moment-card,.service-moment-active,.service-moment-recommendation').forEach(node=>node.remove());
+    root.querySelectorAll('.service-moment-recommendation').forEach(node=>node.remove());
     root.querySelectorAll('.service-moment-target').forEach(node=>node.classList.remove('service-moment-target'));
     root.querySelectorAll('.service-moment-recommended').forEach(node=>node.classList.remove('service-moment-recommended'));
+    root.querySelectorAll('.has-service-moment').forEach(node=>{
+      node.classList.remove('has-service-moment');delete node.dataset.serviceMoment;delete node.dataset.serviceMomentOrder;
+    });
   };
 
   const decorateReady=(moment,state)=>{
     const view=root.querySelector('.view-orders');if(!view)return;
-    const queue=view.querySelector(':scope > .customer-queue'),panel=view.querySelector(':scope > .service-call-choice-panel.is-ready');
-    if(!queue||!panel)return;
+    const panel=view.querySelector(':scope > .service-call-choice-panel.is-ready'),copy=panel?.querySelector('.service-call-choice-copy');
+    if(!panel||!copy)return;
     const order=state.currentOrders?.find(entry=>entry.id===moment.orderId);if(!order)return;
-    let card=view.querySelector(':scope > .service-moment-card');
-    if(!card){card=document.createElement('section');card.className='service-moment-card';queue.after(card);}
-    card.dataset.moment=moment.key;card.dataset.order=moment.orderId;
-    card.innerHTML=`<span class="service-moment-mark" aria-hidden="true">✦</span><span class="service-moment-copy"><small>${moment.tag}</small><strong>${moment.label}</strong><em>${moment.copy}</em><b>${modeLabel(moment.mode)} · ${moment.bonusLabel}</b></span><button type="button" data-service-moment-focus="${moment.orderId}">Gast wählen</button>`;
-    const choice=root.querySelector(`.customer-choice[data-select-order="${moment.orderId}"]`);choice?.classList.add('service-moment-target');
     const focused=view.querySelector(`.service-card[data-service-order="${moment.orderId}"]`);
+    panel.classList.add('has-service-moment');panel.dataset.serviceMoment=moment.key;panel.dataset.serviceMomentOrder=moment.orderId;
+    const small=copy.querySelector('small'),strong=copy.querySelector('strong'),detail=copy.querySelector('span');
+    if(small)small.textContent=`${moment.tag} · SERVICE-MOMENT`;
+    if(strong)strong.textContent=`${moment.label} · ${order.title}`;
+    if(detail)detail.textContent=`${modeLabel(moment.mode)} · ${moment.bonusLabel}`;
+    panel.setAttribute('aria-label',`${moment.label}. ${order.title}. ${moment.copy} Empfohlen: ${modeLabel(moment.mode)}. ${moment.bonusLabel}`);
+    root.querySelector(`.customer-choice[data-select-order="${moment.orderId}"]`)?.classList.add('service-moment-target');
     if(focused){
-      card.classList.add('is-focused');
-      card.querySelector('[data-service-moment-focus]')?.setAttribute('hidden','');
       const recommended=panel.querySelector(`[data-service-call-mode="${moment.mode}"]`);
       recommended?.classList.add('service-moment-recommended');
       if(recommended&&!recommended.querySelector('.service-moment-recommendation')){
@@ -34,14 +37,15 @@ export function installServiceMomentsUI(root){
     }
   };
 
-  const decorateActive=(moment)=>{
+  const decorateActive=moment=>{
     if(!moment.matched)return;
-    const panel=root.querySelector(`.service-card[data-service-order="${moment.orderId}"] .service-call-panel.is-active`);
-    if(panel){
-      let active=panel.querySelector(':scope > .service-moment-active');
-      if(!active){active=document.createElement('div');active.className='service-moment-active';panel.append(active);}
-      active.dataset.moment=moment.key;
-      active.innerHTML=`<small>${moment.tag}</small><strong>${moment.label}</strong><span>${moment.bonusLabel}</span>`;
+    const panel=root.querySelector(`.service-card[data-service-order="${moment.orderId}"] .service-call-panel.is-active`),copy=panel?.querySelector('.service-call-copy');
+    if(panel&&copy){
+      panel.classList.add('has-service-moment');panel.dataset.serviceMoment=moment.key;panel.dataset.serviceMomentOrder=moment.orderId;
+      const small=copy.querySelector('small'),strong=copy.querySelector('strong');
+      if(small)small.textContent=`${moment.tag} · RUF AKTIV`;
+      if(strong)strong.textContent=`${moment.label} · ${strong.textContent}`;
+      panel.setAttribute('aria-label',`${moment.label}. ${moment.copy} ${moment.bonusLabel}`);
     }
     root.querySelector(`.customer-choice[data-select-order="${moment.orderId}"]`)?.classList.add('service-moment-target');
     root.querySelector(`.board-job[data-focus-order="${moment.orderId}"]`)?.classList.add('service-moment-target');
@@ -50,7 +54,8 @@ export function installServiceMomentsUI(root){
   const decorate=()=>{
     if(decorating)return;decorating=true;
     try{
-      const state=getState(),moment=serviceMomentStatus(state),signature=`${root.dataset.view}|${moment.available?'1':'0'}|${moment.key||'-'}|${moment.orderId||'-'}|${moment.call?.ready?'r':'-'}|${moment.call?.active?'a':'-'}|${moment.call?.generatorProgress||0}`;
+      const state=getState(),moment=serviceMomentStatus(state),selected=root.querySelector('.view-orders .service-card[data-service-order]')?.dataset.serviceOrder||'-';
+      const signature=`${root.dataset.view}|${selected}|${moment.available?'1':'0'}|${moment.key||'-'}|${moment.orderId||'-'}|${moment.call?.ready?'r':'-'}|${moment.call?.active?'a':'-'}|${moment.call?.generatorProgress||0}`;
       if(signature===lastSignature)return;lastSignature=signature;clear();
       if(!moment.available)return;
       if(moment.call.ready&&root.dataset.view==='orders')decorateReady(moment,state);
@@ -58,12 +63,6 @@ export function installServiceMomentsUI(root){
     }finally{decorating=false;}
   };
 
-  root.addEventListener('click',event=>{
-    const target=event.target instanceof Element?event.target:event.target?.parentElement,button=target?.closest('[data-service-moment-focus]');if(!button)return;
-    event.preventDefault();event.stopPropagation();
-    root.querySelector(`.customer-choice[data-select-order="${button.dataset.serviceMomentFocus}"]`)?.click();
-    lastSignature='';queueMicrotask(decorate);
-  });
   const observer=new MutationObserver(()=>queueMicrotask(decorate));observer.observe(root,{childList:true,subtree:true});decorate();
   return {refresh:()=>{lastSignature='';decorate();},disconnect:()=>observer.disconnect()};
 }
