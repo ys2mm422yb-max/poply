@@ -48,10 +48,10 @@ try{
   await page.goto(baseURL,{waitUntil:'networkidle'});await clearSave();await reload();
 
   await seed('preview');await view('place');
-  const legacyUnlock=page.locator('.purpose-place-unlock'),legacyText=(await legacyUnlock.textContent())||'';
-  assert(legacyText.includes('Kombi-Aufträge'),`legacy Lichter unlock semantics disappeared: ${legacyText}`);
-  assert(legacyText.includes('Abendservice')&&legacyText.includes('+1 FLOW'),`mechanical Lichter semantics missing: ${legacyText}`);
-  assert(!(await legacyUnlock.isVisible()),'long Lichter micro-copy should stay hidden on physical-iPhone layout');
+  const benefitContext=page.locator('.purpose-place-unlock'),benefitText=(await benefitContext.textContent())||'';
+  assert(benefitText.includes('Abendservice')&&benefitText.includes('Special geschafft')&&benefitText.includes('+1 FLOW'),`canonical Lichter gameplay benefit missing: ${benefitText}`);
+  assert(!benefitText.includes('Kombi-Aufträge'),`obsolete generic Lichter unlock leaked back into primary semantics: ${benefitText}`);
+  assert(!(await benefitContext.isVisible()),'long Lichter benefit context should stay hidden on physical-iPhone layout');
   const preview=page.locator('.place-unlock-summary');await preview.waitFor({state:'visible'});const previewText=((await preview.textContent())||'').replace(/\s+/g,' ');
   assert(previewText.includes('Abendservice')&&previewText.includes('+1 FLOW'),`concise Lichter power preview missing: ${previewText}`);
   await assertWithin(preview,'Lichter concise power preview 390x844');await assertNoScroll('Lichter preview 390x844');await shot('100-place-power-preview-lights-390x844');
@@ -93,7 +93,7 @@ try{
   await seed('counter');await view('orders');await page.locator('.service-deliver').tap();await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').placePowerState?.prepReady===true);await view('board');await waitForPrep();assert(await page.locator('.prep-generator-badge').count()===2,'390x720 lost Preparation choices');await assertNoScroll('Vorbereitung 390x720');await shot('108-place-power-preparation-ready-390x720');
   await seed('menu');await view('orders');assert(await page.locator('.place-power-reroll').isVisible(),'390x720 lost Gastwahl action');await assertWithin(page.locator('.place-power-reroll'),'Gastwahl button 390x720');await assertNoScroll('Gastwahl 390x720');await shot('109-place-power-gastwahl-ready-390x720');
 
-  report={lights:{flowCharge:1,concisePreview:true},counter:{preparedDropLevel:preparedDrop.level},menu:{rerollsUsed:afterMenu.placePowerState.rerollsUsed},shortViewportNoScroll:true};
+  report={lights:{flowCharge:1,concisePreview:true,canonicalBenefit:true},counter:{preparedDropLevel:preparedDrop.level},menu:{rerollsUsed:afterMenu.placePowerState.rerollsUsed},shortViewportNoScroll:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('109-place-power-failure');}catch{}}
 finally{await writeFile(`${outDir}/place-powers-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
