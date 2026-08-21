@@ -1,10 +1,23 @@
 import { getState } from './aaa-session.js';
 import { GUEST_PROFILES, GUEST_LOYALTY_MILESTONES, guestForSequence, guestLoyalty } from './aaa-guests.js';
+import { guestTraitForOrder } from './aaa-guest-dynamics.js';
 import { serviceSpecialProgressText } from './aaa-specials.js';
 
 const visitTarget=loyalty=>loyalty.next?.visits??GUEST_LOYALTY_MILESTONES.at(-1).visits;
 const choiceProgress=loyalty=>`${loyalty.visits}/${visitTarget(loyalty)}`;
 const specialChoiceCopy=(special,guest,loyalty)=>`<b>${special.completed?'✓ Fertig':`${special.tag} ${serviceSpecialProgressText(special)}`}</b><span> · ${guest.name} ${choiceProgress(loyalty)}</span>`;
+const loyaltyBenefitCopy=loyalty=>loyalty.next?`${choiceProgress(loyalty)} → +${loyalty.next.rewardCoins} ●`:`${loyalty.visits} Besuche · MAX`;
+
+function decorateFocusedGuest(card,order,state){
+  const guest=guestForSequence(order.sequence),loyalty=guestLoyalty(state,guest.id),{trait}=guestTraitForOrder(order);
+  const theme=card.querySelector(':scope .service-order-theme');
+  if(!theme)return;
+  let chip=theme.querySelector('.guest-regular-chip');
+  if(!chip){chip=document.createElement('em');chip.className='guest-regular-chip';theme.append(chip);}
+  const markup=`<b>${guest.name} · ${trait.short||trait.label}</b><span>${loyaltyBenefitCopy(loyalty)}</span>`;
+  if(chip.innerHTML!==markup)chip.innerHTML=markup;
+  chip.title=loyalty.next?`${trait.label}: ${trait.copy} · noch ${loyalty.visitsUntilNext} bis ${loyalty.next.title} (+${loyalty.next.rewardCoins} Coins)`:`${trait.label}: ${trait.copy} · höchster Loyalty-Rang`;
+}
 
 function decorateOrders(root,state){
   root.querySelectorAll('.customer-choice[data-select-order]').forEach(choice=>{
@@ -39,6 +52,7 @@ function decorateOrders(root,state){
         ?`${loyalty.visits} Besuche · noch ${loyalty.visitsUntilNext} bis ${loyalty.next.title} (+${loyalty.next.rewardCoins} Coins)`
         :`${loyalty.visits} Besuche · höchster Rang`;
     }
+    decorateFocusedGuest(card,order,state);
   });
 }
 
@@ -61,7 +75,7 @@ export function installGuestUI(root,ui){
     const state=getState(),viewNode=root.querySelector('.game-view');
     const specialSignature=state.currentOrders.map(order=>`${order.id}:${order.special?.key||'-'}:${order.special?.progress??'-'}:${order.special?.completed?'1':'0'}`).join(',');
     const signature=`${root.dataset.view}|${specialSignature}|${GUEST_PROFILES.map(guest=>state.guestVisits?.[guest.id]??0).join(',')}`;
-    if(signature===lastSignature&&viewNode===lastViewNode)return;
+    if(signature===lastSignature&&viewNode===lastViewNode&&root.querySelectorAll('.service-order-theme .guest-regular-chip').length===root.querySelectorAll('.service-card[data-service-order] .service-order-theme').length)return;
     lastSignature=signature;lastViewNode=viewNode;
     announceMilestones(state);
     if(root.dataset.view==='orders')decorateOrders(root,state);
