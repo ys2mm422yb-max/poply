@@ -4,21 +4,23 @@ const NS='http://www.w3.org/2000/svg';
 const WALK_MS=2300,STAND_MS=3200,MAX_PENDING=3;
 const byId=id=>GUEST_PROFILES.find(guest=>guest.id===id)??null;
 const seatTargets={
-  left:{kind:'seat-left',x:278,y:282,scale:1},
-  right:{kind:'seat-right',x:458,y:288,scale:1},
-  back:{kind:'terrace-seat',x:628,y:282,scale:.82},
+  // Existing seated-pose transforms are body origins; walking figures need explicit foot/ground baselines.
+  left:{kind:'seat-left',x:278,y:358,scale:1},
+  right:{kind:'seat-right',x:458,y:360,scale:1},
+  back:{kind:'terrace-seat',x:628,y:315,scale:.82},
 };
 
 export function guestLifeDestination(stage,seatSlot=null){
   const safeStage=Math.max(0,Math.min(6,Math.floor(Number(stage)||0)));
   if(safeStage>=4&&seatSlot&&seatTargets[seatSlot])return {...seatTargets[seatSlot],seated:true};
-  if(safeStage>=2)return {kind:'counter',x:384,y:292,scale:1,seated:false};
+  if(safeStage>=2)return {kind:'counter',x:382,y:322,scale:1,seated:false};
   return {kind:'entrance',x:405,y:306,scale:1,seated:false};
 }
 
 export function guestLifePath(destination){
   const x=Number(destination?.x)||405,y=Number(destination?.y)||306;
-  return `M742 338 C684 334 628 327 570 315 C512 303 ${Math.min(690,x+110)} ${y+24} ${x} ${y}`;
+  const approachY=Math.max(326,Math.min(356,y-12));
+  return `M742 344 C684 344 628 342 570 338 C512 334 ${Math.min(690,x+112)} ${approachY} ${x} ${y}`;
 }
 
 const sceneStage=svg=>svg.querySelector('.scene-upgrade.sign')?6:svg.querySelector('.scene-upgrade.terrace')?5:svg.querySelector('.scene-upgrade.seating')?4:svg.querySelector('.scene-upgrade.menu')?3:svg.querySelector('.scene-upgrade.counter')?2:svg.querySelector('.scene-upgrade.lights')?1:0;
