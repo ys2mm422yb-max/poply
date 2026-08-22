@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { fetchReleaseSha, releasePollingForWindow, releaseUrl, serviceWorkerPaths, shouldReloadForRelease } from '../src/aaa-updates.js';
+import { CLIENT_RELEASE_STORAGE_KEY, fetchReleaseSha, releasePollingForWindow, releaseUrl, rememberRelease, serviceWorkerPaths, shouldReloadForRelease, shouldReloadForStoredRelease, storedRelease } from '../src/aaa-updates.js';
 
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
@@ -11,6 +11,28 @@ test('release comparison reloads only for a real newer canonical release',()=>{
   assert.equal(shouldReloadForRelease(null,'def'),false);
   assert.equal(shouldReloadForRelease('development','def'),false);
   assert.equal(shouldReloadForRelease('abc','development'),false);
+});
+
+test('cold-start release comparison catches a canonical deploy that happened while the app was closed',()=>{
+  assert.equal(shouldReloadForStoredRelease('old-release','new-release'),true);
+  assert.equal(shouldReloadForStoredRelease('new-release','new-release'),false);
+  assert.equal(shouldReloadForStoredRelease(null,'new-release'),false);
+  assert.equal(shouldReloadForStoredRelease('development','new-release'),false);
+  assert.equal(shouldReloadForStoredRelease('old-release','development'),false);
+});
+
+test('canonical client release marker is isolated from gameplay save and tolerant of storage failures',()=>{
+  const values=new Map();
+  const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
+  assert.equal(storedRelease(storage),null);
+  assert.equal(rememberRelease(storage,'release-a'),true);
+  assert.equal(values.get(CLIENT_RELEASE_STORAGE_KEY),'release-a');
+  assert.equal(storedRelease(storage),'release-a');
+  assert.equal(rememberRelease(storage,'development'),false);
+  assert.equal(storedRelease(storage),'release-a');
+  const blocked={getItem(){throw new Error('blocked');},setItem(){throw new Error('blocked');}};
+  assert.equal(storedRelease(blocked),null);
+  assert.equal(rememberRelease(blocked,'release-b'),false);
 });
 
 test('automatic release polling is production HTTPS behavior, not local QA traffic',()=>{
@@ -40,21 +62,25 @@ test('release marker reader requires a non-empty SHA and uses an absolute same-o
   assert.equal(await fetchReleaseSha(async()=>({ok:false,json:async()=>({sha:'abc'})}),'https://example.test/poply/src/aaa-updates.js'),null);
 });
 
-test('installed Poply app uses stable identity and deployed-only release polling',async()=>{
-  const [manifest,main,updates,worker,pages,release]=await Promise.all([
-    read('manifest.webmanifest'),read('src/aaa-main.js'),read('src/aaa-updates.js'),read('sw.js'),read('.github/workflows/pages.yml'),read('release.json')
+test('installed Poply app uses stable identity, cold-start recovery and canonical deployment verification',async()=>{
+  const [manifest,main,updates,worker,pages,release,rules]=await Promise.all([
+    read('manifest.webmanifest'),read('src/aaa-main.js'),read('src/aaa-updates.js'),read('sw.js'),read('.github/workflows/pages.yml'),read('release.json'),read('PROJECT_RULES.md')
   ]);
   assert.equal(JSON.parse(manifest).id,'./');
   assert.match(main,/installAppUpdates\(\)\.catch/);
+  assert.match(updates,/CLIENT_RELEASE_STORAGE_KEY='poply-client-release-v1'/);
+  assert.match(updates,/shouldReloadForStoredRelease/);
+  assert.match(updates,/rememberRelease\(storageObj,bootRelease\)/);
+  assert.match(updates,/rememberRelease\(storageObj,latestRelease\)/);
   assert.match(updates,/const documentBase=documentObj\.baseURI\|\|windowObj\.location\?\.href/);
   assert.match(updates,/serviceWorkerPaths\(documentBase\)/);
   assert.match(updates,/serviceWorker\.register\(workerUrl,\{scope:workerScope,updateViaCache:'none'\}\)/);
   assert.match(updates,/location\?\.protocol==='https:'/);
-  assert.match(updates,/if\(releasePolling\)/);
   assert.match(updates,/new URL\('\.\.\/release\.json',moduleUrl\)\.href/);
   assert.match(updates,/visibilitychange/);
   assert.match(updates,/windowObj\.location\.reload\(\)/);
   assert.doesNotMatch(updates,/localStorage\.(?:clear|removeItem)/);
+  assert.match(worker,/CACHE_NAME='poply-runtime-v3'/);
   assert.match(worker,/fetch\(url\.href,\{cache:'no-store',credentials:'same-origin'\}\)/);
   assert.match(worker,/await fetch\(request,\{cache:'no-store'\}\)/);
   assert.match(worker,/await caches\.match\(request\)/);
@@ -64,6 +90,9 @@ test('installed Poply app uses stable identity and deployed-only release polling
   assert.match(worker,/offlineReleaseResponse/);
   assert.match(worker,/'Cache-Control':'no-store'/);
   assert.match(pages,/Stamp canonical release/);
+  assert.match(pages,/Verify permanent test URL/);
+  assert.match(pages,/https:\/\/ys2mm422yb-max\.github\.io\/poply/);
   assert.match(pages,/GITHUB_SHA/);
+  assert.match(rules,/installed web app must update itself automatically/i);
   assert.equal(JSON.parse(release).sha,'development');
 });
