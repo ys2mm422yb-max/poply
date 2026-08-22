@@ -51,11 +51,13 @@ test('Place regular identities have stable visual accents with reduced-motion sa
 
 test('served guest route reacts deterministically to built Cafe furniture',()=>{
   assert.deepEqual(guestLifeDestination(0),{kind:'entrance',x:405,y:306,scale:1,seated:false});
-  assert.deepEqual(guestLifeDestination(2),{kind:'counter',x:384,y:292,scale:1,seated:false});
-  assert.deepEqual(guestLifeDestination(4,'left'),{kind:'seat-left',x:278,y:282,scale:1,seated:true});
-  assert.deepEqual(guestLifeDestination(4,'right'),{kind:'seat-right',x:458,y:288,scale:1,seated:true});
-  assert.deepEqual(guestLifeDestination(5,'back'),{kind:'terrace-seat',x:628,y:282,scale:.82,seated:true});
-  assert.match(guestLifePath(guestLifeDestination(4,'right')),/^M742 338 C684 334 628 327 570 315 C512 303 /);
+  assert.deepEqual(guestLifeDestination(2),{kind:'counter',x:382,y:322,scale:1,seated:false});
+  assert.deepEqual(guestLifeDestination(4,'left'),{kind:'seat-left',x:278,y:358,scale:1,seated:true});
+  assert.deepEqual(guestLifeDestination(4,'right'),{kind:'seat-right',x:458,y:360,scale:1,seated:true});
+  assert.deepEqual(guestLifeDestination(5,'back'),{kind:'terrace-seat',x:628,y:315,scale:.82,seated:true});
+  const path=guestLifePath(guestLifeDestination(4,'right'));
+  assert.match(path,/^M742 344 C684 344 628 342 570 338 C512 334 /);
+  assert.match(path,/ 458 360$/);
 });
 
 test('real services feed transient guest-life choreography without new persistence',async()=>{
@@ -69,6 +71,7 @@ test('real services feed transient guest-life choreography without new persisten
   assert.match(life,/root\.dataset\.view!=='place'/);
   assert.match(life,/scene-upgrade\.counter/);
   assert.match(life,/scene-upgrade\.seating/);
+  assert.match(life,/foot\/ground baselines/);
   assert.match(life,/matchMedia\?\.\('\(prefers-reduced-motion: reduce\)'\)/);
   assert.doesNotMatch(life,/localStorage|saveGameState|updatedAt/);
   assert.match(css,/guestLifeStepA/);
