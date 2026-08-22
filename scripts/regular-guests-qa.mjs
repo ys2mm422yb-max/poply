@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 const baseURL=process.env.QA_BASE_URL||'http://127.0.0.1:4173';
 const outDir=process.env.QA_OUT_DIR||'qa-artifacts';
-const SAFE_TOP=47,SAFE_BOTTOM=34;
+const SAFE_TOP=47,SAFE_BOTTOM=34,PENDING_KEY='poply-guest-life-pending-v1';
 await mkdir(outDir,{recursive:true});
 const browser=await webkit.launch({headless:true});
 const context=await browser.newContext({viewport:{width:390,height:844},screen:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'de-DE'});
@@ -17,9 +17,10 @@ const applyInsets=()=>page.evaluate(({top,bottom})=>{document.documentElement.st
 const go=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click();await page.waitForSelector(`.view-${view}`);await page.waitForTimeout(140);};
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertAboveDock=async(locator,label)=>{const [box,nav]=await Promise.all([locator.boundingBox(),page.locator('.main-nav').boundingBox()]);assert(box&&nav,`${label}: geometry missing`);assert(box.y+box.height<=nav.y-1,`${label}: overlaps dock ${JSON.stringify({box,nav})}`);};
+const pendingGuests=()=>page.evaluate(key=>{try{return JSON.parse(localStorage.getItem(key)||'[]');}catch{return [];}},PENDING_KEY);
 
 const seed=async({stage=5,fulfill=true,visits={mika:5,nora:2,sam:1}}={})=>{
-  await page.evaluate(async({stage,fulfill,visits})=>{
+  await page.evaluate(async({stage,fulfill,visits,pendingKey})=>{
     const game=await import('./src/v2-game.js');
     const state=game.createInitialState(),upgrades=['lights','counter','menu','seating','terrace','sign'];
     state.placeUpgrades=upgrades.slice(0,stage);
@@ -37,7 +38,8 @@ const seed=async({stage=5,fulfill=true,visits={mika:5,nora:2,sam:1}}={})=>{
     }
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
     localStorage.setItem('poply-v2-state-1-backup',JSON.stringify(state));
-  },{stage,fulfill,visits});
+    localStorage.removeItem(pendingKey);
+  },{stage,fulfill,visits,pendingKey:PENDING_KEY});
   await page.reload({waitUntil:'networkidle'});
   await applyInsets();
   await page.waitForTimeout(180);
@@ -98,7 +100,19 @@ const inspectArrival=async height=>{
   assert(!(await deliver.isDisabled()),`Guest arrival ${height}: seeded Nora order is not ready`);
   await deliver.click();
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').guestVisits?.nora===3);
-  await page.waitForTimeout(360);
+
+  // Human navigation is not instant. The served guest must still be waiting while the player remains on Orders.
+  await page.waitForTimeout(1600);
+  assert((await pendingGuests()).includes('nora'),`Guest arrival ${height}: Nora was lost before Place navigation`);
+
+  // Simulate the reload boundary an automatic installed-PWA release update can cause.
+  await page.reload({waitUntil:'networkidle'});
+  await applyInsets();
+  await page.waitForTimeout(220);
+  assert((await pendingGuests()).includes('nora'),`Guest arrival ${height}: Nora pending arrival did not survive reload`);
+  const savedVisits=await page.evaluate(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').guestVisits?.nora);
+  assert(savedVisits===3,`Guest arrival ${height}: gameplay loyalty changed across reload ${savedVisits}`);
+
   await go('place');
   const scene=page.locator('.view-place.place-coast .place-scene-svg');
   const walker=scene.locator('.guest-life-arrival[data-guest-life-walker="nora"]');
@@ -106,9 +120,14 @@ const inspectArrival=async height=>{
   assert((await walker.getAttribute('data-guest-life-destination'))==='seat-right',`Guest arrival ${height}: Nora did not route to her rendered seat`);
   assert((await walker.locator('animateMotion').count())===1,`Guest arrival ${height}: motion path missing`);
   assert((await scene.getAttribute('data-guest-life-arrival'))==='nora',`Guest arrival ${height}: scene did not bind arrival identity`);
-  await page.waitForTimeout(520);
+  assert((await pendingGuests()).includes('nora'),`Guest arrival ${height}: pending marker cleared before visible arrival completed`);
+  await page.waitForTimeout(650);
   await shot(`352-guest-arrival-390x${height}`);
+
+  await page.waitForFunction(()=>document.querySelector('.view-place.place-coast .guest-life-arrival[data-guest-life-walker="nora"]')?.getAttribute('data-guest-life-state')==='arrived');
+  await shot(`354-guest-arrived-390x${height}`);
   await page.waitForFunction(()=>!document.querySelector('.view-place.place-coast .guest-life-arrival[data-guest-life-walker="nora"]'));
+  assert(!(await pendingGuests()).includes('nora'),`Guest arrival ${height}: completed arrival marker was not consumed`);
   const seated=scene.locator('.place-life-guests-v2-front [data-regular-guest="nora"]');
   await seated.waitFor({state:'visible'});
   const opacity=await seated.evaluate(node=>Number.parseFloat(getComputedStyle(node).opacity));
@@ -131,6 +150,7 @@ const inspectReducedMotion=async height=>{
   assert((await scene.locator('.guest-life-arrival animateMotion').count())===0,`Reduced motion ${height}: travel animation was created`);
   const opacity=await scene.locator('.place-life-guests-v2-front [data-regular-guest="nora"]').evaluate(node=>Number.parseFloat(getComputedStyle(node).opacity));
   assert(opacity>.9,`Reduced motion ${height}: final seated guest is hidden`);
+  assert(!(await pendingGuests()).includes('nora'),`Reduced motion ${height}: completed pending marker remained`);
   await page.emulateMedia({reducedMotion:'no-preference'});
 };
 
@@ -156,7 +176,7 @@ try{
   }
   await page.setViewportSize({width:390,height:844});
   await inspectCounterRoute();
-  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,noNewPersistence:true,screenshots:8};
+  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,humanNavigationDelayMs:1600,reloadBeforePlace:true,pendingArrivalReloadSafe:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,gameplaySaveSchemaUnchanged:true,screenshots:10};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('359-regular-guests-failure');}catch{}}
 finally{await writeFile(`${outDir}/regular-guests-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}

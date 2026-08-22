@@ -1,7 +1,8 @@
 import { GUEST_PROFILES } from './aaa-guests.js';
 
 const NS='http://www.w3.org/2000/svg';
-const WALK_MS=2300,STAND_MS=3200,MAX_PENDING=3;
+const WALK_MS=3000,ARRIVE_MS=700,STAND_MS=5000,SETTLE_MS=1400,MAX_PENDING=3;
+export const GUEST_LIFE_PENDING_KEY='poply-guest-life-pending-v1';
 const byId=id=>GUEST_PROFILES.find(guest=>guest.id===id)??null;
 const seatTargets={
   // Existing seated-pose transforms are body origins; walking figures need explicit foot/ground baselines.
@@ -23,6 +24,31 @@ export function guestLifePath(destination){
   return `M742 344 C684 344 628 342 570 338 C512 334 ${Math.min(690,x+112)} ${approachY} ${x} ${y}`;
 }
 
+export function normalizeGuestLifePending(value){
+  const source=Array.isArray(value)?value:[];
+  return source.reduce((ids,id)=>{
+    if(!byId(id))return ids;
+    const next=ids.filter(existing=>existing!==id);next.push(id);
+    return next.slice(-MAX_PENDING);
+  },[]);
+}
+
+export function readGuestLifePending(storage){
+  if(!storage?.getItem)return [];
+  try{return normalizeGuestLifePending(JSON.parse(storage.getItem(GUEST_LIFE_PENDING_KEY)||'[]'));}catch{return [];}
+}
+
+export function writeGuestLifePending(value,storage){
+  const pending=normalizeGuestLifePending(value);
+  if(!storage?.setItem)return pending;
+  try{
+    if(pending.length)storage.setItem(GUEST_LIFE_PENDING_KEY,JSON.stringify(pending));
+    else storage.removeItem?.(GUEST_LIFE_PENDING_KEY);
+  }catch{}
+  return pending;
+}
+
+const guestLifeStorage=()=>{try{return globalThis.localStorage??null;}catch{return null;}};
 const sceneStage=svg=>svg.querySelector('.scene-upgrade.sign')?6:svg.querySelector('.scene-upgrade.terrace')?5:svg.querySelector('.scene-upgrade.seating')?4:svg.querySelector('.scene-upgrade.menu')?3:svg.querySelector('.scene-upgrade.counter')?2:svg.querySelector('.scene-upgrade.lights')?1:0;
 const seatSlotFor=(svg,guestId)=>{
   const node=svg.querySelector(`.place-life-guests-v2-front [data-regular-guest="${guestId}"]`);
@@ -53,35 +79,44 @@ function insertWalker(svg,profile,destination,motion){
 
 function markSettled(svg,guestId){
   const node=svg.querySelector(`.place-life-guests-v2-front [data-regular-guest="${guestId}"]`);if(!node)return;
-  node.classList.add('guest-life-settle');setTimeout(()=>node.classList.remove('guest-life-settle'),900);
+  node.classList.add('guest-life-settle');setTimeout(()=>node.classList.remove('guest-life-settle'),SETTLE_MS);
 }
 
 export function installGuestLife(root){
-  let pending=[],active=false,queued=false,activeTimer=0;
+  const storage=guestLifeStorage();
+  let pending=readGuestLifePending(storage),active=false,queued=false,activeTimer=0;
+  const persist=()=>{pending=writeGuestLifePending(pending,storage);};
+  const consume=guestId=>{pending=pending.filter(id=>id!==guestId);persist();};
   const refresh=()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate();});};
   const finish=(svg,walker,guestId,destination)=>{
     clearTimeout(activeTimer);
+    consume(guestId);
     if(destination.seated){walker?.remove();delete svg.dataset.guestLifeArrival;markSettled(svg,guestId);active=false;refresh();return;}
     if(walker)walker.dataset.guestLifeState='standing';
     activeTimer=setTimeout(()=>{walker?.remove();active=false;refresh();},STAND_MS);
+  };
+  const completeWalk=(svg,walker,guestId,destination)=>{
+    if(!walker){finish(svg,walker,guestId,destination);return;}
+    walker.dataset.guestLifeState='arrived';
+    activeTimer=setTimeout(()=>finish(svg,walker,guestId,destination),destination.seated?ARRIVE_MS:0);
   };
   const decorate=()=>{
     if(active||!pending.length||root.dataset.view!=='place')return;
     const svg=root.querySelector('.view-place.place-coast .place-scene-svg');if(!svg)return;
     const stage=sceneStage(svg);
     if(stage>=4&&!svg.querySelector('.place-life-guests-v2-front'))return;
-    const guestId=pending.shift(),profile=byId(guestId);if(!profile){refresh();return;}
+    const guestId=pending[0],profile=byId(guestId);if(!profile){consume(guestId);refresh();return;}
     const destination=guestLifeDestination(stage,seatSlotFor(svg,guestId)),reduce=reducedMotion();
     active=true;
-    if(reduce&&destination.seated){markSettled(svg,guestId);active=false;refresh();return;}
+    if(reduce&&destination.seated){consume(guestId);markSettled(svg,guestId);active=false;refresh();return;}
     const walker=insertWalker(svg,profile,destination,!reduce);if(!walker){active=false;refresh();return;}
     if(destination.seated)svg.dataset.guestLifeArrival=guestId;
     if(reduce){finish(svg,walker,guestId,destination);return;}
-    activeTimer=setTimeout(()=>finish(svg,walker,guestId,destination),WALK_MS+80);
+    activeTimer=setTimeout(()=>completeWalk(svg,walker,guestId,destination),WALK_MS);
   };
   const onServed=event=>{
     const guestId=event?.detail?.guestId;if(!byId(guestId))return;
-    pending=pending.filter(id=>id!==guestId);pending.push(guestId);if(pending.length>MAX_PENDING)pending=pending.slice(-MAX_PENDING);refresh();
+    pending=normalizeGuestLifePending([...pending,guestId]);persist();refresh();
   };
   document.addEventListener('poply:guest-served',onServed);
   const observer=new MutationObserver(refresh);observer.observe(root,{childList:true,subtree:true});
