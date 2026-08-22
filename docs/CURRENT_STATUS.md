@@ -2,8 +2,8 @@
 
 Updated: 2026-08-22
 
-## Current verified baseline
-Current `main`: `068164e82f0c5f4a13a7befadb1431af4ba07bef` (`Merge Arbeitsblock 6: Langzeitmotivation`).
+## Current verified runtime baseline
+Current verified runtime/gameplay baseline: `068164e82f0c5f4a13a7befadb1431af4ba07bef` (`Merge Arbeitsblock 6: Langzeitmotivation`). Documentation-only status-sync commits may follow this SHA without changing the shipped runtime tree.
 
 The binding product sequence from Issue #42 is complete. Arbeitsblöcke 1 → 6 were implemented, tested, visually accepted on physical-iPhone dimensions and merged in order. There are no open Poply pull requests after the Block-6 merge.
 
@@ -64,7 +64,7 @@ PR #160, accepted head `5f7180fd4a642f8bd7016223cd18736eae3c7557`.
 Dedicated WebKit QA covers 390×844 / 390×720, Reduced Motion, one-screen/no-scroll and dock clearance. Seven `340–346` screenshots were manually opened and accepted; Issue #42 records the final artifact/report and zero open PRs before Block 6 started.
 
 ### 6 — Langzeitmotivation — LIVE
-PR #162, accepted head `214dfc6ca6bfd4eac249e4970f5e00a2848cb3ff`; merge/current main `068164e82f0c5f4a13a7befadb1431af4ba07bef`.
+PR #162, accepted head `214dfc6ca6bfd4eac249e4970f5e00a2848cb3ff`; runtime merge `068164e82f0c5f4a13a7befadb1431af4ba07bef`.
 
 - generator mastery derives only from existing generator `taps`: Neu → Vertraut → Geübt → Meister;
 - no mastery currency/economy buff and no new persistence;

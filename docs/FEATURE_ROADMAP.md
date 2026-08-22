@@ -6,7 +6,7 @@ Durable coordination: GitHub Issue #42.
 Poply grows on two parallel tracks: real product/gameplay depth and screenshot-driven production quality. Neither track may overwrite active work from the other.
 
 ## Live product baseline
-Current verified production main: `068164e82f0c5f4a13a7befadb1431af4ba07bef`.
+Current verified runtime/gameplay baseline: `068164e82f0c5f4a13a7befadb1431af4ba07bef`. Documentation-only status-sync commits may follow this SHA without changing the shipped runtime tree.
 
 Production includes:
 - persistent 7×7 merge Board / Werkbank;
@@ -65,7 +65,7 @@ PR #160 · accepted head `5f7180fd4a642f8bd7016223cd18736eae3c7557`.
 Deterministic Stammgast/Kaffee-Tag/Sonnenuntergang/Rush-Hour moments create temporary priorities by reusing Service-Ruf, FLOW and Place Powers. No second event timer, hidden RNG or disconnected minigame layer.
 
 ### Block 6 — Long-term motivation — LIVE
-PR #162 · accepted head `214dfc6ca6bfd4eac249e4970f5e00a2848cb3ff` · merge/current main `068164e82f0c5f4a13a7befadb1431af4ba07bef`.
+PR #162 · accepted head `214dfc6ca6bfd4eac249e4970f5e00a2848cb3ff` · runtime merge `068164e82f0c5f4a13a7befadb1431af4ba07bef`.
 
 Generator Mastery uses existing taps, Collection owns unknown silhouettes, Daily Goals get deterministic story framing, and a fully restored world gets a strong completion payoff. No mastery currency, economy buff, new persistence, streak or FOMO layer.
 
