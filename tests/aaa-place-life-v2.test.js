@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { GUEST_LIFE_PENDING_KEY, guestLifeDestination, guestLifePath, normalizeGuestLifePending, readGuestLifePending, writeGuestLifePending } from '../src/aaa-guest-life-ui.js';
+import { GUEST_LIFE_PENDING_KEY, activeOrderGuestIds, guestLifeDestination, guestLifePath, normalizeGuestLifePending, readGuestLifePending, writeGuestLifePending } from '../src/aaa-guest-life-ui.js';
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
 test('living Place pass hides the old stiff guests and installs furniture-aware authored poses',async()=>{
@@ -60,6 +60,14 @@ test('served guest route reacts deterministically to built Cafe furniture',()=>{
   assert.match(path,/ 458 360$/);
 });
 
+test('active order guests are deterministic, unique and bounded for visible Place waiting',()=>{
+  const state={currentOrders:[{sequence:1},{sequence:2},{sequence:1},{sequence:0}]};
+  assert.deepEqual(activeOrderGuestIds(state),['nora','sam','mika']);
+  assert.deepEqual(activeOrderGuestIds(state,2),['nora','sam']);
+  assert.deepEqual(activeOrderGuestIds({currentOrders:[]},2),[]);
+  assert.deepEqual(activeOrderGuestIds(null,2),[]);
+});
+
 test('guest-life pending arrivals are bounded, identity-safe and reload-readable without touching gameplay save',()=>{
   const values=new Map();
   const storage={
@@ -78,7 +86,7 @@ test('guest-life pending arrivals are bounded, identity-safe and reload-readable
   assert.equal(values.has(GUEST_LIFE_PENDING_KEY),false);
 });
 
-test('real services feed reload-safe guest-life choreography through an isolated UI marker',async()=>{
+test('real services and current orders feed visible reload-safe guest-life without a second game system',async()=>{
   const [life,ui,daily,main,css]=await Promise.all([read('src/aaa-guest-life-ui.js'),read('src/aaa-ui.js'),read('src/aaa-daily-ui.js'),read('src/aaa-main.js'),read('src/aaa-place-life-v2.css')]);
   assert.match(ui,/poply:guest-served/);
   assert.match(ui,/emitGuestServed\(result,'order'\)/);
@@ -86,17 +94,21 @@ test('real services feed reload-safe guest-life choreography through an isolated
   assert.match(daily,/source:'daily-bonus'/);
   assert.match(main,/installGuestLife\(root\)/);
   assert.match(life,/GUEST_LIFE_PENDING_KEY='poply-guest-life-pending-v1'/);
-  assert.match(life,/MAX_PENDING=3/);
+  assert.match(life,/MAX_PENDING=3,MAX_WAITING=2/);
+  assert.match(life,/guestForSequence/);
+  assert.match(life,/currentOrders/);
+  assert.match(life,/data-guest-life-waiting/);
   assert.match(life,/readGuestLifePending\(storage\)/);
   assert.match(life,/writeGuestLifePending\(pending,storage\)/);
   assert.match(life,/root\.dataset\.view!=='place'/);
   assert.match(life,/scene-upgrade\.counter/);
   assert.match(life,/scene-upgrade\.seating/);
   assert.match(life,/foot\/ground baselines/);
-  assert.match(life,/data-guest-life-state='arrived'|guestLifeState='arrived'/);
+  assert.match(life,/guestLifeState='arrived'|dataset\.guestLifeState='arrived'|dataset\.guestLifeState="arrived"/);
   assert.match(life,/matchMedia\?\.\('\(prefers-reduced-motion: reduce\)'\)/);
   assert.doesNotMatch(life,/saveGameState|updatedAt|poply-v2-state-1/);
   assert.match(css,/guestLifeStepA/);
+  assert.match(css,/guestLifeWait/);
   assert.match(css,/guestLifeSettle/);
   assert.match(css,/data-guest-life-arrival/);
 });
