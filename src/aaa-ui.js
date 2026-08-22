@@ -9,6 +9,7 @@ export function createUI(root,toast){
   let view='board',menuOpen=false,lastFx=null,toastTimer=0,selectedOrderId=null,collectionFamily='coffee';
   const message=(text,tone='good')=>{clearTimeout(toastTimer);toast.textContent=text;toast.dataset.tone=tone;toast.classList.add('show');toastTimer=setTimeout(()=>toast.classList.remove('show'),1400);};
   const emitProgression=(result,source)=>{if(result?.progression)document.dispatchEvent(new CustomEvent('poply:progression',{detail:{...result.progression,source}}));};
+  const emitGuestServed=(result,source)=>{const guestId=result?.guest?.guest?.id;if(guestId)document.dispatchEvent(new CustomEvent('poply:guest-served',{detail:{guestId,visits:result.guest.visits,source}}));};
   const emitDiscovery=result=>{
     if(!result?.discovery||!result.discoveredItem)return;
     document.dispatchEvent(new CustomEvent('poply:discovery',{detail:{item:result.discoveredItem,progression:result.progression,mastery:result.mastery||result.discovery?.mastery||null}}));
@@ -96,7 +97,7 @@ export function createUI(root,toast){
         const callNote=callBonus?` · Service-Ruf +${callBonus}`:result.serviceCall?.expired?' · Service-Ruf verfallen':'';
         const dynamicNote=dynamicBonus?` · Gast/Tag +${dynamicBonus}`:'';
         const momentNote=result.serviceMoment?.completed?` · ${result.serviceMoment.moment.label}: ${result.serviceMoment.bonusLabel}`:'';
-        playDelivery(card);playFeedback('delivery');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}${dynamicNote}${momentNote}`);
+        playDelivery(card);playFeedback('delivery');emitGuestServed(result,'order');message(`Auftrag geliefert  +${result.rewards.coins} ●${specialNote}  +${result.rewards.stars} ★  +${result.progression?.gained||0} XP${callNote}${dynamicNote}${momentNote}`);
         if(selectedOrderId===orderId)selectedOrderId=null;
         setTimeout(()=>{render();playRewards(result.rewards,rewardOrigin);emitProgression(result,'order');},320);
       }

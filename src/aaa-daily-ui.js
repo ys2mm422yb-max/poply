@@ -30,6 +30,7 @@ export function installDailyUI(root,ui){
   let open=false,lastSignature='',lastSheetSignature='';
   const signature=state=>JSON.stringify({view:root.dataset.view,date:state.daily?.dateKey,places:state.placeUpgrades,goals:state.daily?.goals?.map(g=>[g.progress,g.claimed]),served:state.daily?.bonus?.served,coins:state.coins,stars:state.stars});
   const closeLayer=()=>{root.querySelector('.daily-layer')?.remove();lastSheetSignature='';};
+  const emitGuestServed=result=>{const guestId=result?.guest?.guest?.id;if(guestId)document.dispatchEvent(new CustomEvent('poply:guest-served',{detail:{guestId,visits:result.guest.visits,source:'daily-bonus'}}));};
   const decorate=()=>{
     const state=getState();
     if(root.dataset.view!=='orders'){
@@ -56,7 +57,7 @@ export function installDailyUI(root,ui){
     if(target.closest('[data-daily-close]')){open=false;decorate();return;}
     const claim=target.closest('[data-daily-claim]');
     if(claim){const result=claimTodayGoal(claim.dataset.dailyClaim);if(result.changed)ui.message(`Tagesziel geschafft  +${result.reward.coins} Coins`);else ui.message('Dieses Tagesziel ist noch nicht fertig.','bad');ui.render();decorate();return;}
-    if(target.closest('[data-daily-serve]')){const result=serveDailyGuest();if(result.changed){ui.message(`Tagesgast serviert  +${result.rewards.coins} Coins  +${result.rewards.stars} Sterne`);ui.progression(result,'daily-bonus');}else ui.message('Für den Tagesgast fehlt noch das gewünschte Item.','bad');ui.render();decorate();}
+    if(target.closest('[data-daily-serve]')){const result=serveDailyGuest();if(result.changed){emitGuestServed(result);ui.message(`Tagesgast serviert  +${result.rewards.coins} Coins  +${result.rewards.stars} Sterne`);ui.progression(result,'daily-bonus');}else ui.message('Für den Tagesgast fehlt noch das gewünschte Item.','bad');ui.render();decorate();}
   });
   const observer=new MutationObserver(()=>queueMicrotask(decorate));observer.observe(root,{childList:true,subtree:true});
   decorate();return {refresh:decorate,disconnect:()=>observer.disconnect()};

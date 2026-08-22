@@ -18,16 +18,26 @@ const go=async view=>{await page.locator(`.nav-tab[data-view="${view}"]`).click(
 const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:document.documentElement.scrollHeight,inner:innerHeight}));assert(m.scroll<=m.inner+1,`${label}: document scrolls ${JSON.stringify(m)}`);};
 const assertAboveDock=async(locator,label)=>{const [box,nav]=await Promise.all([locator.boundingBox(),page.locator('.main-nav').boundingBox()]);assert(box&&nav,`${label}: geometry missing`);assert(box.y+box.height<=nav.y-1,`${label}: overlaps dock ${JSON.stringify({box,nav})}`);};
 
-const seed=async()=>{
-  await page.evaluate(async()=>{
+const seed=async({stage=5,fulfill=true,visits={mika:5,nora:2,sam:1}}={})=>{
+  await page.evaluate(async({stage,fulfill,visits})=>{
     const game=await import('./src/v2-game.js');
-    const state=game.createInitialState();
-    state.placeUpgrades=['lights','counter','menu','seating','terrace'];
-    state.guestVisits={mika:5,nora:2,sam:1};
+    const state=game.createInitialState(),upgrades=['lights','counter','menu','seating','terrace','sign'];
+    state.placeUpgrades=upgrades.slice(0,stage);
+    state.guestVisits={...visits};
     state.stars=13;
+    if(fulfill){
+      const target=state.currentOrders.find(order=>order.id==='order-1');
+      for(const req of target?.requirements||[]){
+        for(let n=0;n<req.qty;n+=1){
+          const index=state.board.findIndex(item=>!item);
+          if(index<0)throw new Error('No empty Board slot for regular guest QA seed');
+          state.board[index]={kind:'item',family:req.family,level:req.level};
+        }
+      }
+    }
     localStorage.setItem('poply-v2-state-1',JSON.stringify(state));
     localStorage.setItem('poply-v2-state-1-backup',JSON.stringify(state));
-  });
+  },{stage,fulfill,visits});
   await page.reload({waitUntil:'networkidle'});
   await applyInsets();
   await page.waitForTimeout(180);
@@ -79,6 +89,60 @@ const inspectPlace=async height=>{
   await shot(`351-regular-guests-place-390x${height}`);
 };
 
+const inspectArrival=async height=>{
+  await go('orders');
+  await page.locator('.customer-choice').nth(1).click();
+  const card=page.locator('.service-card[data-service-order="order-1"]');
+  const deliver=card.locator('[data-order="order-1"]');
+  await deliver.waitFor({state:'visible'});
+  assert(!(await deliver.isDisabled()),`Guest arrival ${height}: seeded Nora order is not ready`);
+  await deliver.click();
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}').guestVisits?.nora===3);
+  await page.waitForTimeout(360);
+  await go('place');
+  const scene=page.locator('.view-place.place-coast .place-scene-svg');
+  const walker=scene.locator('.guest-life-arrival[data-guest-life-walker="nora"]');
+  await walker.waitFor({state:'visible'});
+  assert((await walker.getAttribute('data-guest-life-destination'))==='seat-right',`Guest arrival ${height}: Nora did not route to her rendered seat`);
+  assert((await walker.locator('animateMotion').count())===1,`Guest arrival ${height}: motion path missing`);
+  assert((await scene.getAttribute('data-guest-life-arrival'))==='nora',`Guest arrival ${height}: scene did not bind arrival identity`);
+  await page.waitForTimeout(520);
+  await shot(`352-guest-arrival-390x${height}`);
+  await page.waitForFunction(()=>!document.querySelector('.view-place.place-coast .guest-life-arrival[data-guest-life-walker="nora"]'));
+  const seated=scene.locator('.place-life-guests-v2-front [data-regular-guest="nora"]');
+  await seated.waitFor({state:'visible'});
+  const opacity=await seated.evaluate(node=>Number.parseFloat(getComputedStyle(node).opacity));
+  assert(opacity>.9,`Guest arrival ${height}: Nora did not settle visibly ${opacity}`);
+  const visits=await seated.getAttribute('data-regular-visits');
+  assert(visits==='3',`Guest arrival ${height}: seated Nora visit count not refreshed ${visits}`);
+  await shot(`353-guest-seated-390x${height}`);
+  await assertAboveDock(scene,`Guest arrival Place ${height}`);
+  await assertNoScroll(`Guest arrival ${height}`);
+};
+
+const inspectReducedMotion=async height=>{
+  await seed({stage:5,fulfill:false});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.evaluate(()=>document.dispatchEvent(new CustomEvent('poply:guest-served',{detail:{guestId:'nora',visits:3,source:'qa'}})));
+  await go('place');
+  const scene=page.locator('.view-place.place-coast .place-scene-svg');
+  await page.waitForFunction(()=>document.querySelector('.view-place.place-coast .place-life-guests-v2-front [data-regular-guest="nora"]'));
+  await page.waitForTimeout(180);
+  assert((await scene.locator('.guest-life-arrival animateMotion').count())===0,`Reduced motion ${height}: travel animation was created`);
+  const opacity=await scene.locator('.place-life-guests-v2-front [data-regular-guest="nora"]').evaluate(node=>Number.parseFloat(getComputedStyle(node).opacity));
+  assert(opacity>.9,`Reduced motion ${height}: final seated guest is hidden`);
+  await page.emulateMedia({reducedMotion:'no-preference'});
+};
+
+const inspectCounterRoute=async()=>{
+  await seed({stage:2,fulfill:false,visits:{mika:1,nora:1,sam:0}});
+  await page.evaluate(()=>document.dispatchEvent(new CustomEvent('poply:guest-served',{detail:{guestId:'nora',visits:2,source:'qa'}})));
+  await go('place');
+  const walker=page.locator('.view-place.place-coast .guest-life-arrival[data-guest-life-walker="nora"]');
+  await walker.waitFor({state:'visible'});
+  assert((await walker.getAttribute('data-guest-life-destination'))==='counter','Counter-only Cafe did not route served guest to counter');
+};
+
 let report={},failure=null;
 try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
@@ -87,8 +151,12 @@ try{
     await seed();
     await inspectOrders(height);
     await inspectPlace(height);
+    await inspectArrival(height);
+    await inspectReducedMotion(height);
   }
-  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,noNewPersistence:true,screenshots:4};
+  await page.setViewportSize({width:390,height:844});
+  await inspectCounterRoute();
+  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,noNewPersistence:true,screenshots:8};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('359-regular-guests-failure');}catch{}}
 finally{await writeFile(`${outDir}/regular-guests-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
