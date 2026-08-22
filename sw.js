@@ -1,5 +1,5 @@
 const CACHE_PREFIX='poply-runtime-';
-const CACHE_NAME='poply-runtime-v2';
+const CACHE_NAME='poply-runtime-v3';
 const OFFLINE_RELEASE_BODY=JSON.stringify({sha:null,deployedAt:null,offline:true});
 
 self.addEventListener('install',()=>{self.skipWaiting();});
