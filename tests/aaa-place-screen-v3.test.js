@@ -54,5 +54,5 @@ test('Physical iPhone release is loaded last and rotates the runtime cache',asyn
   assert.match(index,/aaa-place-life-v2\.css\?v=20260818-guidance1[^]*aaa-iphone-readability\.css\?v=20260819-iphone1/);
   assert.match(index,/aaa-main\.js\?v=20260819-iphone1/);
   assert.match(index,/data-build="aaa-foundation-20260819-iphone1"/);
-  assert.match(worker,/CACHE_NAME='poply-runtime-v2'/);
+  assert.match(worker,/CACHE_NAME='poply-runtime-v3'/);
 });
