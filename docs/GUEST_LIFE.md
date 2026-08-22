@@ -1,6 +1,6 @@
 # Guest-Life · Café am Meer
 
-Status: LIVE since PR #166; reload-visibility hardening is being verified on `fix/guest-life-visible-release-proof`.
+Status: LIVE since PR #166. Reload-visibility hardening: PR #168.
 Original accepted Guest-Life head: `4e13355aaefdfbd5139eae9b431d726f2406cd29`.
 Durable coordination: GitHub Issue #42.
 
