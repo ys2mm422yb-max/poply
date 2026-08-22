@@ -1,4 +1,5 @@
 const UPDATE_INTERVAL_MS=5*60*1000;
+export const CLIENT_RELEASE_STORAGE_KEY='poply-client-release-v1';
 
 export function releaseUrl(moduleUrl=import.meta.url){
   return new URL('../release.json',moduleUrl).href;
@@ -12,6 +13,24 @@ export function shouldReloadForRelease(bootRelease,latestRelease){
   if(!bootRelease||!latestRelease)return false;
   if(bootRelease==='development'||latestRelease==='development')return false;
   return bootRelease!==latestRelease;
+}
+
+export function storedRelease(storageObj,key=CLIENT_RELEASE_STORAGE_KEY){
+  try{
+    const value=storageObj?.getItem?.(key);
+    return typeof value==='string'&&value.trim()?value.trim():null;
+  }catch{return null;}
+}
+
+export function rememberRelease(storageObj,release,key=CLIENT_RELEASE_STORAGE_KEY){
+  if(!release||release==='development')return false;
+  try{storageObj?.setItem?.(key,release);return true;}catch{return false;}
+}
+
+export function shouldReloadForStoredRelease(previousRelease,latestRelease){
+  if(!previousRelease||!latestRelease)return false;
+  if(previousRelease==='development'||latestRelease==='development')return false;
+  return previousRelease!==latestRelease;
 }
 
 export async function fetchReleaseSha(fetchImpl=globalThis.fetch,moduleUrl=import.meta.url){
@@ -32,6 +51,7 @@ export async function installAppUpdates({
   documentObj=globalThis.document,
   windowObj=globalThis.window,
   fetchImpl=globalThis.fetch,
+  storageObj=windowObj?.localStorage,
   now=()=>Date.now(),
   intervalMs=UPDATE_INTERVAL_MS,
   releasePolling=releasePollingForWindow(windowObj),
@@ -44,11 +64,6 @@ export async function installAppUpdates({
   const registration=await navigatorObj.serviceWorker.register(workerUrl,{scope:workerScope,updateViaCache:'none'});
   registration.update().catch(()=>{});
 
-  let bootRelease=null;
-  if(releasePolling){
-    try{bootRelease=await fetchReleaseSha(fetchImpl);}catch{}
-  }
-
   let checking=false;
   let reloading=false;
   let lastCheck=0;
@@ -58,6 +73,23 @@ export async function installAppUpdates({
     windowObj.location.reload();
     return true;
   };
+
+  let bootRelease=null;
+  if(releasePolling){
+    try{
+      bootRelease=await fetchReleaseSha(fetchImpl);
+      const previousRelease=storedRelease(storageObj);
+      if(shouldReloadForStoredRelease(previousRelease,bootRelease)){
+        // Advance the canonical marker before reloading so an iOS snapshot/cold start
+        // cannot loop if the same release is restored again.
+        rememberRelease(storageObj,bootRelease);
+        const bootReload=reload();
+        return {supported:true,registration,bootRelease,bootReload,releasePolling};
+      }
+      if(!previousRelease&&bootRelease)rememberRelease(storageObj,bootRelease);
+    }catch{}
+  }
+
   const check=async({force=false}={})=>{
     if(!releasePolling||checking||reloading)return false;
     const stamp=now();
@@ -65,8 +97,11 @@ export async function installAppUpdates({
     checking=true;lastCheck=stamp;
     try{
       const latestRelease=await fetchReleaseSha(fetchImpl);
-      if(shouldReloadForRelease(bootRelease,latestRelease))return reload();
-      if(!bootRelease&&latestRelease)bootRelease=latestRelease;
+      if(shouldReloadForRelease(bootRelease,latestRelease)){
+        rememberRelease(storageObj,latestRelease);
+        return reload();
+      }
+      if(!bootRelease&&latestRelease){bootRelease=latestRelease;rememberRelease(storageObj,latestRelease);}
       return false;
     }catch{return false;}
     finally{checking=false;}
@@ -87,5 +122,5 @@ export async function installAppUpdates({
     if(hadController)reload();
   });
 
-  return {supported:true,registration,bootRelease,check,timer,releasePolling};
+  return {supported:true,registration,bootRelease,bootReload:false,check,timer,releasePolling};
 }
