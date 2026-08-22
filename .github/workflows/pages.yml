@@ -46,3 +46,35 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify-canonical:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify permanent test URL
+        env:
+          CANONICAL_URL: https://ys2mm422yb-max.github.io/poply
+        run: |
+          for attempt in {1..30}; do
+            if node --input-type=module <<'NODE'
+          const base=process.env.CANONICAL_URL;
+          const expected=process.env.GITHUB_SHA;
+          const nonce=Date.now();
+          const releaseResponse=await fetch(`${base}/release.json?verify=${expected}-${nonce}`,{cache:'no-store'});
+          if(!releaseResponse.ok)throw new Error(`release.json HTTP ${releaseResponse.status}`);
+          const release=await releaseResponse.json();
+          if(release.sha!==expected)throw new Error(`canonical SHA ${release.sha} != ${expected}`);
+          const rootResponse=await fetch(`${base}/?verify=${expected}-${nonce}`,{cache:'no-store'});
+          if(!rootResponse.ok)throw new Error(`canonical root HTTP ${rootResponse.status}`);
+          const html=await rootResponse.text();
+          if(!html.includes('Poply Places')||!html.includes('aaa-main.js'))throw new Error('canonical root is not Poply app shell');
+          console.log(`Canonical Poply verified at ${expected}`);
+          NODE
+            then
+              exit 0
+            fi
+            echo "Canonical Pages release not ready yet (attempt $attempt/30)."
+            sleep 5
+          done
+          echo "Permanent test URL did not reach $GITHUB_SHA."
+          exit 1
