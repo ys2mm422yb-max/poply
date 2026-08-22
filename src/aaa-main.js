@@ -27,6 +27,7 @@ import { installOrdersStageV2 } from './aaa-orders-stage-v2.js';
 import { installOrderThemes } from './aaa-order-themes.js';
 import { installWorldLife } from './aaa-world-life.js';
 import { installPlaceLifeV2 } from './aaa-place-life-v2.js';
+import { installGuestLife } from './aaa-guest-life-ui.js';
 import { installAppUpdates } from './aaa-updates.js';
 
 document.documentElement.style.setProperty('--poply-hero',`url(${ASSETS.hero})`);
@@ -63,6 +64,7 @@ installGuestUI(root,ui);
 installGuestDynamicsUI(root);
 installWorldLife(root);
 installPlaceLifeV2(root);
+installGuestLife(root);
 installLayoutStability(root);
 installGameplayFirst(root);
 installOrdersStageV2(root);
