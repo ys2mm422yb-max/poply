@@ -15,7 +15,15 @@ const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:docu
 const assertWithin=async(locator,label)=>{const box=await locator.boundingBox(),height=await page.evaluate(()=>window.visualViewport?.height||innerHeight);assert(box&&box.y>=-1&&box.y+box.height<=height+1,`${label} outside viewport ${JSON.stringify(box)}`);};
 const assertNotClipped=async(locator,label)=>{const m=await locator.evaluate(node=>({scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,text:node.textContent}));assert(m.scrollWidth<=m.clientWidth+1&&m.scrollHeight<=m.clientHeight+1,`${label} clipped ${JSON.stringify(m)}`);};
 const reset=async()=>{await page.evaluate(()=>{localStorage.removeItem('poply-v2-state-1');localStorage.removeItem('poply-v2-state-1-backup');});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board');};
-const openOrders=async()=>{await page.locator('.nav-tab[data-view="orders"]').click();await page.waitForSelector('.view-orders .customer-choice');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));};
+const openOrders=async()=>{
+  await page.locator('.nav-tab[data-view="orders"]').click();
+  await page.waitForSelector('.view-orders .customer-choice');
+  const ribbon=page.locator('.daily-ribbon[data-daily-toggle]');
+  await ribbon.waitFor({state:'visible'});
+  const copy=await ribbon.evaluate(node=>({small:node.querySelector('.daily-ribbon-copy small')?.textContent?.trim()||'',strong:node.querySelector('.daily-ribbon-copy strong')?.textContent?.trim()||'',text:node.textContent?.replace(/\s+/g,' ').trim()||''}));
+  assert(copy.small&&copy.strong,`Service Specials: Daily story ribbon is empty ${JSON.stringify(copy)}`);
+  assert(!copy.text.includes('Tagesziele & Gast'),`Service Specials: Daily ribbon still uses technical-only label ${JSON.stringify(copy)}`);
+};
 
 let report={},failure=null;
 try{
@@ -79,7 +87,7 @@ try{
   assert(((await shortPanel.textContent())||'').includes('Merge-Serie'),'short viewport lost Special panel');
   await assertWithin(shortPanel,'Merge-Serie panel 390x720');await assertWithin(page.locator('.service-deliver'),'service button 390x720');await assertNoScroll('Service Specials 390x720');await shot('104-service-special-series-390x720');
 
-  report={openingSpecials:specials,seriesRewardCoins:40,completedWithMerges:2,deliveryCoinsWithBonus:130,replacementSpecial:replacement.special.type,compactQueueLines:true,loyaltyCoexists:true,shortViewportNoScroll:true};
+  report={openingSpecials:specials,seriesRewardCoins:40,completedWithMerges:2,deliveryCoinsWithBonus:130,replacementSpecial:replacement.special.type,compactQueueLines:true,loyaltyCoexists:true,shortViewportNoScroll:true,dailyStoryRibbon:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('105-service-special-failure');}catch{}}
 finally{await writeFile(`${outDir}/service-specials-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}

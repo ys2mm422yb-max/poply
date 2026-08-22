@@ -17,6 +17,14 @@ const assertNoScroll=async label=>{const m=await page.evaluate(()=>({scroll:docu
 const assertVisibleWithin=async(locator,label)=>{const box=await locator.boundingBox();assert(box&&box.y>=-1&&box.y+box.height<=await page.evaluate(()=>window.visualViewport?.height||innerHeight)+1,`${label} outside viewport ${JSON.stringify(box)}`);};
 const assertNotClipped=async(locator,label)=>{const m=await locator.evaluate(node=>({scrollWidth:node.scrollWidth,clientWidth:node.clientWidth,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,text:node.textContent}));assert(m.scrollWidth<=m.clientWidth+1&&m.scrollHeight<=m.clientHeight+1,`${label} visually clipped ${JSON.stringify(m)}`);};
 const assertNoEllipsisStyle=async(locator,label)=>{const style=await locator.evaluate(node=>{const css=getComputedStyle(node);return {whiteSpace:css.whiteSpace,textOverflow:css.textOverflow,overflowX:css.overflowX,overflowY:css.overflowY};});assert(style.whiteSpace!=='nowrap'&&style.textOverflow!=='ellipsis',`${label} still uses ellipsis CSS ${JSON.stringify(style)}`);};
+const waitForDailyRibbon=async label=>{
+  const ribbon=page.locator('.daily-ribbon[data-daily-toggle]');
+  await ribbon.waitFor({state:'visible'});
+  const copy=await ribbon.evaluate(node=>({small:node.querySelector('.daily-ribbon-copy small')?.textContent?.trim()||'',strong:node.querySelector('.daily-ribbon-copy strong')?.textContent?.trim()||'',text:node.textContent?.replace(/\s+/g,' ').trim()||''}));
+  assert(copy.small&&copy.strong,`${label}: Daily story ribbon is empty ${JSON.stringify(copy)}`);
+  assert(!copy.text.includes('Tagesziele & Gast'),`${label}: Daily ribbon still uses technical-only label ${JSON.stringify(copy)}`);
+  return copy;
+};
 const seed=async mutate=>page.evaluate(async source=>{const game=await import('./src/v2-game.js');const state=game.createInitialState();const fn=(0,eval)(`(${source})`);fn(state,game);localStorage.setItem('poply-v2-state-1',JSON.stringify(state));},mutate.toString());
 
 let report={},failure=null;
@@ -36,14 +44,14 @@ try{
 
   await page.locator('.purpose-card button').click();
   await page.waitForSelector('.view-orders .service-card');
-  await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
+  const openingDaily=await waitForDailyRibbon('opening Orders');
   assert((await page.locator('.service-hero h2').textContent())?.includes('Wähle'),'orders hero still explains instead of offering a choice');
-  assert((await page.locator('.daily-ribbon').textContent())?.includes('Tagesziele & Gast'),'Daily ribbon rendered as an empty surface');
+  assert(openingDaily.small&&openingDaily.strong,'Daily ribbon rendered as an empty surface');
   await assertNoEllipsisStyle(page.locator('.service-hero p'),'opening Orders purpose line');
   await assertNotClipped(page.locator('.service-hero p'),'opening Orders purpose line');
   const choices=page.locator('.customer-choice');assert(await choices.count()===3,'opening does not expose three guest choices');
   await page.locator('[data-select-order="order-1"]').click();
-  await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));
+  await waitForDailyRibbon('selected opening order');
   assert((await page.locator('.service-card[data-service-order="order-1"] .service-strategy').textContent())?.includes('KOMBI'),'combo strategy not visible');
   assert(await page.locator('.service-card[data-service-order="order-1"] .service-status').isHidden(),'redundant service status pill is still visible/clippable');
   await assertVisibleWithin(page.locator('.service-card[data-service-order="order-1"]'),'opening combo service card');
@@ -113,11 +121,11 @@ try{
   await page.setViewportSize({width:390,height:720});
   await seed(()=>{});await page.reload({waitUntil:'networkidle'});await page.waitForSelector('.view-board .purpose-card');
   await assertNoScroll('fresh board 390x720');await shot('88-first-session-board-390x720');
-  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await page.waitForFunction(()=>document.querySelector('.daily-ribbon')?.textContent?.includes('Tagesziele'));await assertNoEllipsisStyle(page.locator('.service-hero p'),'short Orders purpose line');await assertNotClipped(page.locator('.service-hero p'),'short Orders purpose line');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
+  await page.locator('.purpose-card button').click();await page.waitForSelector('.view-orders');await waitForDailyRibbon('short opening Orders');await assertNoEllipsisStyle(page.locator('.service-hero p'),'short Orders purpose line');await assertNotClipped(page.locator('.service-hero p'),'short Orders purpose line');await assertNoScroll('opening orders 390x720');await shot('89-first-session-orders-390x720');
   await seed((state,game)=>{state.placeUpgrades=game.PLACE_01_UPGRADES.slice(0,4).map(upgrade=>upgrade.id);});await page.reload({waitUntil:'networkidle'});await page.locator('.nav-tab[data-view="place"]').click();await page.waitForSelector('.place-life-guests-v2 .place-life-person');
   await assertNotClipped(page.locator('.purpose-place-unlock strong'),'short mid-stage benefit copy');await assertNoScroll('living coast stage4 390x720');await shot('90-living-cafe-stage4-390x720');
 
-  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,readyOrderPurpose:readyPurpose,firstBuildBenefit:firstBenefit,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true,deliveryTransitionWaited:true,livingGuestLayer:true};
+  report={freshTitles:titles,postServeTitles:postTitles,firstBuildStars:4,readyOrderPurpose:readyPurpose,firstBuildBenefit:firstBenefit,stage4Guests:2,finalCoastElements:['lights','counter','menu','seating','terrace','sign'],shortViewportNoScroll:true,dailyRibbonPopulated:true,dailyStoryRibbon:true,serviceStatusDecluttered:true,purposeCopyUnclipped:true,purposeNoEllipsisCss:true,deliveryTransitionWaited:true,livingGuestLayer:true};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('98-first-session-failure');}catch{}}
 finally{await writeFile(`${outDir}/first-session-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
