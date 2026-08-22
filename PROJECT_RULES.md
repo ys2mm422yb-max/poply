@@ -46,6 +46,13 @@ The target is an original Poply product in the same broad genre, not a direct co
 - Prefer reviewable changes, but deliberate rebuilds are allowed when old architecture conflicts with the new direction.
 - Do not introduce paid services or material recurring costs without explicit owner approval.
 
+### Mandatory preflight before new work
+- Before implementing any non-trivial Poply change, first verify the current `main` SHA, open pull requests, GitHub Issue #42, current status/roadmap documents and the existing contracts/code for every affected system.
+- Search relevant merged pull requests, commits and durable docs before removing, simplifying, renaming or redesigning existing behavior. Understand why the current behavior was introduced and which QA/product contract protects it.
+- Do not duplicate work that is already shipped or active. Do not revive a stale implementation branch when newer work has superseded it; start from current `main` unless a still-valid branch is explicitly being continued.
+- A new change must extend or deliberately replace the current product contract, not accidentally reverse a previously accepted decision. If the requested direction conflicts with an established contract, surface that conflict before implementation instead of silently rolling the product backward.
+- For meaningful work, record the preflight result and relevant prior PRs/contracts in the new PR and/or Issue #42 so the next worker can reconstruct why the change is safe.
+
 ## 6. Continuous self-review
 - At meaningful milestones independently review merge clarity, board usability, order flow, progression, visual polish, mobile UX, accessibility, responsiveness, performance and reliability.
 - Prefer rendered screenshots/live builds over source-only judgments.
