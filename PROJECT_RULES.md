@@ -14,6 +14,8 @@ These rules apply to all future Poply work unless the project owner explicitly c
 - Testable updates always return to this same URL.
 - Do not use rotating preview URLs as the normal testing path.
 - If deployment breaks, repair the canonical deployment instead of replacing the URL.
+- The installed web app must update itself automatically to the latest successfully deployed canonical release. The owner must not need to reinstall the app, clear Safari/PWA caches, remove Home Screen data or switch to a new URL to receive a normal Poply update.
+- A release is not considered live until the permanent URL serves the exact intended `main` release marker and the installed-app automatic update path is proven for both an already-running app and a cold/backgrounded iPhone-style return.
 
 ## 3. Binding product reset – 2026-08-13
 Poply is no longer being developed as a connect-and-pop / chain puzzle game.
