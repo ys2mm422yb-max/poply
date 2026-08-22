@@ -45,6 +45,31 @@ const seed=async({stage=5,fulfill=true,visits={mika:5,nora:2,sam:1}}={})=>{
   await page.waitForTimeout(180);
 };
 
+const inspectWaitingOrders=async height=>{
+  await seed({stage:1,fulfill:false,visits:{mika:0,nora:0,sam:0}});
+  await go('place');
+  const scene=page.locator('.view-place.place-coast .place-scene-svg');
+  await scene.waitFor({state:'visible'});
+  await page.waitForFunction(()=>document.querySelectorAll('.view-place.place-coast [data-guest-life-waiting]').length===2);
+  assert((await scene.locator('.place-life-guests-v2-front [data-regular-guest]').count())===0,`Waiting guests ${height}: early Cafe unexpectedly depends on seating regulars`);
+  const ids=await scene.locator('[data-guest-life-waiting]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-guest-life-waiting')));
+  const expected=await page.evaluate(()=>{
+    const profiles=['mika','nora','sam'],state=JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}'),ids=[];
+    for(const order of state.currentOrders||[]){const id=profiles[Math.abs(Number(order.sequence)||0)%profiles.length];if(!ids.includes(id))ids.push(id);if(ids.length===2)break;}
+    return ids;
+  });
+  assert(JSON.stringify(ids)===JSON.stringify(expected),`Waiting guests ${height}: active order identities mismatch ${JSON.stringify({ids,expected})}`);
+  const waiting=scene.locator('[data-guest-life-waiting]');
+  for(let i=0;i<await waiting.count();i+=1){
+    const box=await waiting.nth(i).boundingBox();
+    assert(box&&box.width>=24&&box.height>=36,`Waiting guests ${height}: guest ${i} is not visibly rendered ${JSON.stringify(box)}`);
+  }
+  assert((await scene.locator('[data-guest-life-waiting] animateMotion').count())===0,`Waiting guests ${height}: pre-service guests should wait, not run loops`);
+  await assertAboveDock(scene,`Waiting guests Place ${height}`);
+  await assertNoScroll(`Waiting guests ${height}`);
+  await shot(`355-active-order-guests-place-390x${height}`);
+};
+
 const inspectOrders=async height=>{
   await go('orders');
   const choice=page.locator('.customer-choice').nth(1);
@@ -86,6 +111,7 @@ const inspectPlace=async height=>{
   assert(nameText.includes('Mika · Stammgast')&&nameText.includes('Nora · Bekannt')&&nameText.includes('Sam'),`Regular Place ${height}: visible guest names/ranks missing ${nameText}`);
   const nameplates=scene.locator('.regular-guest-nameplate');
   for(let i=0;i<await nameplates.count();i+=1){const box=await nameplates.nth(i).boundingBox();assert(box&&box.width>=38&&box.height>=8,`Regular Place ${height}: nameplate ${i} not visible ${JSON.stringify(box)}`);}
+  assert((await scene.locator('[data-guest-life-waiting]').count())===0,`Regular Place ${height}: already seated regulars were duplicated as waiting order guests`);
   await assertAboveDock(scene,`Regular Place scene ${height}`);
   await assertNoScroll(`Regular Place ${height}`);
   await shot(`351-regular-guests-place-390x${height}`);
@@ -121,6 +147,7 @@ const inspectArrival=async height=>{
   assert((await walker.locator('animateMotion').count())===1,`Guest arrival ${height}: motion path missing`);
   assert((await scene.getAttribute('data-guest-life-arrival'))==='nora',`Guest arrival ${height}: scene did not bind arrival identity`);
   assert((await pendingGuests()).includes('nora'),`Guest arrival ${height}: pending marker cleared before visible arrival completed`);
+  assert((await scene.locator('[data-guest-life-waiting="nora"]').count())===0,`Guest arrival ${height}: served Nora was duplicated as a waiting guest`);
   await page.waitForTimeout(650);
   await shot(`352-guest-arrival-390x${height}`);
 
@@ -168,6 +195,7 @@ try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
   for(const height of [844,720]){
     await page.setViewportSize({width:390,height});
+    await inspectWaitingOrders(height);
     await seed();
     await inspectOrders(height);
     await inspectPlace(height);
@@ -176,7 +204,7 @@ try{
   }
   await page.setViewportSize({width:390,height:844});
   await inspectCounterRoute();
-  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,humanNavigationDelayMs:1600,reloadBeforePlace:true,pendingArrivalReloadSafe:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,gameplaySaveSchemaUnchanged:true,screenshots:10};
+  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},activeOrderGuestsVisibleBeforeService:true,earlyCafeWithoutSeatingCovered:true,preServiceWaitingCount:2,preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,humanNavigationDelayMs:1600,reloadBeforePlace:true,pendingArrivalReloadSafe:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,gameplaySaveSchemaUnchanged:true,screenshots:12};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('359-regular-guests-failure');}catch{}}
 finally{await writeFile(`${outDir}/regular-guests-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
