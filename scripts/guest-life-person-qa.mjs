@@ -48,8 +48,8 @@ const inspect=async height=>{
   assert(baristaDisplay==='none',`Person contract ${height}: anonymous permanent barista is still visible (${baristaDisplay})`);
 
   const steam=scene.locator('.cafe-steam');
-  assert(await steam.count()===1,`Person contract ${height}: counter steam marker missing`);
-  assert((await steam.evaluate(node=>getComputedStyle(node).display))==='none',`Person contract ${height}: idle counter still shows permanent steam`);
+  assert(await steam.count()===1,`Person contract ${height}: legacy counter steam marker missing`);
+  assert((await steam.evaluate(node=>getComputedStyle(node).display))==='none',`Person contract ${height}: idle counter still exposes legacy steam`);
 
   const mapLaunch=page.locator('.view-place.place-coast [data-action="place-map"]');
   assert(await mapLaunch.locator('svg').count()===1,`Person contract ${height}: map launcher does not use a clear map icon`);
@@ -91,10 +91,18 @@ const inspect=async height=>{
   await goPlace();
   const serviceScene=page.locator('.view-place.place-coast .place-scene-svg');
   await page.waitForFunction(()=>document.querySelector('.view-place.place-coast .place-scene-svg')?.classList.contains('has-guest-life-service'));
-  assert((await serviceScene.locator('.cafe-steam').evaluate(node=>getComputedStyle(node).display))!=='none',`Person contract ${height}: real counter service does not reveal short-lived steam`);
-  assert(await serviceScene.locator('[data-guest-life-walker="nora"]').count()===1,`Person contract ${height}: service steam is not tied to the pending served guest`);
+  const serviceSteam=serviceScene.locator('.cafe-steam');
+  const steamStyle=await serviceSteam.evaluate(node=>{const style=getComputedStyle(node);return {display:style.display,opacity:Number(style.opacity),pathAnimations:[...node.querySelectorAll('path')].map(path=>getComputedStyle(path).animationName)};});
+  assert(steamStyle.display!=='none',`Person contract ${height}: legacy service-state marker was not activated ${JSON.stringify(steamStyle)}`);
+  assert(steamStyle.opacity===0,`Person contract ${height}: legacy steam/smoke is still visually exposed ${JSON.stringify(steamStyle)}`);
+  assert(steamStyle.pathAnimations.every(name=>name==='none'),`Person contract ${height}: hidden legacy smoke paths still animate ${JSON.stringify(steamStyle)}`);
+  const cupAnimation=await serviceScene.locator('.cafe-cups').evaluate(node=>getComputedStyle(node).animationName);
+  const counterAnimation=await serviceScene.locator('.counter-top').evaluate(node=>getComputedStyle(node).animationName);
+  assert(cupAnimation.includes('placeServiceCupPayoff'),`Person contract ${height}: real service has no cup payoff (${cupAnimation})`);
+  assert(counterAnimation.includes('placeServiceCounterPayoff'),`Person contract ${height}: real service has no counter payoff (${counterAnimation})`);
+  assert(await serviceScene.locator('[data-guest-life-walker="nora"]').count()===1,`Person contract ${height}: service payoff is not tied to the pending served guest`);
   assert(await serviceScene.locator('[data-guest-life-waiting="nora"]').count()===0,`Person contract ${height}: served Nora duplicated in waiting queue`);
-  await shot(`358-guest-life-service-steam-stage2-390x${height}`);
+  await shot(`358-guest-life-service-payoff-stage2-390x${height}`);
 
   await page.emulateMedia({reducedMotion:'reduce'});
   await seedStage2();
@@ -108,7 +116,7 @@ let report={},failure=null;
 try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
   for(const height of [844,720])await inspect(height);
-  report={viewports:['390x844','390x720'],anonymousBaristaHidden:true,threeActiveGuestsVisible:true,activeGuestsUseStaggeredCounterRoles:true,activeGuestsMoveOnScreen:true,idleSteamHidden:true,serviceSteamVisible:true,mapIconClear:true,reducedMotionSafe:true,screenshots:6};
+  report={viewports:['390x844','390x720'],anonymousBaristaHidden:true,threeActiveGuestsVisible:true,activeGuestsUseStaggeredCounterRoles:true,activeGuestsMoveOnScreen:true,idleSteamHidden:true,serviceSteamVisuallySuppressed:true,serviceCupCounterPayoff:true,mapIconClear:true,reducedMotionSafe:true,screenshots:6};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('359-guest-life-person-failure');}catch{}}
 finally{await writeFile(`${outDir}/guest-life-person-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
