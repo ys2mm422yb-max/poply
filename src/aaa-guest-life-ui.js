@@ -86,11 +86,11 @@ const seatSlotFor=(svg,guestId)=>{
   return null;
 };
 const reducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]));
 
 function personMarkup(profile,{x=0,y=0,scale=1,kind='',state='standing',walker=false,entering=false}={}){
   const travel=walker?`<animateMotion class="guest-life-motion" dur="${WALK_MS}ms" path="${guestLifePath({x,y})}" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .7 .25 1"/>`:'';
-  const waitIn=entering?`<animateTransform class="guest-life-wait-in" attributeName="transform" type="translate" from="742 344" to="${x} ${y}" dur="${WAIT_IN_MS}ms" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .7 .25 1"/>`:'';
+  const waitIn=entering?`<animateMotion class="guest-life-wait-in" dur="${WAIT_IN_MS}ms" path="${guestLifePath({x,y})}" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .7 .25 1"/>`:'';
   const transform=walker||entering?'':` transform="translate(${x} ${y})"`;
   const walkerAttr=walker?` data-guest-life-walker="${profile.id}"`:'';
   const waitingAttr=state==='waiting'?` data-guest-life-waiting="${profile.id}" data-guest-life-waiting-kind="${esc(kind)}"`:'';
