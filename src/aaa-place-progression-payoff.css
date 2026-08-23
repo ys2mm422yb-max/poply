@@ -18,8 +18,8 @@
 .production-place.place-coast .world-hero[data-stage="2"] .world-art{filter:saturate(1.09) contrast(1.025) brightness(1.015)}
 .production-place.place-coast .world-hero[data-stage="3"] .world-art{filter:saturate(1.12) contrast(1.03) brightness(1.02)}
 .production-place.place-coast .world-hero[data-stage="4"] .world-art{filter:saturate(1.14) contrast(1.03) brightness(1.025)}
-.production-place.place-coast .world-hero[data-stage="5"] .world-art,
-.production-place.place-coast .world-hero[data-stage="6"] .world-art{filter:saturate(1.17) contrast(1.035) brightness(1.03)}
+.production-place.place-coast .world-hero[data-stage="5"] .world-art{filter:saturate(1.17) contrast(1.035) brightness(1.03)}
+.place-map-preview.place-coast .place-scene-v2{filter:saturate(1.17) contrast(1.035) brightness(1.03)}
 
 /* 1/6 Lichter: make the first build read as a real opening-up of the Café. */
 .production-place.place-coast .scene-upgrade.lights .cafe-bulb{
@@ -80,14 +80,18 @@
   filter:drop-shadow(0 10px 7px rgba(47,29,23,.3)) brightness(1.05);
 }
 
-/* 6/6 Poply-Schild: completion reads as a finished destination. */
-.production-place.place-coast .world-hero[data-stage="6"] .scene-upgrade.sign{
+/* 6/6 Poply-Schild: completion reads as a finished destination.
+   Completed Coast is revisited through the map, so the same finish is authored there too. */
+.production-place.place-coast .world-hero[data-stage="6"] .scene-upgrade.sign,
+.place-map-preview.place-coast .scene-upgrade.sign{
   filter:drop-shadow(0 12px 10px rgba(0,24,29,.28)) drop-shadow(0 0 18px rgba(255,215,117,.34));
 }
-.production-place.place-coast .world-hero[data-stage="6"] .cafe-flags{
+.production-place.place-coast .world-hero[data-stage="6"] .cafe-flags,
+.place-map-preview.place-coast .cafe-flags{
   filter:drop-shadow(0 2px 2px rgba(65,37,27,.25));
 }
-.production-place.place-coast .world-hero[data-stage="6"] .cafe-celebration-dots{
+.production-place.place-coast .world-hero[data-stage="6"] .cafe-celebration-dots,
+.place-map-preview.place-coast .cafe-celebration-dots{
   filter:drop-shadow(0 0 7px rgba(255,239,164,.65));
 }
 
