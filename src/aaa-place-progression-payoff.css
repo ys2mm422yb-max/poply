@@ -95,9 +95,9 @@
   filter:drop-shadow(0 0 7px rgba(255,239,164,.65));
 }
 
-/* Every build should have a short emotional before/after beat without hiding the playable state. */
+/* Every build keeps the existing authored restoration sweep and layers a short brightness pulse on top. */
 .production-place.place-coast .world-hero.fx-restoration-reveal::after{
-  animation:placeBuildWorldPulse 1.05s cubic-bezier(.16,.9,.2,1) both;
+  animation:restoration-sweep .9s ease-out both,placeBuildWorldPulse 1.05s cubic-bezier(.16,.9,.2,1) both;
 }
 .production-place.place-coast .world-hero[data-stage="1"].fx-restoration-reveal .scene-upgrade.lights,
 .production-place.place-coast .world-hero[data-stage="2"].fx-restoration-reveal .scene-upgrade.counter,
