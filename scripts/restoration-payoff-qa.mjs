@@ -48,7 +48,8 @@ const runBuild=async(label,shotName)=>{
   const hook=await page.locator('.world-hero').evaluate(el=>({hasFx:el.classList.contains('fx-restoration-reveal'),animation:getComputedStyle(el).animationName,afterAnimation:getComputedStyle(el,'::after').animationName}));
   assert(hook.hasFx,`${label}: world hero did not receive fx-restoration-reveal`);
   assert((hook.animation||'').includes('restoration-scene-reveal'),`${label}: world hero reveal animation missing ${JSON.stringify(hook)}`);
-  assert((hook.afterAnimation||'').includes('restoration-sweep'),`${label}: world hero sweep animation missing ${JSON.stringify(hook)}`);
+  assert((hook.afterAnimation||'').includes('restoration-sweep'),`${label}: existing world hero sweep animation was lost ${JSON.stringify(hook)}`);
+  assert((hook.afterAnimation||'').includes('placeBuildWorldPulse'),`${label}: stronger Café world pulse is not rendered alongside the existing sweep ${JSON.stringify(hook)}`);
   const fit=await assertShellFits(label);
   await shot(shotName);
   const save=await readSave();assert(save.placeUpgrades.includes('lights'),`${label}: build was not persisted`);
