@@ -51,12 +51,16 @@ const inspect=async height=>{
   assert(ids.length===2,`Person contract ${height}: expected two active order guests, got ${JSON.stringify(ids)}`);
   const kinds=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-guest-life-waiting-kind')));
   assert(JSON.stringify(kinds)===JSON.stringify(['counter-wait','counter-queue']),`Person contract ${height}: guests are not using counter-aware waiting roles ${JSON.stringify(kinds)}`);
-  assert((await scene.locator('[data-guest-life-waiting] .guest-life-wait-in').count())===2,`Person contract ${height}: guests do not visibly enter the Cafe scene`);
+  assert((await scene.locator('[data-guest-life-waiting] .guest-life-wait-in').count())===2,`Person contract ${height}: guest entry animation elements are missing`);
   assert((await scene.locator('.place-life-guests-v2-front [data-regular-guest]').count())===0,`Person contract ${height}: unserved guests were duplicated as seated regulars`);
 
-  await page.waitForTimeout(220);
+  const entryStart=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().x));
+  await page.waitForTimeout(260);
+  const entryMid=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().x));
+  entryStart.forEach((x,index)=>assert(x-entryMid[index]>=6,`Person contract ${height}: guest ${index} did not visibly move into scene ${JSON.stringify({start:x,mid:entryMid[index]})}`));
   await shot(`356-guest-life-entering-stage2-390x${height}`);
-  await page.waitForTimeout(900);
+
+  await page.waitForTimeout(760);
   const boxes=[];
   for(let i=0;i<2;i+=1){
     const box=await waiting.nth(i).boundingBox();boxes.push(box);
@@ -77,7 +81,7 @@ let report={},failure=null;
 try{
   await page.goto(baseURL,{waitUntil:'networkidle'});
   for(const height of [844,720])await inspect(height);
-  report={viewports:['390x844','390x720'],anonymousBaristaHidden:true,activeGuestsUseCounterRoles:true,activeGuestsEnterVisibly:true,reducedMotionSafe:true,screenshots:4};
+  report={viewports:['390x844','390x720'],anonymousBaristaHidden:true,activeGuestsUseCounterRoles:true,activeGuestsMoveOnScreen:true,reducedMotionSafe:true,screenshots:4};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('358-guest-life-person-failure');}catch{}}
 finally{await writeFile(`${outDir}/guest-life-person-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}
