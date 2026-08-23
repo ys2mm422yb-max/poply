@@ -2,7 +2,7 @@ import { GUEST_PROFILES, guestForSequence } from './aaa-guests.js';
 import { getState } from './aaa-session.js';
 
 const NS='http://www.w3.org/2000/svg';
-const WALK_MS=3000,ARRIVE_MS=700,STAND_MS=5000,SETTLE_MS=1400,MAX_PENDING=3,MAX_WAITING=2;
+const WALK_MS=3000,WAIT_IN_MS=900,ARRIVE_MS=700,STAND_MS=5000,SETTLE_MS=1400,MAX_PENDING=3,MAX_WAITING=2;
 export const GUEST_LIFE_PENDING_KEY='poply-guest-life-pending-v1';
 const byId=id=>GUEST_PROFILES.find(guest=>guest.id===id)??null;
 const seatTargets={
@@ -11,10 +11,18 @@ const seatTargets={
   right:{kind:'seat-right',x:458,y:360,scale:1},
   back:{kind:'terrace-seat',x:628,y:315,scale:.82},
 };
-const waitingTargets=[
-  {x:590,y:356,scale:.78},
-  {x:684,y:350,scale:.7},
-];
+
+export function guestLifeWaitingTargets(stage){
+  const safeStage=Math.max(0,Math.min(6,Math.floor(Number(stage)||0)));
+  if(safeStage>=2)return [
+    {kind:'counter-wait',x:438,y:340,scale:.88},
+    {kind:'counter-queue',x:526,y:348,scale:.8},
+  ];
+  return [
+    {kind:'entrance-wait',x:452,y:340,scale:.88},
+    {kind:'entrance-queue',x:542,y:348,scale:.8},
+  ];
+}
 
 export function guestLifeDestination(stage,seatSlot=null){
   const safeStage=Math.max(0,Math.min(6,Math.floor(Number(stage)||0)));
@@ -78,16 +86,20 @@ const seatSlotFor=(svg,guestId)=>{
 const reducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches===true;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
-function personMarkup(profile,{x=0,y=0,scale=1,state='standing',walker=false}={}){
+function personMarkup(profile,{x=0,y=0,scale=1,kind='',state='standing',walker=false,entering=false}={}){
   const travel=walker?`<animateMotion class="guest-life-motion" dur="${WALK_MS}ms" path="${guestLifePath({x,y})}" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .7 .25 1"/>`:'';
-  const transform=walker?'':` transform="translate(${x} ${y})"`;
+  const waitIn=entering?`<animateTransform class="guest-life-wait-in" attributeName="transform" type="translate" from="742 344" to="${x} ${y}" dur="${WAIT_IN_MS}ms" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".2 .7 .25 1"/>`:'';
+  const transform=walker||entering?'':` transform="translate(${x} ${y})"`;
   const walkerAttr=walker?` data-guest-life-walker="${profile.id}"`:'';
-  const waitingAttr=state==='waiting'?` data-guest-life-waiting="${profile.id}"`:'';
-  return `<g class="guest-life-arrival${state==='waiting'?' guest-life-waiting':''} regular-${profile.id}"${walkerAttr}${waitingAttr} data-guest-life-state="${state}" aria-hidden="true"${transform}>${travel}<g class="guest-life-scale" transform="scale(${scale})"><ellipse class="guest-life-shadow" cx="0" cy="8" rx="21" ry="6"/><g class="guest-life-step"><path class="guest-life-leg guest-life-leg-a" d="M-7-12q-5 12-13 20"/><path class="guest-life-leg guest-life-leg-b" d="M7-12q6 12 15 19"/><path class="guest-life-shoe guest-life-shoe-a" d="M-24 9h15"/><path class="guest-life-shoe guest-life-shoe-b" d="M15 8h15"/><path class="guest-life-shirt" d="M-20-54q20-13 40 0l-3 43h-34Z"/><circle class="guest-life-head" cx="0" cy="-70" r="14"/><path class="guest-life-hair" d="M-13-73q4-17 18-14q10 2 12 14q-8-5-13-2q-7-6-17 8"/><path class="guest-life-arm guest-life-arm-a" d="M-15-49q-12 10-17 22"/><path class="guest-life-arm guest-life-arm-b" d="M15-48q13 9 18 21"/><circle class="guest-life-eye" cx="-5" cy="-70" r="1.2"/><circle class="guest-life-eye" cx="5" cy="-70" r="1.2"/><path class="guest-life-smile" d="M-4-64q4 3 8 0"/></g><g class="guest-life-name" transform="translate(-45 -111)"><rect width="90" height="24" rx="12"/><text x="45" y="16" text-anchor="middle">${esc(profile.name)}</text></g></g></g>`;
+  const waitingAttr=state==='waiting'?` data-guest-life-waiting="${profile.id}" data-guest-life-waiting-kind="${esc(kind)}"`:'';
+  const nameMarkup=state==='waiting'
+    ?`<g class="guest-life-name guest-life-waiting-name" transform="translate(-36 -106)"><rect width="72" height="20" rx="10"/><text x="36" y="14" text-anchor="middle">${esc(profile.name)}</text></g>`
+    :`<g class="guest-life-name" transform="translate(-45 -111)"><rect width="90" height="24" rx="12"/><text x="45" y="16" text-anchor="middle">${esc(profile.name)}</text></g>`;
+  return `<g class="guest-life-arrival${state==='waiting'?' guest-life-waiting':''} regular-${profile.id}"${walkerAttr}${waitingAttr} data-guest-life-state="${state}" aria-hidden="true"${transform}>${travel}${waitIn}<g class="guest-life-scale" transform="scale(${scale})"><ellipse class="guest-life-shadow" cx="0" cy="8" rx="21" ry="6"/><g class="guest-life-step"><path class="guest-life-leg guest-life-leg-a" d="M-7-12q-5 12-13 20"/><path class="guest-life-leg guest-life-leg-b" d="M7-12q6 12 15 19"/><path class="guest-life-shoe guest-life-shoe-a" d="M-24 9h15"/><path class="guest-life-shoe guest-life-shoe-b" d="M15 8h15"/><path class="guest-life-shirt" d="M-20-54q20-13 40 0l-3 43h-34Z"/><circle class="guest-life-head" cx="0" cy="-70" r="14"/><path class="guest-life-hair" d="M-13-73q4-17 18-14q10 2 12 14q-8-5-13-2q-7-6-17 8"/><path class="guest-life-arm guest-life-arm-a" d="M-15-49q-12 10-17 22"/><path class="guest-life-arm guest-life-arm-b" d="M15-48q13 9 18 21"/><circle class="guest-life-eye" cx="-5" cy="-70" r="1.2"/><circle class="guest-life-eye" cx="5" cy="-70" r="1.2"/><path class="guest-life-smile" d="M-4-64q4 3 8 0"/></g>${nameMarkup}</g></g>`;
 }
 
 function walkerMarkup(profile,destination,motion){
-  return personMarkup(profile,{x:destination.x,y:destination.y,scale:destination.scale??1,state:motion?'walking':'standing',walker:motion});
+  return personMarkup(profile,{x:destination.x,y:destination.y,scale:destination.scale??1,kind:destination.kind,state:motion?'walking':'standing',walker:motion});
 }
 
 function parseGroup(markup){
@@ -107,19 +119,20 @@ function insertWalker(svg,profile,destination,motion){
 }
 
 function renderWaitingGuests(svg,pending){
+  const stage=sceneStage(svg),targets=guestLifeWaitingTargets(stage),reduce=reducedMotion();
   const regularIds=new Set([...svg.querySelectorAll('[data-regular-guest]')].map(node=>node.getAttribute('data-regular-guest')).filter(Boolean));
   const waiting=activeOrderGuestIds(getState())
     .filter(id=>!pending.includes(id)&&!regularIds.has(id))
     .slice(0,MAX_WAITING);
-  const signature=waiting.join('|');
+  const signature=`${stage}|${waiting.join('|')}`;
   const existing=svg.querySelector('.guest-life-waiting-layer');
   if(existing?.dataset.guestLifeWaitingSignature===signature)return waiting;
   existing?.remove();
   if(!waiting.length)return waiting;
   const layer=document.createElementNS(NS,'g');layer.classList.add('guest-life-waiting-layer');layer.dataset.guestLifeWaitingSignature=signature;layer.setAttribute('aria-hidden','true');
   waiting.forEach((guestId,index)=>{
-    const profile=byId(guestId),target=waitingTargets[index];
-    const guest=profile&&target?parseGroup(personMarkup(profile,{...target,state:'waiting'})):null;
+    const profile=byId(guestId),target=targets[index];
+    const guest=profile&&target?parseGroup(personMarkup(profile,{...target,state:'waiting',entering:!reduce})):null;
     if(guest)layer.append(guest);
   });
   insertBeforeForeground(svg,layer);
