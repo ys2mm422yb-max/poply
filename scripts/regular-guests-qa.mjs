@@ -50,12 +50,12 @@ const inspectWaitingOrders=async height=>{
   await go('place');
   const scene=page.locator('.view-place.place-coast .place-scene-svg');
   await scene.waitFor({state:'visible'});
-  await page.waitForFunction(()=>document.querySelectorAll('.view-place.place-coast [data-guest-life-waiting]').length===2);
+  await page.waitForFunction(()=>document.querySelectorAll('.view-place.place-coast [data-guest-life-waiting]').length===3);
   assert((await scene.locator('.place-life-guests-v2-front [data-regular-guest]').count())===0,`Waiting guests ${height}: early Cafe unexpectedly depends on seating regulars`);
   const ids=await scene.locator('[data-guest-life-waiting]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-guest-life-waiting')));
   const expected=await page.evaluate(()=>{
     const profiles=['mika','nora','sam'],state=JSON.parse(localStorage.getItem('poply-v2-state-1')||'{}'),ids=[];
-    for(const order of state.currentOrders||[]){const id=profiles[Math.abs(Number(order.sequence)||0)%profiles.length];if(!ids.includes(id))ids.push(id);if(ids.length===2)break;}
+    for(const order of state.currentOrders||[]){const id=profiles[Math.abs(Number(order.sequence)||0)%profiles.length];if(!ids.includes(id))ids.push(id);if(ids.length===3)break;}
     return ids;
   });
   assert(JSON.stringify(ids)===JSON.stringify(expected),`Waiting guests ${height}: active order identities mismatch ${JSON.stringify({ids,expected})}`);
@@ -204,7 +204,7 @@ try{
   }
   await page.setViewportSize({width:390,height:844});
   await inspectCounterRoute();
-  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},activeOrderGuestsVisibleBeforeService:true,earlyCafeWithoutSeatingCovered:true,preServiceWaitingCount:2,preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,humanNavigationDelayMs:1600,reloadBeforePlace:true,pendingArrivalReloadSafe:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,gameplaySaveSchemaUnchanged:true,screenshots:12};
+  report={viewports:['390x844','390x720'],guestVisits:{mika:5,nora:2,sam:1},activeOrderGuestsVisibleBeforeService:true,earlyCafeWithoutSeatingCovered:true,preServiceWaitingCount:3,preferenceVisible:true,nextLoyaltyPayoffVisible:true,regularsInPlace:true,realServiceArrival:true,humanNavigationDelayMs:1600,reloadBeforePlace:true,pendingArrivalReloadSafe:true,seatsFollowBuiltFurniture:true,reducedMotionSafe:true,gameplaySaveSchemaUnchanged:true,screenshots:12};
   if(problems.length)throw new Error(`console problems: ${problems.join(' | ')}`);
 }catch(error){failure=error;try{await shot('359-regular-guests-failure');}catch{}}
 finally{await writeFile(`${outDir}/regular-guests-report.json`,JSON.stringify({report,problems,failure:failure?.message||null},null,2));await browser.close();}

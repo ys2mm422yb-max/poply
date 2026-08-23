@@ -1,6 +1,6 @@
 # Guest-Life · Café am Meer
 
-Status: LIVE since PR #166. Reload-visibility hardening: PR #168. Active-order visibility: PR #169. Person-role cleanup: PR #170.
+Status: LIVE since PR #166. Reload-visibility hardening: PR #168. Active-order visibility: PR #169. Person-role cleanup: PR #170. Queue/ambient clarity follow-up is being verified on `fix/guest-life-queue-clarity`.
 Durable coordination: GitHub Issue #42.
 
 ## Purpose
@@ -12,12 +12,14 @@ This is a visual/game-feel extension of the existing guest/order/loyalty layers,
 
 ## Preflight / preserved contracts
 The implementation deliberately extends, rather than replaces:
+- PR #83 / #127 — environment-first living Place and Café Scene V2 remain the authored visual foundation;
 - PR #143 — authored living Café guests, furniture-aware layering and idempotent Place decoration;
 - PR #156 — Mika/Nora/Sam identity, loyalty-backed recurring guests and existing seated regular poses;
 - PR #160 — Service Moments remain the service-priority mechanic; Guest-Life adds no second timer/event game;
 - PR #167 — the permanent installed-PWA update path may reload the client after a canonical release;
 - PR #168 — a just-served Guest-Life arrival survives that reload until it is visibly completed;
-- PR #169 — active order guests are visible before service, including early Café stages without seating.
+- PR #169 — active order guests are visible before service, including early Café stages without seating;
+- PR #170 — every visible person must have a readable gameplay role; the anonymous permanent barista is hidden.
 
 The shipped 1→6 sequence remains intact. Orders, requirements, rewards, loyalty thresholds, Service-Ruf, Service Specials, Place Powers and restoration costs are unchanged.
 
@@ -28,6 +30,8 @@ Every visible person in Café am Meer must have a player-readable reason to be t
 - Active order guests are canonical Mika/Nora/Sam identities derived from the existing `currentOrders` sequence mapping.
 - Before `Neue Theke`, active guests approach and wait near the Café entrance.
 - From `Neue Theke` onward, active guests approach and wait in a small authored counter queue instead of standing as remote scene decoration.
+- If three different active orders belong to Mika, Nora and Sam, all three identities are visible; the Place must not silently omit the third active guest.
+- The three waiting positions are deliberately staggered in X, ground baseline and scale so they read as a short queue/depth arrangement rather than three flat stickers.
 - Waiting guests briefly enter from the right-hand approach when the Place scene is rendered, then settle at the stage-aware waiting point.
 - Waiting labels are intentionally more compact than arrival/regular labels so the person remains the visual focus.
 - An identity already visible as a recurring guest or currently pending a served arrival is never duplicated as another waiting copy.
@@ -38,10 +42,22 @@ The goal is not to simulate staff or a customer AI system. It is to make each re
 ## Active-order guests before service
 When Café am Meer is visible, Guest-Life derives visible waiting identities directly from the existing `currentOrders` and canonical `guestForSequence` mapping.
 
-- Up to two unique active-order guests are shown.
+- Up to three unique active-order guests are shown, matching the existing three simultaneous customer orders when their identities differ.
 - This works at the early Café stages before `Sitzecke` exists.
 - Waiting state is derived from existing order state and introduces no new gameplay persistence.
 - Fixed authored positions are used; there is no pathfinding, collision simulation or hidden occupancy system.
+
+## Ambient-life contract
+Earlier environment-first Place work intentionally used cups/steam as life cues while fake people were rejected. Guest-Life now provides real customer presence, so permanent counter steam is no longer needed as generic ambient activity.
+
+- The authored counter cups remain part of the built `Neue Theke` artwork.
+- `cafe-steam` is hidden while the counter is idle.
+- Steam becomes visible only while a real pending served guest is actively completing the stage-2/3 counter service arrival/stand state.
+- Seated arrivals at stage 4+ do not turn on counter steam.
+- No timer, reward, production rule or persistence field is attached to steam; it is visual feedback derived from the existing pending service state.
+
+## Place utility clarity
+The Places map remains the same small scene utility introduced by the café-first Place hierarchy. Its ambiguous target-like `⌖` glyph is replaced by an explicit authored map SVG while preserving the same action, touch target and `Places Karte öffnen` accessibility label.
 
 ## Post-service runtime contract
 Successful real services emit one transient `poply:guest-served` event containing the already-resolved guest identity:
@@ -85,29 +101,36 @@ With `prefers-reduced-motion: reduce`:
 - no staff-management system;
 - no automatic screen switch after delivery;
 - no backend/Neon;
+- no Orders or Board hierarchy changes in this slice;
 - no changes to Sonnenkai/Dachgarten guest choreography in this slice.
 
 ## Acceptance
 Required evidence:
 1. stage 1 still shows canonical active-order guests before service;
-2. stage 2 shows the same active guests approaching and waiting in counter-aware positions;
-3. the stage-2 QA measures real on-screen X movement during that entry instead of only checking for an animation element;
-4. the anonymous permanent `cafe-barista` is not visibly rendered at stage 2;
-5. waiting identities come from real `currentOrders`, not a synthetic NPC list;
-6. already-seated recurring guests and pending served identities are not duplicated as waiting guests;
-7. normal real Nora service still increments existing loyalty and produces the reload-safe visible arrival;
-8. stage-2 served guests route to the counter and later leave instead of becoming a permanent unnamed figure;
-9. stage-4+ served guests still settle into their existing recurring seats;
-10. Reduced Motion creates no waiting-entry or served travel animation and leaves the final state visible;
-11. 390×844 and 390×720 stay above the dock and do not document-scroll;
-12. stage-2 entry/waiting screenshots and the existing walking/arrived/settled screenshots are actually opened and visually reviewed before merge;
-13. after merge, exact-main CI/Browser/PWA/Place03 and canonical permanent-link release verification must succeed before the change is called live.
+2. stage 2 shows all three unique active-order guests when three different canonical identities own the current orders;
+3. the three stage-2 guests use `counter-wait`, `counter-queue`, `counter-queue-back` with visibly increasing depth/baseline instead of a flat row;
+4. the stage-2 QA measures real on-screen X movement for all three entries instead of only checking for animation elements;
+5. the anonymous permanent `cafe-barista` is not visibly rendered at stage 2;
+6. idle stage-2 counter steam is hidden;
+7. a real pending served stage-2 guest makes the existing counter steam visible only during the service payoff;
+8. the Place map launcher renders an explicit map SVG and no `⌖` target glyph;
+9. waiting identities come from real `currentOrders`, not a synthetic NPC list;
+10. already-seated recurring guests and pending served identities are not duplicated as waiting guests;
+11. normal real Nora service still increments existing loyalty and produces the reload-safe visible arrival;
+12. stage-2 served guests route to the counter and later leave instead of becoming a permanent unnamed figure;
+13. stage-4+ served guests still settle into their existing recurring seats;
+14. Reduced Motion creates no waiting-entry or served travel animation and leaves the final state visible;
+15. 390×844 and 390×720 stay above the dock and do not document-scroll;
+16. stage-2 entry/waiting/service screenshots and the existing walking/arrived/settled screenshots are actually opened and visually reviewed before merge;
+17. after merge, exact-main CI/Browser/PWA/Place03 and canonical permanent-link release verification must succeed before the change is called live.
 
-New canonical person-role screenshots:
+Queue/ambient clarity screenshots:
 - `356-guest-life-entering-stage2-390x844.png`
 - `356-guest-life-entering-stage2-390x720.png`
 - `357-guest-life-waiting-stage2-390x844.png`
 - `357-guest-life-waiting-stage2-390x720.png`
+- `358-guest-life-service-steam-stage2-390x844.png`
+- `358-guest-life-service-steam-stage2-390x720.png`
 
 Existing Guest-Life screenshots remain regression evidence:
 - `355-active-order-guests-place-390x844.png`

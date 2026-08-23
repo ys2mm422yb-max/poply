@@ -2,7 +2,7 @@ import { GUEST_PROFILES, guestForSequence } from './aaa-guests.js';
 import { getState } from './aaa-session.js';
 
 const NS='http://www.w3.org/2000/svg';
-const WALK_MS=3000,WAIT_IN_MS=900,ARRIVE_MS=700,STAND_MS=5000,SETTLE_MS=1400,MAX_PENDING=3,MAX_WAITING=2;
+const WALK_MS=3000,WAIT_IN_MS=900,ARRIVE_MS=700,STAND_MS=5000,SETTLE_MS=1400,MAX_PENDING=3,MAX_WAITING=3;
 export const GUEST_LIFE_PENDING_KEY='poply-guest-life-pending-v1';
 const byId=id=>GUEST_PROFILES.find(guest=>guest.id===id)??null;
 const seatTargets={
@@ -15,12 +15,14 @@ const seatTargets={
 export function guestLifeWaitingTargets(stage){
   const safeStage=Math.max(0,Math.min(6,Math.floor(Number(stage)||0)));
   if(safeStage>=2)return [
-    {kind:'counter-wait',x:438,y:340,scale:.88},
-    {kind:'counter-queue',x:526,y:348,scale:.8},
+    {kind:'counter-wait',x:420,y:338,scale:.9},
+    {kind:'counter-queue',x:504,y:348,scale:.81},
+    {kind:'counter-queue-back',x:590,y:356,scale:.72},
   ];
   return [
-    {kind:'entrance-wait',x:452,y:340,scale:.88},
-    {kind:'entrance-queue',x:542,y:348,scale:.8},
+    {kind:'entrance-wait',x:438,y:338,scale:.9},
+    {kind:'entrance-queue',x:526,y:348,scale:.81},
+    {kind:'entrance-queue-back',x:614,y:356,scale:.72},
   ];
 }
 
@@ -150,12 +152,13 @@ export function installGuestLife(root){
   const persist=()=>{pending=writeGuestLifePending(pending,storage);};
   const consume=guestId=>{pending=pending.filter(id=>id!==guestId);persist();};
   const refresh=()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;decorate();});};
+  const clearServiceSteam=svg=>svg?.classList.remove('has-guest-life-service');
   const finish=(svg,walker,guestId,destination)=>{
     clearTimeout(activeTimer);
     consume(guestId);
-    if(destination.seated){walker?.remove();delete svg.dataset.guestLifeArrival;markSettled(svg,guestId);active=false;refresh();return;}
+    if(destination.seated){clearServiceSteam(svg);walker?.remove();delete svg.dataset.guestLifeArrival;markSettled(svg,guestId);active=false;refresh();return;}
     if(walker)walker.dataset.guestLifeState='standing';
-    activeTimer=setTimeout(()=>{walker?.remove();active=false;refresh();},STAND_MS);
+    activeTimer=setTimeout(()=>{clearServiceSteam(svg);walker?.remove();active=false;refresh();},STAND_MS);
   };
   const completeWalk=(svg,walker,guestId,destination)=>{
     if(!walker){finish(svg,walker,guestId,destination);return;}
@@ -173,8 +176,9 @@ export function installGuestLife(root){
     svg.querySelector(`.guest-life-waiting[data-guest-life-waiting="${guestId}"]`)?.remove();
     const destination=guestLifeDestination(stage,seatSlotFor(svg,guestId)),reduce=reducedMotion();
     active=true;
+    if(destination.kind==='counter')svg.classList.add('has-guest-life-service');else clearServiceSteam(svg);
     if(reduce&&destination.seated){consume(guestId);markSettled(svg,guestId);active=false;refresh();return;}
-    const walker=insertWalker(svg,profile,destination,!reduce);if(!walker){active=false;refresh();return;}
+    const walker=insertWalker(svg,profile,destination,!reduce);if(!walker){clearServiceSteam(svg);active=false;refresh();return;}
     if(destination.seated)svg.dataset.guestLifeArrival=guestId;
     if(reduce){finish(svg,walker,guestId,destination);return;}
     activeTimer=setTimeout(()=>completeWalk(svg,walker,guestId,destination),WALK_MS);
