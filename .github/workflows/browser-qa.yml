@@ -85,6 +85,9 @@ jobs:
       - name: Run recurring guests WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/regular-guests-qa.mjs
+      - name: Run Guest-Life person-role WebKit QA
+        env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
+        run: node scripts/guest-life-person-qa.mjs
       - name: Run Merge Flow WebKit QA
         env: {QA_BASE_URL: http://127.0.0.1:4173, QA_OUT_DIR: qa-artifacts}
         run: node scripts/merge-flow-qa.mjs
