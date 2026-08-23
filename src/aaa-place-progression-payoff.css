@@ -1,0 +1,131 @@
+/* Café progression payoff — make each restoration beat visibly change the world.
+   Extends Scene V2 (#127), gameplay benefits (#158) and Guest-Life (#166–171).
+   The legacy cafe-steam geometry stays in the SVG as a state marker only: on real iPhone
+   it read as moving smoke across the counter front, so visible service feedback is now
+   the cups/counter light response instead. */
+
+.production-place.place-coast .place-scene-v2 .cafe-steam{
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.production-place.place-coast .place-scene-v2 .cafe-steam path{
+  animation:none!important;
+}
+
+/* Stage-to-stage world finish: the shell starts calmer and gains warmth/colour as it is restored. */
+.production-place.place-coast .world-hero[data-stage="0"] .world-art{filter:saturate(.94) contrast(1.01) brightness(.98)}
+.production-place.place-coast .world-hero[data-stage="1"] .world-art{filter:saturate(1.04) contrast(1.02) brightness(1.01)}
+.production-place.place-coast .world-hero[data-stage="2"] .world-art{filter:saturate(1.09) contrast(1.025) brightness(1.015)}
+.production-place.place-coast .world-hero[data-stage="3"] .world-art{filter:saturate(1.12) contrast(1.03) brightness(1.02)}
+.production-place.place-coast .world-hero[data-stage="4"] .world-art{filter:saturate(1.14) contrast(1.03) brightness(1.025)}
+.production-place.place-coast .world-hero[data-stage="5"] .world-art{filter:saturate(1.17) contrast(1.035) brightness(1.03)}
+.place-map-preview.place-coast .place-scene-v2{filter:saturate(1.17) contrast(1.035) brightness(1.03)}
+
+/* 1/6 Lichter: make the first build read as a real opening-up of the Café. */
+.production-place.place-coast .scene-upgrade.lights .cafe-bulb{
+  filter:drop-shadow(0 0 8px rgba(255,218,117,.82));
+}
+.production-place.place-coast .scene-upgrade.lights .cafe-evening-wash{opacity:.15}
+.production-place.place-coast .scene-upgrade.lights .under-eave-light{
+  stroke-width:8;
+  opacity:.9;
+  filter:drop-shadow(0 0 5px rgba(255,228,160,.7));
+}
+
+/* 2/6 Neue Theke: stronger material/readability, but no fake permanent smoke. */
+.production-place.place-coast .scene-upgrade.counter{
+  filter:drop-shadow(0 14px 10px rgba(48,27,18,.32)) drop-shadow(0 1px 0 rgba(255,239,190,.35));
+}
+.production-place.place-coast .scene-upgrade.counter .counter-top{
+  fill:#f9d995;
+  filter:drop-shadow(0 4px 3px rgba(83,48,27,.25));
+}
+.production-place.place-coast .scene-upgrade.counter .counter-front{filter:saturate(1.18) brightness(1.04)}
+.production-place.place-coast .scene-upgrade.counter .cafe-cups{filter:drop-shadow(0 2px 2px rgba(73,45,30,.28))}
+
+/* A real served guest gets a clear, short service response at the actual cups/counter.
+   No drifting steam/smoke is used. */
+.production-place.place-coast .place-scene-v2.has-guest-life-service .cafe-cups{
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:placeServiceCupPayoff .78s cubic-bezier(.2,.8,.25,1) 2;
+}
+.production-place.place-coast .place-scene-v2.has-guest-life-service .counter-top{
+  animation:placeServiceCounterPayoff .78s ease-out 2;
+}
+
+/* 3/6 Menüwand: a new focal point appears instead of reading like another flat rectangle. */
+.production-place.place-coast .scene-upgrade.menu rect{
+  fill:#123f48;
+  filter:drop-shadow(0 5px 5px rgba(0,30,36,.3)) drop-shadow(0 0 7px rgba(244,205,111,.18));
+}
+.production-place.place-coast .scene-upgrade.menu .menu-spark{filter:drop-shadow(0 0 6px rgba(255,239,165,.78))}
+.production-place.place-coast .scene-upgrade.menu .cafe-canopy-top{
+  filter:drop-shadow(0 9px 5px rgba(72,44,27,.28)) saturate(1.12);
+}
+
+/* 4/6 Sitzecke: furniture should read as a genuine new usable zone. */
+.production-place.place-coast .scene-upgrade.seating .cafe-table{
+  filter:drop-shadow(0 12px 8px rgba(54,33,25,.3));
+}
+.production-place.place-coast .scene-upgrade.seating .cafe-table>ellipse:first-child{fill:#f2c77e}
+.production-place.place-coast .scene-upgrade.seating .table-cup{filter:drop-shadow(0 2px 2px rgba(77,47,30,.25))}
+
+/* 5/6 Meerterrasse: foreground depth becomes a warmer destination, not just extra floor. */
+.production-place.place-coast .scene-upgrade.terrace .terrace-plane{
+  filter:saturate(1.16) brightness(1.05) drop-shadow(0 -6px 12px rgba(255,206,139,.12));
+}
+.production-place.place-coast .scene-upgrade.terrace .terrace-planters{filter:saturate(1.18) brightness(1.03)}
+.production-place.place-coast .scene-upgrade.terrace .terrace-service-cart{
+  filter:drop-shadow(0 10px 7px rgba(47,29,23,.3)) brightness(1.05);
+}
+
+/* 6/6 Poply-Schild: completion reads as a finished destination.
+   Completed Coast is revisited through the map, so the same finish is authored there too. */
+.production-place.place-coast .world-hero[data-stage="6"] .scene-upgrade.sign,
+.place-map-preview.place-coast .scene-upgrade.sign{
+  filter:drop-shadow(0 12px 10px rgba(0,24,29,.28)) drop-shadow(0 0 18px rgba(255,215,117,.34));
+}
+.production-place.place-coast .world-hero[data-stage="6"] .cafe-flags,
+.place-map-preview.place-coast .cafe-flags{
+  filter:drop-shadow(0 2px 2px rgba(65,37,27,.25));
+}
+.production-place.place-coast .world-hero[data-stage="6"] .cafe-celebration-dots,
+.place-map-preview.place-coast .cafe-celebration-dots{
+  filter:drop-shadow(0 0 7px rgba(255,239,164,.65));
+}
+
+/* Every build keeps the existing authored restoration sweep and layers a short brightness pulse on top. */
+.production-place.place-coast .world-hero.fx-restoration-reveal::after{
+  animation:restoration-sweep .9s ease-out both,placeBuildWorldPulse 1.05s cubic-bezier(.16,.9,.2,1) both;
+}
+.production-place.place-coast .world-hero[data-stage="1"].fx-restoration-reveal .scene-upgrade.lights,
+.production-place.place-coast .world-hero[data-stage="2"].fx-restoration-reveal .scene-upgrade.counter,
+.production-place.place-coast .world-hero[data-stage="3"].fx-restoration-reveal .scene-upgrade.menu,
+.production-place.place-coast .world-hero[data-stage="4"].fx-restoration-reveal .scene-upgrade.seating,
+.production-place.place-coast .world-hero[data-stage="5"].fx-restoration-reveal .scene-upgrade.terrace,
+.production-place.place-coast .world-hero[data-stage="6"].fx-restoration-reveal .scene-upgrade.sign{
+  filter:drop-shadow(0 0 18px rgba(255,220,128,.55)) drop-shadow(0 12px 10px rgba(0,24,29,.2));
+}
+
+@keyframes placeServiceCupPayoff{
+  0%,100%{filter:drop-shadow(0 2px 2px rgba(73,45,30,.28));transform:translateY(0) scale(1)}
+  45%{filter:drop-shadow(0 0 9px rgba(255,230,145,.95));transform:translateY(-2px) scale(1.12)}
+}
+@keyframes placeServiceCounterPayoff{
+  0%,100%{filter:drop-shadow(0 4px 3px rgba(83,48,27,.25));}
+  45%{filter:drop-shadow(0 0 12px rgba(255,218,120,.72));}
+}
+@keyframes placeBuildWorldPulse{
+  0%{opacity:.35;filter:brightness(.96)}
+  42%{opacity:1;filter:brightness(1.18)}
+  100%{opacity:1;filter:brightness(1)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .production-place.place-coast .place-scene-v2.has-guest-life-service .cafe-cups,
+  .production-place.place-coast .place-scene-v2.has-guest-life-service .counter-top,
+  .production-place.place-coast .world-hero.fx-restoration-reveal::after{
+    animation:none!important;
+  }
+}

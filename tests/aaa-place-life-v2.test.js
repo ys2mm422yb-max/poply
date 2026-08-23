@@ -101,7 +101,7 @@ test('guest-life pending arrivals are bounded, identity-safe and reload-readable
   assert.equal(values.has(GUEST_LIFE_PENDING_KEY),false);
 });
 
-test('visible Place people are role-driven: three active guests, no anonymous barista, and service-bound steam',async()=>{
+test('visible Place people are role-driven: three active guests, stable entry motion, no anonymous barista, and service state feedback',async()=>{
   const [life,ui,daily,main,css,roleCss,index]=await Promise.all([
     read('src/aaa-guest-life-ui.js'),read('src/aaa-ui.js'),read('src/aaa-daily-ui.js'),read('src/aaa-main.js'),read('src/aaa-place-life-v2.css'),read('src/aaa-guest-life-contract.css'),read('index.html')
   ]);
@@ -122,7 +122,8 @@ test('visible Place people are role-driven: three active guests, no anonymous ba
   assert.match(life,/guestLifeWaitingTargets\(stage\)/);
   assert.match(life,/counter-queue-back/);
   assert.match(life,/data-guest-life-waiting-kind/);
-  assert.match(life,/animateTransform class="guest-life-wait-in"/);
+  assert.match(life,/animateMotion class="guest-life-wait-in"/);
+  assert.doesNotMatch(life,/animateTransform class="guest-life-wait-in"/);
   assert.match(life,/signature=`\$\{stage\}\|\$\{waiting\.join\('\|'\)\}`/);
   assert.match(life,/has-guest-life-service/);
   assert.match(life,/readGuestLifePending\(storage\)/);

@@ -64,7 +64,9 @@ const inspectWaitingOrders=async height=>{
     const box=await waiting.nth(i).boundingBox();
     assert(box&&box.width>=24&&box.height>=36,`Waiting guests ${height}: guest ${i} is not visibly rendered ${JSON.stringify(box)}`);
   }
-  assert((await scene.locator('[data-guest-life-waiting] animateMotion').count())===0,`Waiting guests ${height}: pre-service guests should wait, not run loops`);
+  assert((await scene.locator('[data-guest-life-waiting] .guest-life-motion').count())===0,`Waiting guests ${height}: pre-service guests must not use the full served-guest walk`);
+  assert((await scene.locator('[data-guest-life-waiting] .guest-life-wait-in').count())===3,`Waiting guests ${height}: expected one authored entry motion per active guest`);
+  assert((await scene.locator('[data-guest-life-waiting] animateMotion:not(.guest-life-wait-in)').count())===0,`Waiting guests ${height}: unexpected pre-service motion primitive`);
   await assertAboveDock(scene,`Waiting guests Place ${height}`);
   await assertNoScroll(`Waiting guests ${height}`);
   await shot(`355-active-order-guests-place-390x${height}`);
