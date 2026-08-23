@@ -1,6 +1,6 @@
 # Guest-Life · Café am Meer
 
-Status: LIVE since PR #166. Reload-visibility hardening: PR #168. Active-order visibility: PR #169. Person-role cleanup is being verified on `fix/guest-life-person-contract`.
+Status: LIVE since PR #166. Reload-visibility hardening: PR #168. Active-order visibility: PR #169. Person-role cleanup: PR #170.
 Durable coordination: GitHub Issue #42.
 
 ## Purpose
@@ -91,16 +91,17 @@ With `prefers-reduced-motion: reduce`:
 Required evidence:
 1. stage 1 still shows canonical active-order guests before service;
 2. stage 2 shows the same active guests approaching and waiting in counter-aware positions;
-3. the anonymous permanent `cafe-barista` is not visibly rendered at stage 2;
-4. waiting identities come from real `currentOrders`, not a synthetic NPC list;
-5. already-seated recurring guests and pending served identities are not duplicated as waiting guests;
-6. normal real Nora service still increments existing loyalty and produces the reload-safe visible arrival;
-7. stage-2 served guests route to the counter and later leave instead of becoming a permanent unnamed figure;
-8. stage-4+ served guests still settle into their existing recurring seats;
-9. Reduced Motion creates no waiting-entry or served travel animation and leaves the final state visible;
-10. 390×844 and 390×720 stay above the dock and do not document-scroll;
-11. stage-2 entry/waiting screenshots and the existing walking/arrived/settled screenshots are actually opened and visually reviewed before merge;
-12. after merge, exact-main CI/Browser/PWA/Place03 and canonical permanent-link release verification must succeed before the change is called live.
+3. the stage-2 QA measures real on-screen X movement during that entry instead of only checking for an animation element;
+4. the anonymous permanent `cafe-barista` is not visibly rendered at stage 2;
+5. waiting identities come from real `currentOrders`, not a synthetic NPC list;
+6. already-seated recurring guests and pending served identities are not duplicated as waiting guests;
+7. normal real Nora service still increments existing loyalty and produces the reload-safe visible arrival;
+8. stage-2 served guests route to the counter and later leave instead of becoming a permanent unnamed figure;
+9. stage-4+ served guests still settle into their existing recurring seats;
+10. Reduced Motion creates no waiting-entry or served travel animation and leaves the final state visible;
+11. 390×844 and 390×720 stay above the dock and do not document-scroll;
+12. stage-2 entry/waiting screenshots and the existing walking/arrived/settled screenshots are actually opened and visually reviewed before merge;
+13. after merge, exact-main CI/Browser/PWA/Place03 and canonical permanent-link release verification must succeed before the change is called live.
 
 New canonical person-role screenshots:
 - `356-guest-life-entering-stage2-390x844.png`
