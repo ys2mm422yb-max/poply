@@ -55,14 +55,14 @@ const inspect=async height=>{
   assert((await scene.locator('.place-life-guests-v2-front [data-regular-guest]').count())===0,`Person contract ${height}: unserved guests were duplicated as seated regulars`);
 
   const entryStart=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().x));
-  // Sample near the middle of the authored 900 ms entrance. This remains a real geometry check,
-  // but avoids judging a spline by its deliberately slow opening frames.
-  await page.waitForTimeout(420);
+  // Sample around the middle of the authored 900 ms entrance. This remains a real geometry check,
+  // but avoids judging the deliberately slow opening frames of the authored spline.
+  await page.waitForTimeout(500);
   const entryMid=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().x));
-  entryStart.forEach((x,index)=>assert(x-entryMid[index]>=10,`Person contract ${height}: guest ${index} did not visibly move into scene ${JSON.stringify({start:x,mid:entryMid[index]})}`));
+  entryStart.forEach((x,index)=>assert(x-entryMid[index]>=12,`Person contract ${height}: guest ${index} did not visibly move into scene ${JSON.stringify({start:x,mid:entryMid[index]})}`));
   await shot(`356-guest-life-entering-stage2-390x${height}`);
 
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(520);
   const boxes=[];
   for(let i=0;i<2;i+=1){
     const box=await waiting.nth(i).boundingBox();boxes.push(box);
