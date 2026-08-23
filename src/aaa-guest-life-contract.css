@@ -1,0 +1,12 @@
+/* Guest-Life person-role contract: no anonymous permanent NPC competes with real guests. */
+.view-place.place-coast .cafe-barista{display:none!important}
+
+.guest-life-waiting{pointer-events:none}
+.guest-life-waiting .guest-life-name rect{fill:rgba(18,72,76,.88);stroke-width:1.6}
+.guest-life-waiting .guest-life-name text{font-size:13px;font-weight:900}
+.guest-life-waiting[data-guest-life-waiting-kind="counter-wait"] .guest-life-shadow,
+.guest-life-waiting[data-guest-life-waiting-kind="counter-queue"] .guest-life-shadow{opacity:.28}
+
+@media(prefers-reduced-motion:reduce){
+  .guest-life-waiting *{animation:none!important}
+}
