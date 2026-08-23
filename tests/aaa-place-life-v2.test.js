@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { GUEST_LIFE_PENDING_KEY, activeOrderGuestIds, guestLifeDestination, guestLifePath, normalizeGuestLifePending, readGuestLifePending, writeGuestLifePending } from '../src/aaa-guest-life-ui.js';
+import { GUEST_LIFE_PENDING_KEY, activeOrderGuestIds, guestLifeDestination, guestLifePath, guestLifeWaitingTargets, normalizeGuestLifePending, readGuestLifePending, writeGuestLifePending } from '../src/aaa-guest-life-ui.js';
 const read=path=>readFile(new URL(`../${path}`,import.meta.url),'utf8');
 
 test('living Place pass hides the old stiff guests and installs furniture-aware authored poses',async()=>{
@@ -60,6 +60,19 @@ test('served guest route reacts deterministically to built Cafe furniture',()=>{
   assert.match(path,/ 458 360$/);
 });
 
+test('waiting guests use stage-aware entrance and counter positions instead of permanent decoration',()=>{
+  assert.deepEqual(guestLifeWaitingTargets(0),[
+    {kind:'entrance-wait',x:452,y:340,scale:.88},
+    {kind:'entrance-queue',x:542,y:348,scale:.8},
+  ]);
+  assert.deepEqual(guestLifeWaitingTargets(1),guestLifeWaitingTargets(0));
+  assert.deepEqual(guestLifeWaitingTargets(2),[
+    {kind:'counter-wait',x:438,y:340,scale:.88},
+    {kind:'counter-queue',x:526,y:348,scale:.8},
+  ]);
+  assert.deepEqual(guestLifeWaitingTargets(6),guestLifeWaitingTargets(2));
+});
+
 test('active order guests are deterministic, unique and bounded for visible Place waiting',()=>{
   const state={currentOrders:[{sequence:1},{sequence:2},{sequence:1},{sequence:0}]};
   assert.deepEqual(activeOrderGuestIds(state),['nora','sam','mika']);
@@ -86,18 +99,26 @@ test('guest-life pending arrivals are bounded, identity-safe and reload-readable
   assert.equal(values.has(GUEST_LIFE_PENDING_KEY),false);
 });
 
-test('real services and current orders feed visible reload-safe guest-life without a second game system',async()=>{
-  const [life,ui,daily,main,css]=await Promise.all([read('src/aaa-guest-life-ui.js'),read('src/aaa-ui.js'),read('src/aaa-daily-ui.js'),read('src/aaa-main.js'),read('src/aaa-place-life-v2.css')]);
+test('visible Place people are role-driven: old barista hidden, active guests enter, and services stay reload-safe',async()=>{
+  const [life,ui,daily,main,css,roleCss,index]=await Promise.all([
+    read('src/aaa-guest-life-ui.js'),read('src/aaa-ui.js'),read('src/aaa-daily-ui.js'),read('src/aaa-main.js'),read('src/aaa-place-life-v2.css'),read('src/aaa-guest-life-contract.css'),read('index.html')
+  ]);
   assert.match(ui,/poply:guest-served/);
   assert.match(ui,/emitGuestServed\(result,'order'\)/);
   assert.match(daily,/poply:guest-served/);
   assert.match(daily,/source:'daily-bonus'/);
   assert.match(main,/installGuestLife\(root\)/);
+  assert.match(index,/aaa-guest-life-contract\.css/);
+  assert.match(roleCss,/\.view-place\.place-coast \.cafe-barista\{display:none!important\}/);
   assert.match(life,/GUEST_LIFE_PENDING_KEY='poply-guest-life-pending-v1'/);
+  assert.match(life,/WAIT_IN_MS=900/);
   assert.match(life,/MAX_PENDING=3,MAX_WAITING=2/);
   assert.match(life,/guestForSequence/);
   assert.match(life,/currentOrders/);
-  assert.match(life,/data-guest-life-waiting/);
+  assert.match(life,/guestLifeWaitingTargets\(stage\)/);
+  assert.match(life,/data-guest-life-waiting-kind/);
+  assert.match(life,/animateTransform class="guest-life-wait-in"/);
+  assert.match(life,/signature=`\$\{stage\}\|\$\{waiting\.join\('\|'\)\}`/);
   assert.match(life,/readGuestLifePending\(storage\)/);
   assert.match(life,/writeGuestLifePending\(pending,storage\)/);
   assert.match(life,/root\.dataset\.view!=='place'/);
