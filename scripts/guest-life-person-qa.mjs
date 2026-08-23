@@ -51,18 +51,23 @@ const inspect=async height=>{
   assert(ids.length===2,`Person contract ${height}: expected two active order guests, got ${JSON.stringify(ids)}`);
   const kinds=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-guest-life-waiting-kind')));
   assert(JSON.stringify(kinds)===JSON.stringify(['counter-wait','counter-queue']),`Person contract ${height}: guests are not using counter-aware waiting roles ${JSON.stringify(kinds)}`);
-  assert((await scene.locator('[data-guest-life-waiting] .guest-life-wait-in').count())===2,`Person contract ${height}: guest entry animation elements are missing`);
+  const entryAnimations=scene.locator('[data-guest-life-waiting] .guest-life-wait-in');
+  assert((await entryAnimations.count())===2,`Person contract ${height}: guest entry animation elements are missing`);
   assert((await scene.locator('.place-life-guests-v2-front [data-regular-guest]').count())===0,`Person contract ${height}: unserved guests were duplicated as seated regulars`);
 
+  // Restart the actual rendered SMIL entrance after all setup assertions. Measuring the natural animation
+  // from an arbitrary late QA timestamp is flaky; restarting the same shipped animation makes geometry proof deterministic.
+  const restartable=await entryAnimations.evaluateAll(nodes=>nodes.every(node=>typeof node.beginElement==='function'));
+  assert(restartable,`Person contract ${height}: rendered guest entry cannot be deterministically restarted for motion proof`);
+  await entryAnimations.evaluateAll(nodes=>nodes.forEach(node=>node.beginElement()));
+  await page.waitForTimeout(40);
   const entryStart=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().x));
-  // Sample around the middle of the authored 900 ms entrance. This remains a real geometry check,
-  // but avoids judging the deliberately slow opening frames of the authored spline.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(460);
   const entryMid=await waiting.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().x));
   entryStart.forEach((x,index)=>assert(x-entryMid[index]>=12,`Person contract ${height}: guest ${index} did not visibly move into scene ${JSON.stringify({start:x,mid:entryMid[index]})}`));
   await shot(`356-guest-life-entering-stage2-390x${height}`);
 
-  await page.waitForTimeout(520);
+  await page.waitForTimeout(500);
   const boxes=[];
   for(let i=0;i<2;i+=1){
     const box=await waiting.nth(i).boundingBox();boxes.push(box);
