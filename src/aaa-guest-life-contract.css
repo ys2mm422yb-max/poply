@@ -2,7 +2,8 @@
 .view-place.place-coast .cafe-barista{display:none!important}
 
 /* Counter steam is feedback for an actual served guest, not permanent ambient smoke. */
-.view-place.place-coast .cafe-steam,.place-map-preview.place-coast .cafe-steam{display:none!important}
+.view-place.place-coast .cafe-steam{display:none!important}
+.place-map-preview.place-coast .cafe-steam{display:none!important}
 .view-place.place-coast .place-scene-svg.has-guest-life-service .cafe-steam{display:block!important}
 
 .guest-life-waiting{pointer-events:none}
