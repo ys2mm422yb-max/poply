@@ -13,6 +13,7 @@ const FAMILY_SOURCE={
 };
 const PLACE_UNLOCK_BY_UPGRADE={sign:'sunset','sunset-sign':'garden'};
 const TRACE_SERVICE_LIMIT=120;
+const TRACE_POOL_PROBE_LIMIT=32;
 
 export const RUNTIME_TRACE_POLICIES=Object.freeze(['fifo','restoration-efficient','coin-conservative']);
 export const ECONOMY_GUARDS={
@@ -156,6 +157,13 @@ function selectRuntimeOrder(state,policy){
   return [...choices].sort(comparators[policy])[0];
 }
 
+function runtimeCandidateTitles(state,chapterId){
+  const probe=structuredClone(state);probe.currentOrders=[];
+  const titles=new Set();
+  for(let sequence=0;sequence<TRACE_POOL_PROBE_LIMIT;sequence+=1)titles.add(createProgressionOrder(probe,sequence,chapterId).title);
+  return [...titles];
+}
+
 function readyRuntimeTraceOrder(inputState,order){
   const state=structuredClone(inputState);
   state.board=state.board.map(slot=>slot?.kind==='item'?null:slot);
@@ -184,7 +192,7 @@ function summarizeVisibleChoice(visible){
 export function simulateRuntimeOrderRoute(policy='fifo'){
   if(!RUNTIME_TRACE_POLICIES.includes(policy))throw new Error(`Unknown runtime trace policy: ${policy}`);
   let state=createInitialState(),services=0,energy=0,orderCoins=0;
-  const orderLog=[],checkpoints={},antiRepeatViolations=[],queueSizeViolations=[];
+  const orderLog=[],checkpoints={},avoidableRepeatViolations=[],forcedRepeats=[],queueSizeViolations=[];
   let previousCheckpoint={services:0,energy:0,orderCoins:0};
 
   while(!isPlace03Complete(state)&&services<TRACE_SERVICE_LIMIT){
@@ -195,9 +203,14 @@ export function simulateRuntimeOrderRoute(policy='fifo'){
     const choice=summarizeVisibleChoice(visible);
     const sequenceBefore=state.orderSequence;
     const remainingTitles=(state.currentOrders||[]).filter(order=>order.id!==selected.id).map(order=>order.title);
+    const candidateTitles=runtimeCandidateTitles(state,activeBefore);
+    const blockedTitles=new Set([...remainingTitles,selected.title]);
+    const unblockedCandidateTitles=candidateTitles.filter(title=>!blockedTitles.has(title));
     const replacementContext={
       chapterId:activeBefore,
       completedRestorations:completedUpgradeCountForChapter(state,activeBefore),
+      candidateTitles,
+      unblockedCandidateTitles,
     };
 
     const ready=readyRuntimeTraceOrder(state,selected);
@@ -208,9 +221,11 @@ export function simulateRuntimeOrderRoute(policy='fifo'){
 
     const replacement=state.currentOrders.find(order=>order.id===`order-${sequenceBefore}`)||null;
     if(!replacement){
-      antiRepeatViolations.push({service:services,reason:'replacement-missing',selected:selected.title});
+      avoidableRepeatViolations.push({service:services,reason:'replacement-missing',selected:selected.title});
     }else if(replacement.title===selected.title||remainingTitles.includes(replacement.title)){
-      antiRepeatViolations.push({service:services,reason:'replacement-repeat',selected:selected.title,replacement:replacement.title,remainingTitles});
+      const repeat={service:services,selected:selected.title,replacement:replacement.title,remainingTitles,candidateTitles};
+      if(unblockedCandidateTitles.length)avoidableRepeatViolations.push({...repeat,reason:'avoidable-repeat',unblockedCandidateTitles});
+      else forcedRepeats.push({...repeat,reason:'pool-exhausted'});
     }
     const queueAfterReplacement=visibleOrderEconomy(state);
 
@@ -274,7 +289,8 @@ export function simulateRuntimeOrderRoute(policy='fifo'){
     orderCoins,
     starsLeft:state.stars,
     checkpoints,
-    antiRepeatViolations,
+    avoidableRepeatViolations,
+    forcedRepeats,
     queueSizeViolations,
     maxSelectedEnergy:selectedEnergy.length?Math.max(...selectedEnergy):0,
     maxSelectedEnergyPerStar:selectedEnergyPerStar.length?Math.max(...selectedEnergyPerStar):0,
@@ -430,7 +446,7 @@ export function economyGuardFailures(snapshot=economySnapshot()){
   }
   for(const [policy,trace] of Object.entries(snapshot.runtimeTraces||{})){
     if(!trace.completed)failures.push(`${policy}: runtime route did not complete within ${TRACE_SERVICE_LIMIT} services`);
-    if(trace.antiRepeatViolations.length)failures.push(`${policy}: ${trace.antiRepeatViolations.length} anti-repeat violations`);
+    if(trace.avoidableRepeatViolations.length)failures.push(`${policy}: ${trace.avoidableRepeatViolations.length} avoidable anti-repeat violations`);
     if(trace.queueSizeViolations.length)failures.push(`${policy}: ${trace.queueSizeViolations.length} three-order queue violations`);
     if(trace.maxSelectedEnergy>ECONOMY_GUARDS.maxSingleOrderEnergy)failures.push(`${policy}: selected ${trace.maxSelectedEnergy} energy exceeds ${ECONOMY_GUARDS.maxSingleOrderEnergy}`);
     for(const [chapterId,checkpoint] of Object.entries(trace.checkpoints||{})){
