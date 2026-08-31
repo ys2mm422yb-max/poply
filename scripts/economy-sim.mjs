@@ -28,7 +28,8 @@ const runtimeTraceSummary=trace=>({
     maxLowestVisibleEnergy:trace.maxChoiceFloorEnergy,
     maxLowestVisibleEnergyPerStar:round(trace.maxChoiceFloorEnergyPerStar),
   },
-  antiRepeatViolations:trace.antiRepeatViolations.length,
+  avoidableRepeatViolations:trace.avoidableRepeatViolations.length,
+  forcedRepeats:trace.forcedRepeats.length,
   queueSizeViolations:trace.queueSizeViolations.length,
 });
 
