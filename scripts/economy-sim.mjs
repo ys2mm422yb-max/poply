@@ -21,6 +21,21 @@ const report={
       })),
     },
   ])),
+  coreCoinJourney:{
+    storage:snapshot.journey.storage,
+    checkpoints:Object.fromEntries(Object.entries(snapshot.journey.checkpoints).map(([chapterId,data])=>[
+      chapterId,
+      {
+        ordersServed:data.ordersServed,
+        totalXp:data.totalXp,
+        level:data.level,
+        sources:data.sources,
+        grossCoins:data.grossCoins,
+        coinsAfterFullStorage:data.coinsAfterFullStorage,
+      },
+    ])),
+    totals:snapshot.journey.totals,
+  },
 };
 const failures=economyGuardFailures(snapshot);
 console.log(JSON.stringify({...report,failures},null,2));

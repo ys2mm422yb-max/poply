@@ -1,4 +1,8 @@
-import { PLACE_CHAPTERS, createInitialState, createProgressionOrder, orderDifficultyBand } from './v2-game.js';
+import { ITEM_FAMILIES, PLACE_CHAPTERS, createInitialState, createProgressionOrder, orderDifficultyBand } from './v2-game.js';
+import { INITIAL_STORAGE_CAPACITY, STORAGE_CAPACITY_STEP, STORAGE_MAX_CAPACITY, STORAGE_UPGRADE_COSTS } from './aaa-inventory.js';
+import { LEVEL_REWARD_COINS, playerProgress, xpForOrder, xpForRestoration } from './aaa-progression.js';
+import { FAMILY_MASTERY_REWARD_COINS, discoveryXpForItem } from './aaa-collection.js';
+import { GUEST_LOYALTY_MILESTONES, guestForSequence } from './aaa-guests.js';
 
 const FAMILY_SOURCE={
   coffee:'coffee-gen',
@@ -7,10 +11,12 @@ const FAMILY_SOURCE={
   fruit:'sunset-gen',
   herb:'garden-gen',
 };
+const PLACE_UNLOCK_BY_UPGRADE={sign:'sunset','sunset-sign':'garden'};
 
 export const ECONOMY_GUARDS={
   maxSingleOrderEnergy:64,
   maxEstablishedEnergyPerStar:7.25,
+  storageAffordableByChapter:'coast',
   chapterOrderWindows:{
     coast:[12,18],
     sunset:[13,20],
@@ -50,13 +56,16 @@ export function theoreticalOrderEnergy(requirements=[]){
 }
 
 export function orderEconomy(order){
-  const energy=theoreticalOrderEnergy(order?.requirements||[]);
+  const requirements=(order?.requirements||[]).map(requirement=>({...requirement}));
+  const energy=theoreticalOrderEnergy(requirements);
   const coins=Math.max(0,Number(order?.rewards?.coins)||0);
   const stars=Math.max(0,Number(order?.rewards?.stars)||0);
   return {
     id:order?.id||null,
+    sequence:Number.isInteger(order?.sequence)?order.sequence:null,
     title:order?.title||'',
     difficulty:order?.difficulty||null,
+    requirements,
     energy,
     coins,
     stars,
@@ -103,15 +112,126 @@ export function simulateChapterPacing(chapterId){
   while(completed<chapter.upgrades.length&&ordersServed<100){
     const state=stateForChapterStage(chapterId,completed);
     const order=createProgressionOrder(state,sequence,chapterId);
-    const effort=orderEconomy(order);
+    const effort=orderEconomy(order),completedBefore=completed,upgradesBuilt=[];
     stars+=effort.stars;coins+=effort.coins;energy+=effort.energy;ordersServed+=1;sequence+=1;
-    orderLog.push({...effort,completedBefore:completed});
     while(completed<chapter.upgrades.length&&stars>=chapter.upgrades[completed].cost){
       stars-=chapter.upgrades[completed].cost;
+      upgradesBuilt.push(chapter.upgrades[completed].id);
       completed+=1;
     }
+    orderLog.push({...effort,completedBefore,completedAfter:completed,upgradesBuilt});
   }
   return {chapterId,ordersServed,energy,coins,starsLeft:stars,completed,orderLog};
+}
+
+export function storageExpansionPlan(){
+  let capacity=INITIAL_STORAGE_CAPACITY,totalCost=0;
+  const steps=[];
+  while(capacity<STORAGE_MAX_CAPACITY){
+    const cost=Number(STORAGE_UPGRADE_COSTS[capacity]);
+    if(!Number.isFinite(cost)||cost<0)throw new Error(`Missing storage upgrade cost for capacity ${capacity}`);
+    const nextCapacity=Math.min(STORAGE_MAX_CAPACITY,capacity+STORAGE_CAPACITY_STEP);
+    steps.push({from:capacity,to:nextCapacity,cost});
+    totalCost+=cost;capacity=nextCapacity;
+  }
+  return {initialCapacity:INITIAL_STORAGE_CAPACITY,maxCapacity:STORAGE_MAX_CAPACITY,steps,totalCost};
+}
+
+function initialDiscoveryLevels(){
+  const levels=Object.fromEntries(Object.keys(ITEM_FAMILIES).map(family=>[family,0]));
+  for(const item of createInitialState().board){
+    if(item?.kind==='item'&&Object.hasOwn(levels,item.family))levels[item.family]=Math.max(levels[item.family],item.level||0);
+  }
+  return levels;
+}
+
+function requiredDiscoveryProgress(requirements,discoveredLevels,masteredFamilies){
+  let xp=0,masteryCoins=0;
+  for(const requirement of requirements){
+    const family=requirement?.family,definition=ITEM_FAMILIES[family];
+    if(!definition)throw new Error(`Unknown discovery family: ${family}`);
+    const requiredLevel=Math.min(definition.stages.length,Math.max(1,Number(requirement.level)||1));
+    const previous=Math.max(0,Number(discoveredLevels[family])||0);
+    if(requiredLevel<=previous)continue;
+    for(let level=previous+1;level<=requiredLevel;level+=1)xp+=discoveryXpForItem(level);
+    discoveredLevels[family]=requiredLevel;
+    if(requiredLevel===definition.stages.length&&!masteredFamilies.has(family)){
+      masteredFamilies.add(family);masteryCoins+=FAMILY_MASTERY_REWARD_COINS;
+    }
+  }
+  return {xp,masteryCoins};
+}
+
+export function simulateEconomyJourney(){
+  const initialCoins=Math.max(0,Number(createInitialState().coins)||0),storage=storageExpansionPlan();
+  const discoveredLevels=initialDiscoveryLevels(),masteredFamilies=new Set(),guestVisits={};
+  let ordersServed=0,orderCoins=0,orderXp=0,discoveryXp=0,restorationXp=0,loyaltyCoins=0,masteryCoins=0,serviceSequence=0;
+  const checkpoints={};
+
+  for(const chapter of PLACE_CHAPTERS){
+    const pacing=simulateChapterPacing(chapter.id);
+    const before={ordersServed,orderCoins,orderXp,discoveryXp,restorationXp,loyaltyCoins,masteryCoins};
+    for(const entry of pacing.orderLog){
+      ordersServed+=1;orderCoins+=entry.coins;orderXp+=xpForOrder(entry);
+      const discovery=requiredDiscoveryProgress(entry.requirements,discoveredLevels,masteredFamilies);
+      discoveryXp+=discovery.xp;masteryCoins+=discovery.masteryCoins;
+
+      const guest=guestForSequence(serviceSequence),beforeVisits=Math.max(0,Number(guestVisits[guest.id])||0),visits=beforeVisits+1;
+      guestVisits[guest.id]=visits;serviceSequence+=1;
+      const loyalty=GUEST_LOYALTY_MILESTONES.find(milestone=>milestone.visits===visits);
+      loyaltyCoins+=loyalty?.rewardCoins||0;
+
+      for(const upgradeId of entry.upgradesBuilt){
+        restorationXp+=xpForRestoration({unlockedPlace:PLACE_UNLOCK_BY_UPGRADE[upgradeId]||null});
+      }
+    }
+
+    const totalXp=orderXp+discoveryXp+restorationXp,level=playerProgress(totalXp).level;
+    const levelCoins=Math.max(0,level-1)*LEVEL_REWARD_COINS;
+    const grossCoins=initialCoins+orderCoins+levelCoins+loyaltyCoins+masteryCoins;
+    checkpoints[chapter.id]={
+      chapterId:chapter.id,
+      ordersServed,
+      totalXp,
+      level,
+      sources:{initialCoins,orderCoins,levelCoins,loyaltyCoins,masteryCoins},
+      grossCoins,
+      storageCost:storage.totalCost,
+      coinsAfterFullStorage:grossCoins-storage.totalCost,
+      discoveryLevels:{...discoveredLevels},
+      chapterDelta:{
+        ordersServed:ordersServed-before.ordersServed,
+        orderCoins:orderCoins-before.orderCoins,
+        orderXp:orderXp-before.orderXp,
+        discoveryXp:discoveryXp-before.discoveryXp,
+        restorationXp:restorationXp-before.restorationXp,
+        loyaltyCoins:loyaltyCoins-before.loyaltyCoins,
+        masteryCoins:masteryCoins-before.masteryCoins,
+      },
+    };
+  }
+
+  const totalXp=orderXp+discoveryXp+restorationXp,level=playerProgress(totalXp).level,levelCoins=Math.max(0,level-1)*LEVEL_REWARD_COINS;
+  const grossCoins=initialCoins+orderCoins+levelCoins+loyaltyCoins+masteryCoins;
+  return {
+    initialCoins,
+    storage,
+    checkpoints,
+    totals:{
+      ordersServed,
+      orderCoins,
+      orderXp,
+      discoveryXp,
+      restorationXp,
+      totalXp,
+      level,
+      levelCoins,
+      loyaltyCoins,
+      masteryCoins,
+      grossCoins,
+      coinsAfterFullStorage:grossCoins-storage.totalCost,
+    },
+  };
 }
 
 export function economySnapshot(){
@@ -122,7 +242,7 @@ export function economySnapshot(){
       bands:[0,2,4].map(completed=>bandEconomyProfile(chapter.id,completed)),
     };
   }
-  return {chapters};
+  return {chapters,journey:simulateEconomyJourney()};
 }
 
 export function economyGuardFailures(snapshot=economySnapshot()){
@@ -139,6 +259,10 @@ export function economyGuardFailures(snapshot=economySnapshot()){
     if(established?.energyPerStar>ECONOMY_GUARDS.maxEstablishedEnergyPerStar){
       failures.push(`${chapterId}: established ${established.energyPerStar.toFixed(2)} energy/star exceeds ${ECONOMY_GUARDS.maxEstablishedEnergyPerStar}`);
     }
+  }
+  const storageCheckpoint=snapshot.journey?.checkpoints?.[ECONOMY_GUARDS.storageAffordableByChapter];
+  if(storageCheckpoint&&storageCheckpoint.coinsAfterFullStorage<0){
+    failures.push(`${ECONOMY_GUARDS.storageAffordableByChapter}: full Storage costs ${storageCheckpoint.storageCost} but deterministic core Coins only reach ${storageCheckpoint.grossCoins}`);
   }
   return failures;
 }
