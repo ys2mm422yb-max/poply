@@ -51,11 +51,13 @@ test('isolated chapter reference remains stable for template and band regression
   assert.ok(coast.energy<228,'first-session variety should not make Place 01 grindier than the previous isolated baseline');
 });
 
-test('runtime trace preserves the real opening queue, anti-repeat and replacement-before-build order',()=>{
+test('runtime trace preserves the real opening queue, best-effort anti-repeat and replacement-before-build order',()=>{
   const trace=simulateRuntimeOrderRoute('fifo');
   assert.equal(trace.completed,true);
-  assert.deepEqual(trace.antiRepeatViolations,[]);
+  assert.deepEqual(trace.avoidableRepeatViolations,[]);
   assert.deepEqual(trace.queueSizeViolations,[]);
+  assert.equal(trace.forcedRepeats.length,9,'narrow later-Place pools can force duplicates in a three-order queue');
+  assert.deepEqual({service:trace.forcedRepeats[0].service,reason:trace.forcedRepeats[0].reason},{service:18,reason:'pool-exhausted'});
 
   const first=trace.orderLog[0];
   assert.deepEqual(first.visible.map(order=>order.title),['Erster Kaffee','Frühstück am Fenster','Süße Begrüßung']);
@@ -83,11 +85,13 @@ test('rolling three-order policies expose materially different but finite pacing
   assert.deepEqual(restoration.checkpoints.sunset.delta,{ordersServed:15,energy:238,orderCoins:2805});
   assert.deepEqual(restoration.checkpoints.garden.delta,{ordersServed:20,energy:266,orderCoins:4515});
   assert.deepEqual({services:restoration.services,energy:restoration.energy,orderCoins:restoration.orderCoins},{services:51,energy:664,orderCoins:8923});
+  assert.deepEqual(restoration.forcedRepeats,[]);
 
   assert.deepEqual(conservative.checkpoints.coast.delta,{ordersServed:16,energy:152,orderCoins:1464});
   assert.deepEqual(conservative.checkpoints.sunset.delta,{ordersServed:16,energy:238,orderCoins:2735});
   assert.deepEqual(conservative.checkpoints.garden.delta,{ordersServed:21,energy:273,orderCoins:4495});
   assert.deepEqual({services:conservative.services,energy:conservative.energy,orderCoins:conservative.orderCoins},{services:53,energy:663,orderCoins:8694});
+  assert.deepEqual(conservative.forcedRepeats,[]);
 });
 
 test('permanent Storage sink stays tied to canonical upgrade configuration',()=>{
@@ -135,7 +139,7 @@ test('core journey follows the conservative rolling queue and actual order guest
   });
 });
 
-test('economy guard catches isolated, rolling-queue and permanent-sink regressions before release',()=>{
+test('economy guard catches isolated, avoidable-repeat and permanent-sink regressions before release',()=>{
   const snapshot=economySnapshot();
   assert.deepEqual(economyGuardFailures(snapshot),[]);
 
@@ -144,8 +148,8 @@ test('economy guard catches isolated, rolling-queue and permanent-sink regressio
   assert.match(economyGuardFailures(brokenPacing)[0],/coast: isolated 99 orders outside/);
 
   const brokenQueue=structuredClone(snapshot);
-  brokenQueue.runtimeTraces.fifo.antiRepeatViolations.push({service:1});
-  assert.ok(economyGuardFailures(brokenQueue).some(failure=>/fifo: 1 anti-repeat violations/.test(failure)));
+  brokenQueue.runtimeTraces.fifo.avoidableRepeatViolations.push({service:1});
+  assert.ok(economyGuardFailures(brokenQueue).some(failure=>/fifo: 1 avoidable anti-repeat violations/.test(failure)));
 
   const brokenStorage=structuredClone(snapshot);
   brokenStorage.journey.checkpoints.coast.coinsAfterFullStorage=-1;
