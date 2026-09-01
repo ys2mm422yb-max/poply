@@ -1,4 +1,4 @@
-import { ITEM_FAMILIES, PLACE_CHAPTERS, createInitialState, createProgressionOrder, orderDifficultyBand } from './v2-game.js';
+import { ITEM_FAMILIES, PLACE_CHAPTERS, activePlaceChapter, buildNextUpgrade, createInitialState, createProgressionOrder, fulfillOrder, isPlace03Complete, makeItem, orderDifficultyBand } from './v2-game.js';
 import { INITIAL_STORAGE_CAPACITY, STORAGE_CAPACITY_STEP, STORAGE_MAX_CAPACITY, STORAGE_UPGRADE_COSTS } from './aaa-inventory.js';
 import { LEVEL_REWARD_COINS, playerProgress, xpForOrder, xpForRestoration } from './aaa-progression.js';
 import { FAMILY_MASTERY_REWARD_COINS, discoveryXpForItem } from './aaa-collection.js';
@@ -12,11 +12,15 @@ const FAMILY_SOURCE={
   herb:'garden-gen',
 };
 const PLACE_UNLOCK_BY_UPGRADE={sign:'sunset','sunset-sign':'garden'};
+const TRACE_SERVICE_LIMIT=120;
+const TRACE_POOL_PROBE_LIMIT=32;
 
+export const RUNTIME_TRACE_POLICIES=Object.freeze(['fifo','restoration-efficient','coin-conservative']);
 export const ECONOMY_GUARDS={
   maxSingleOrderEnergy:64,
   maxEstablishedEnergyPerStar:7.25,
   storageAffordableByChapter:'coast',
+  runtimeTracePolicy:'coin-conservative',
   chapterOrderWindows:{
     coast:[12,18],
     sunset:[13,20],
@@ -104,6 +108,8 @@ export function bandEconomyProfile(chapterId,completed){
   };
 }
 
+// Isolated reference model retained for template/band regressions. It intentionally
+// does not represent the live three-order queue; simulateRuntimeOrderRoute does.
 export function simulateChapterPacing(chapterId){
   const chapter=PLACE_CHAPTERS.find(entry=>entry.id===chapterId);
   if(!chapter)throw new Error(`Unknown chapter: ${chapterId}`);
@@ -122,6 +128,176 @@ export function simulateChapterPacing(chapterId){
     orderLog.push({...effort,completedBefore,completedAfter:completed,upgradesBuilt});
   }
   return {chapterId,ordersServed,energy,coins,starsLeft:stars,completed,orderLog};
+}
+
+const completedUpgradeCountForChapter=(state,chapterId)=>{
+  const chapter=PLACE_CHAPTERS.find(entry=>entry.id===chapterId);
+  if(!chapter)return 0;
+  return chapter.upgrades.reduce((count,upgrade)=>count+(state.placeUpgrades.includes(upgrade.id)?1:0),0);
+};
+const chapterForUpgrade=upgradeId=>PLACE_CHAPTERS.find(chapter=>chapter.upgrades.some(upgrade=>upgrade.id===upgradeId))||null;
+const chapterComplete=(state,chapter)=>chapter?.upgrades.every(upgrade=>state.placeUpgrades.includes(upgrade.id))||false;
+const safeSequence=order=>Number.isInteger(order?.sequence)?order.sequence:Number.MAX_SAFE_INTEGER;
+const compareNumber=(left,right)=>left-right;
+
+function visibleOrderEconomy(state){
+  return (state.currentOrders||[]).map(order=>({...orderEconomy(order),chapter:order.chapter||null}));
+}
+
+function selectRuntimeOrder(state,policy){
+  if(!RUNTIME_TRACE_POLICIES.includes(policy))throw new Error(`Unknown runtime trace policy: ${policy}`);
+  const choices=visibleOrderEconomy(state);
+  if(!choices.length)throw new Error('Runtime trace has no visible orders');
+  const compareSequence=(left,right)=>compareNumber(safeSequence(left),safeSequence(right));
+  const comparators={
+    fifo:(left,right)=>compareSequence(left,right),
+    'restoration-efficient':(left,right)=>compareNumber(left.energyPerStar,right.energyPerStar)||compareNumber(left.energy,right.energy)||compareSequence(left,right),
+    'coin-conservative':(left,right)=>compareNumber(left.coins,right.coins)||compareNumber(left.energy,right.energy)||compareSequence(left,right),
+  };
+  return [...choices].sort(comparators[policy])[0];
+}
+
+function runtimeCandidateTitles(state,chapterId){
+  const probe=structuredClone(state);probe.currentOrders=[];
+  const titles=new Set();
+  for(let sequence=0;sequence<TRACE_POOL_PROBE_LIMIT;sequence+=1)titles.add(createProgressionOrder(probe,sequence,chapterId).title);
+  return [...titles];
+}
+
+function readyRuntimeTraceOrder(inputState,order){
+  const state=structuredClone(inputState);
+  state.board=state.board.map(slot=>slot?.kind==='item'?null:slot);
+  let cursor=0;
+  for(const requirement of order.requirements||[]){
+    for(let count=0;count<Math.max(0,Number(requirement.qty)||0);count+=1){
+      while(cursor<state.board.length&&state.board[cursor]!==null)cursor+=1;
+      if(cursor>=state.board.length)throw new Error(`Runtime trace cannot seed ${order.title}: Board is full`);
+      state.board[cursor]=makeItem(requirement.family,requirement.level,`economy-trace-${order.sequence}-${requirement.family}-${requirement.level}-${count}-${cursor}`);
+      cursor+=1;
+    }
+  }
+  return state;
+}
+
+function summarizeVisibleChoice(visible){
+  const energy=visible.map(order=>order.energy),energyPerStar=visible.map(order=>order.energyPerStar);
+  return {
+    lowestEnergy:Math.min(...energy),
+    highestEnergy:Math.max(...energy),
+    lowestEnergyPerStar:Math.min(...energyPerStar),
+    highestEnergyPerStar:Math.max(...energyPerStar),
+  };
+}
+
+export function simulateRuntimeOrderRoute(policy='fifo'){
+  if(!RUNTIME_TRACE_POLICIES.includes(policy))throw new Error(`Unknown runtime trace policy: ${policy}`);
+  let state=createInitialState(),services=0,energy=0,orderCoins=0;
+  const orderLog=[],checkpoints={},avoidableRepeatViolations=[],forcedRepeats=[],queueSizeViolations=[];
+  let previousCheckpoint={services:0,energy:0,orderCoins:0};
+
+  while(!isPlace03Complete(state)&&services<TRACE_SERVICE_LIMIT){
+    const activeBefore=activePlaceChapter(state).id;
+    const visible=visibleOrderEconomy(state);
+    if(visible.length!==3)queueSizeViolations.push({service:services+1,size:visible.length});
+    const selected=selectRuntimeOrder(state,policy);
+    const choice=summarizeVisibleChoice(visible);
+    const sequenceBefore=state.orderSequence;
+    const remainingTitles=(state.currentOrders||[]).filter(order=>order.id!==selected.id).map(order=>order.title);
+    const candidateTitles=runtimeCandidateTitles(state,activeBefore);
+    const blockedTitles=new Set([...remainingTitles,selected.title]);
+    const unblockedCandidateTitles=candidateTitles.filter(title=>!blockedTitles.has(title));
+    const replacementContext={
+      chapterId:activeBefore,
+      completedRestorations:completedUpgradeCountForChapter(state,activeBefore),
+      candidateTitles,
+      unblockedCandidateTitles,
+    };
+
+    const ready=readyRuntimeTraceOrder(state,selected);
+    const fulfilled=fulfillOrder(ready,selected.id);
+    if(!fulfilled.changed)throw new Error(`Runtime trace could not fulfill ${selected.id}: ${fulfilled.reason||'unknown'}`);
+    state=fulfilled.state;
+    services+=1;energy+=selected.energy;orderCoins+=selected.coins;
+
+    const replacement=state.currentOrders.find(order=>order.id===`order-${sequenceBefore}`)||null;
+    if(!replacement){
+      avoidableRepeatViolations.push({service:services,reason:'replacement-missing',selected:selected.title});
+    }else if(replacement.title===selected.title||remainingTitles.includes(replacement.title)){
+      const repeat={service:services,selected:selected.title,replacement:replacement.title,remainingTitles,candidateTitles};
+      if(unblockedCandidateTitles.length)avoidableRepeatViolations.push({...repeat,reason:'avoidable-repeat',unblockedCandidateTitles});
+      else forcedRepeats.push({...repeat,reason:'pool-exhausted'});
+    }
+    const queueAfterReplacement=visibleOrderEconomy(state);
+
+    const builds=[],completedChapters=[];
+    for(let buildGuard=0;buildGuard<PLACE_CHAPTERS.reduce((sum,chapter)=>sum+chapter.upgrades.length,0);buildGuard+=1){
+      const built=buildNextUpgrade(state);
+      if(!built.changed){
+        if(['not-enough-stars','place-complete'].includes(built.reason))break;
+        throw new Error(`Runtime trace build failed: ${built.reason||'unknown'}`);
+      }
+      state=built.state;
+      const chapter=chapterForUpgrade(built.upgrade.id);
+      const build={id:built.upgrade.id,chapterId:chapter?.id||null,cost:built.upgrade.cost,unlockedPlace:built.unlockedPlace||null};
+      builds.push(build);
+      if(chapter&&chapterComplete(state,chapter)&&!checkpoints[chapter.id]){
+        const checkpoint={
+          chapterId:chapter.id,
+          services,
+          energy,
+          orderCoins,
+          starsLeft:state.stars,
+          delta:{
+            ordersServed:services-previousCheckpoint.services,
+            energy:energy-previousCheckpoint.energy,
+            orderCoins:orderCoins-previousCheckpoint.orderCoins,
+          },
+          queueAfter:visibleOrderEconomy(state).map(order=>({sequence:order.sequence,chapter:order.chapter,title:order.title,energy:order.energy,coins:order.coins,stars:order.stars})),
+        };
+        checkpoints[chapter.id]=checkpoint;
+        previousCheckpoint={services,energy,orderCoins};
+        completedChapters.push(chapter.id);
+      }
+    }
+
+    orderLog.push({
+      service:services,
+      activeChapterBefore:activeBefore,
+      replacementContext,
+      visible:visible.map(order=>({sequence:order.sequence,chapter:order.chapter,title:order.title,energy:order.energy,coins:order.coins,stars:order.stars,energyPerStar:order.energyPerStar})),
+      choice,
+      selected:{sequence:selected.sequence,chapter:selected.chapter,title:selected.title,energy:selected.energy,coins:selected.coins,stars:selected.stars,energyPerStar:selected.energyPerStar,requirements:selected.requirements},
+      replacement:replacement?{sequence:replacement.sequence,chapter:replacement.chapter,title:replacement.title,difficulty:replacement.difficulty||null}:null,
+      queueAfterReplacement:queueAfterReplacement.map(order=>({sequence:order.sequence,chapter:order.chapter,title:order.title})),
+      builds,
+      completedChapters,
+      activeChapterAfter:activePlaceChapter(state).id,
+      completedRestorationsAfter:completedUpgradeCountForChapter(state,activePlaceChapter(state).id),
+      starsLeft:state.stars,
+      cumulative:{energy,orderCoins},
+    });
+  }
+
+  const completed=isPlace03Complete(state);
+  const selectedEnergy=orderLog.map(entry=>entry.selected.energy),selectedEnergyPerStar=orderLog.map(entry=>entry.selected.energyPerStar);
+  const choiceFloorEnergy=orderLog.map(entry=>entry.choice.lowestEnergy),choiceFloorEnergyPerStar=orderLog.map(entry=>entry.choice.lowestEnergyPerStar);
+  return {
+    policy,
+    completed,
+    services,
+    energy,
+    orderCoins,
+    starsLeft:state.stars,
+    checkpoints,
+    avoidableRepeatViolations,
+    forcedRepeats,
+    queueSizeViolations,
+    maxSelectedEnergy:selectedEnergy.length?Math.max(...selectedEnergy):0,
+    maxSelectedEnergyPerStar:selectedEnergyPerStar.length?Math.max(...selectedEnergyPerStar):0,
+    maxChoiceFloorEnergy:choiceFloorEnergy.length?Math.max(...choiceFloorEnergy):0,
+    maxChoiceFloorEnergyPerStar:choiceFloorEnergyPerStar.length?Math.max(...choiceFloorEnergyPerStar):0,
+    orderLog,
+  };
 }
 
 export function storageExpansionPlan(){
@@ -162,63 +338,69 @@ function requiredDiscoveryProgress(requirements,discoveredLevels,masteredFamilie
   return {xp,masteryCoins};
 }
 
-export function simulateEconomyJourney(){
+export function simulateEconomyJourney(policy=ECONOMY_GUARDS.runtimeTracePolicy,route=simulateRuntimeOrderRoute(policy)){
+  if(route.policy!==policy)throw new Error(`Journey policy ${policy} does not match route policy ${route.policy}`);
   const initialCoins=Math.max(0,Number(createInitialState().coins)||0),storage=storageExpansionPlan();
   const discoveredLevels=initialDiscoveryLevels(),masteredFamilies=new Set(),guestVisits={};
-  let ordersServed=0,orderCoins=0,orderXp=0,discoveryXp=0,restorationXp=0,loyaltyCoins=0,masteryCoins=0,serviceSequence=0;
+  let ordersServed=0,theoreticalEnergy=0,orderCoins=0,orderXp=0,discoveryXp=0,restorationXp=0,loyaltyCoins=0,masteryCoins=0;
   const checkpoints={};
+  let previous={ordersServed:0,theoreticalEnergy:0,orderCoins:0,orderXp:0,discoveryXp:0,restorationXp:0,loyaltyCoins:0,masteryCoins:0};
 
-  for(const chapter of PLACE_CHAPTERS){
-    const pacing=simulateChapterPacing(chapter.id);
-    const before={ordersServed,orderCoins,orderXp,discoveryXp,restorationXp,loyaltyCoins,masteryCoins};
-    for(const entry of pacing.orderLog){
-      ordersServed+=1;orderCoins+=entry.coins;orderXp+=xpForOrder(entry);
-      const discovery=requiredDiscoveryProgress(entry.requirements,discoveredLevels,masteredFamilies);
-      discoveryXp+=discovery.xp;masteryCoins+=discovery.masteryCoins;
+  for(const entry of route.orderLog){
+    const order=entry.selected;
+    ordersServed+=1;theoreticalEnergy+=order.energy;orderCoins+=order.coins;orderXp+=xpForOrder(order);
+    const discovery=requiredDiscoveryProgress(order.requirements,discoveredLevels,masteredFamilies);
+    discoveryXp+=discovery.xp;masteryCoins+=discovery.masteryCoins;
 
-      const guest=guestForSequence(serviceSequence),beforeVisits=Math.max(0,Number(guestVisits[guest.id])||0),visits=beforeVisits+1;
-      guestVisits[guest.id]=visits;serviceSequence+=1;
-      const loyalty=GUEST_LOYALTY_MILESTONES.find(milestone=>milestone.visits===visits);
-      loyaltyCoins+=loyalty?.rewardCoins||0;
+    const guest=guestForSequence(order.sequence),beforeVisits=Math.max(0,Number(guestVisits[guest.id])||0),visits=beforeVisits+1;
+    guestVisits[guest.id]=visits;
+    const loyalty=GUEST_LOYALTY_MILESTONES.find(milestone=>milestone.visits===visits);
+    loyaltyCoins+=loyalty?.rewardCoins||0;
 
-      for(const upgradeId of entry.upgradesBuilt){
-        restorationXp+=xpForRestoration({unlockedPlace:PLACE_UNLOCK_BY_UPGRADE[upgradeId]||null});
-      }
+    for(const build of entry.builds)restorationXp+=xpForRestoration({unlockedPlace:build.unlockedPlace||PLACE_UNLOCK_BY_UPGRADE[build.id]||null});
+
+    for(const chapterId of entry.completedChapters){
+      const totalXp=orderXp+discoveryXp+restorationXp,level=playerProgress(totalXp).level;
+      const levelCoins=Math.max(0,level-1)*LEVEL_REWARD_COINS;
+      const grossCoins=initialCoins+orderCoins+levelCoins+loyaltyCoins+masteryCoins;
+      checkpoints[chapterId]={
+        chapterId,
+        policy,
+        ordersServed,
+        theoreticalEnergy,
+        totalXp,
+        level,
+        sources:{initialCoins,orderCoins,levelCoins,loyaltyCoins,masteryCoins},
+        grossCoins,
+        storageCost:storage.totalCost,
+        coinsAfterFullStorage:grossCoins-storage.totalCost,
+        discoveryLevels:{...discoveredLevels},
+        guestVisits:{...guestVisits},
+        chapterDelta:{
+          ordersServed:ordersServed-previous.ordersServed,
+          theoreticalEnergy:theoreticalEnergy-previous.theoreticalEnergy,
+          orderCoins:orderCoins-previous.orderCoins,
+          orderXp:orderXp-previous.orderXp,
+          discoveryXp:discoveryXp-previous.discoveryXp,
+          restorationXp:restorationXp-previous.restorationXp,
+          loyaltyCoins:loyaltyCoins-previous.loyaltyCoins,
+          masteryCoins:masteryCoins-previous.masteryCoins,
+        },
+      };
+      previous={ordersServed,theoreticalEnergy,orderCoins,orderXp,discoveryXp,restorationXp,loyaltyCoins,masteryCoins};
     }
-
-    const totalXp=orderXp+discoveryXp+restorationXp,level=playerProgress(totalXp).level;
-    const levelCoins=Math.max(0,level-1)*LEVEL_REWARD_COINS;
-    const grossCoins=initialCoins+orderCoins+levelCoins+loyaltyCoins+masteryCoins;
-    checkpoints[chapter.id]={
-      chapterId:chapter.id,
-      ordersServed,
-      totalXp,
-      level,
-      sources:{initialCoins,orderCoins,levelCoins,loyaltyCoins,masteryCoins},
-      grossCoins,
-      storageCost:storage.totalCost,
-      coinsAfterFullStorage:grossCoins-storage.totalCost,
-      discoveryLevels:{...discoveredLevels},
-      chapterDelta:{
-        ordersServed:ordersServed-before.ordersServed,
-        orderCoins:orderCoins-before.orderCoins,
-        orderXp:orderXp-before.orderXp,
-        discoveryXp:discoveryXp-before.discoveryXp,
-        restorationXp:restorationXp-before.restorationXp,
-        loyaltyCoins:loyaltyCoins-before.loyaltyCoins,
-        masteryCoins:masteryCoins-before.masteryCoins,
-      },
-    };
   }
 
   const totalXp=orderXp+discoveryXp+restorationXp,level=playerProgress(totalXp).level,levelCoins=Math.max(0,level-1)*LEVEL_REWARD_COINS;
   const grossCoins=initialCoins+orderCoins+levelCoins+loyaltyCoins+masteryCoins;
   return {
+    policy,
     initialCoins,
     storage,
     checkpoints,
     totals:{
       ordersServed,
+      theoreticalEnergy,
       orderCoins,
       orderXp,
       discoveryXp,
@@ -242,7 +424,9 @@ export function economySnapshot(){
       bands:[0,2,4].map(completed=>bandEconomyProfile(chapter.id,completed)),
     };
   }
-  return {chapters,journey:simulateEconomyJourney()};
+  const runtimeTraces=Object.fromEntries(RUNTIME_TRACE_POLICIES.map(policy=>[policy,simulateRuntimeOrderRoute(policy)]));
+  const journey=simulateEconomyJourney(ECONOMY_GUARDS.runtimeTracePolicy,runtimeTraces[ECONOMY_GUARDS.runtimeTracePolicy]);
+  return {chapters,runtimeTraces,journey};
 }
 
 export function economyGuardFailures(snapshot=economySnapshot()){
@@ -250,7 +434,7 @@ export function economyGuardFailures(snapshot=economySnapshot()){
   for(const [chapterId,data] of Object.entries(snapshot.chapters)){
     const [minOrders,maxOrders]=ECONOMY_GUARDS.chapterOrderWindows[chapterId]||[1,100];
     if(data.pacing.ordersServed<minOrders||data.pacing.ordersServed>maxOrders){
-      failures.push(`${chapterId}: ${data.pacing.ordersServed} orders outside ${minOrders}-${maxOrders}`);
+      failures.push(`${chapterId}: isolated ${data.pacing.ordersServed} orders outside ${minOrders}-${maxOrders}`);
     }
     for(const entry of data.pacing.orderLog){
       if(entry.energy>ECONOMY_GUARDS.maxSingleOrderEnergy)failures.push(`${chapterId}/${entry.title}: ${entry.energy} energy exceeds ${ECONOMY_GUARDS.maxSingleOrderEnergy}`);
@@ -260,9 +444,21 @@ export function economyGuardFailures(snapshot=economySnapshot()){
       failures.push(`${chapterId}: established ${established.energyPerStar.toFixed(2)} energy/star exceeds ${ECONOMY_GUARDS.maxEstablishedEnergyPerStar}`);
     }
   }
+  for(const [policy,trace] of Object.entries(snapshot.runtimeTraces||{})){
+    if(!trace.completed)failures.push(`${policy}: runtime route did not complete within ${TRACE_SERVICE_LIMIT} services`);
+    if(trace.avoidableRepeatViolations.length)failures.push(`${policy}: ${trace.avoidableRepeatViolations.length} avoidable anti-repeat violations`);
+    if(trace.queueSizeViolations.length)failures.push(`${policy}: ${trace.queueSizeViolations.length} three-order queue violations`);
+    if(trace.maxSelectedEnergy>ECONOMY_GUARDS.maxSingleOrderEnergy)failures.push(`${policy}: selected ${trace.maxSelectedEnergy} energy exceeds ${ECONOMY_GUARDS.maxSingleOrderEnergy}`);
+    for(const [chapterId,checkpoint] of Object.entries(trace.checkpoints||{})){
+      const [minOrders,maxOrders]=ECONOMY_GUARDS.chapterOrderWindows[chapterId]||[1,100];
+      if(checkpoint.delta.ordersServed<minOrders||checkpoint.delta.ordersServed>maxOrders){
+        failures.push(`${policy}/${chapterId}: ${checkpoint.delta.ordersServed} runtime orders outside ${minOrders}-${maxOrders}`);
+      }
+    }
+  }
   const storageCheckpoint=snapshot.journey?.checkpoints?.[ECONOMY_GUARDS.storageAffordableByChapter];
   if(storageCheckpoint&&storageCheckpoint.coinsAfterFullStorage<0){
-    failures.push(`${ECONOMY_GUARDS.storageAffordableByChapter}: full Storage costs ${storageCheckpoint.storageCost} but deterministic core Coins only reach ${storageCheckpoint.grossCoins}`);
+    failures.push(`${ECONOMY_GUARDS.storageAffordableByChapter}: full Storage costs ${storageCheckpoint.storageCost} but conservative runtime Coins only reach ${storageCheckpoint.grossCoins}`);
   }
   return failures;
 }
