@@ -59,9 +59,11 @@ The increasing effort inside each Place is intentional and transparent because d
 ### 2. Rolling three-order runtime trace
 The runtime trace starts from the real authored opening and keeps the actual three simultaneous orders alive for the full world route. Each modeled service:
 1. chooses one of the three visible orders using an explicit deterministic policy;
-2. calls the real `fulfillOrder()` path, so the replacement uses the current stage and the shipped anti-repeat rule;
+2. calls the real `fulfillOrder()` path, so the replacement uses the current stage and the shipped **best-effort** anti-repeat rule;
 3. only then spends available Stars through the real `buildNextUpgrade()` path;
 4. preserves the other two visible orders, including carry-over orders when a new Place unlocks.
+
+The anti-repeat contract is intentionally best effort, not an impossible uniqueness guarantee. Replacement selection avoids the just-served title and the other visible titles whenever the active stage pool contains an unblocked alternative. If a later Place/stage pool is narrower than the three-slot queue requires, the deterministic fallback may repeat a title because no unique candidate exists. The audit therefore distinguishes **avoidable repeat violations** from **forced pool-exhaustion repeats**.
 
 The trace seeds only the exact requested items so domain fulfillment can run. Their production cost is still charged through the theoretical Energy model; seeded test items are not free inventory credit.
 
@@ -75,6 +77,8 @@ Three reference policies expose how meaningful the visible choice actually is:
 | FIFO | 15 / 180 / 1,611 | 14 / 290 / 2,845 | 20 / 317 / 4,890 | 49 / 787 / 9,346 |
 | Restoration-efficient | 16 / 160 / 1,603 | 15 / 238 / 2,805 | 20 / 266 / 4,515 | 51 / 664 / 8,923 |
 | Coin-conservative | 16 / 152 / 1,464 | 16 / 238 / 2,735 | 21 / 273 / 4,495 | 53 / 663 / 8,694 |
+
+All three traces have **zero avoidable anti-repeat violations** and keep exactly three visible orders. FIFO records 9 forced pool-exhaustion repeats in later narrow pools; restoration-efficient and coin-conservative record 0. Those forced repeats are reported as a content-variety signal, not mislabeled as an anti-repeat regression.
 
 This changes the interpretation of late Café pressure. In the FIFO trace, the final Café service selects the 48-Energy `Sonnenuntergang`, but the same visible queue still contains `Croissant & Kaffee` at 18 Energy and `Süßer Nachmittag` at 20 Energy. A hard order can therefore be visible without being the player's only route forward. Balance decisions must evaluate the queue, not just the hardest template or isolated band average.
 
@@ -108,7 +112,8 @@ That is evidence **against** changing live reward or Storage values now. The mod
   - Coast: 12–18 orders;
   - Sunset: 13–20 orders;
   - Garden: 16–24 orders;
-- the rolling traces keep exactly three visible orders and preserve the shipped anti-repeat contract;
+- the rolling traces keep exactly three visible orders;
+- any **avoidable** anti-repeat violation fails the audit, while forced pool-exhaustion repeats are counted and reported separately;
 - the exact isolated chapter baseline remains intentional until a balance PR explicitly updates both the values and this contract;
 - Storage costs are read from the same canonical runtime configuration as the Storage system;
 - full 4 → 8 Storage expansion must remain affordable under the coin-conservative rolling route by Café completion.
@@ -123,6 +128,7 @@ node scripts/economy-sim.mjs
 The command prints:
 - the isolated chapter reference;
 - concise FIFO, restoration-efficient and coin-conservative rolling traces;
+- visible-choice pressure plus separate avoidable-repeat / forced-repeat counts;
 - the conservative integrated Coin/XP/Storage journey;
 - guard failures, if any.
 
@@ -139,5 +145,6 @@ It exits non-zero when a guard fails.
 Use the runtime-aware model for the next Milestone-K slices:
 1. compare late-Café queue pressure with a real WebKit/player trace before changing Star or Coin rewards;
 2. add retained-inventory and Energy Reserve assumptions as explicit alternate scenarios, not hidden live difficulty;
-3. centralize more reward/cost configuration only when the runtime migration can be kept simple and deterministic;
-4. only change live reward/cost values after both the simulator and real play evidence point to a specific player-facing pacing problem.
+3. treat forced pool-exhaustion repeats as a separate content-variety signal instead of disguising them as an economy problem;
+4. centralize more reward/cost configuration only when the runtime migration can be kept simple and deterministic;
+5. only change live reward/cost values after both the simulator and real play evidence point to a specific player-facing pacing problem.
